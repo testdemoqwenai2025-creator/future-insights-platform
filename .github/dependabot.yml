@@ -1,0 +1,144 @@
+# =============================================================================
+# AETH-1 Platform - Dependabot Configuration
+# =============================================================================
+# Automated dependency updates and security vulnerability scanning
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+# =============================================================================
+
+version: 2
+
+updates:
+  # ===========================================================================
+  # Bun Package Manager (package.json)
+  # ===========================================================================
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    
+    # Labels for PRs created by Dependabot
+    labels:
+      - "dependencies"
+      - "automated"
+    
+    # Commit message settings
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    
+    # Limit open PRs to avoid overwhelming review queue
+    open-pull-requests-limit: 10
+    
+    # Group minor and patch updates together for stability
+    groups:
+      # Group all minor and patch updates for production dependencies
+      production-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Group development dependencies separately
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Major version updates require separate review
+      major-updates:
+        update-types:
+          - "major"
+      
+      # Security updates get highest priority
+      security-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+    
+    # Reviewers for dependabot PRs
+    reviewers:
+      - "aeth1-maintainers"
+    
+    # Ignore specific versions or packages if needed
+    ignore:
+      # Keep Next.js on v16.x until stable migration path confirmed
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      
+      # React 19 is new, be cautious with major bumps
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+
+  # ===========================================================================
+  # GitHub Actions Workflows
+  # ===========================================================================
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+      timezone: "UTC"
+    
+    labels:
+      - "ci"
+      - "dependencies"
+      - "automated"
+    
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    
+    open-pull-requests-limit: 5
+    
+    groups:
+      actions-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ===========================================================================
+  # Docker (if Dockerfile exists)
+  # ===========================================================================
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "06:00"
+      timezone: "UTC"
+    
+    labels:
+      - "docker"
+      - "dependencies"
+      - "automated"
+    
+    commit-message:
+      prefix: "docker"
+    
+    open-pull-requests-limit: 3
+
+# =============================================================================
+# Security Settings (Optional - can also be set in repo settings)
+# =============================================================================
+# These settings complement the above and provide additional control
+
+# Note: For advanced security features, enable in repository settings:
+# 1. Go to Settings > Code security > Dependabot
+# 2. Enable "Dependabot security updates"
+# 3. Configure "Global options" as needed
+
+# Recommended security settings:
+# - Enable automated security updates for all ecosystems
+# - Set maximum weekly email digest frequency
+# - Configure alert preferences for critical vulnerabilities

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "../coverage",
+    "rootDir": "..",
+    "types": ["jest", "node"]
+  },
+  "include": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "../src/**/*.ts"
+  ],
+  "exclude": [
+    "../node_modules",
+    "../.next"
+  ]
+}

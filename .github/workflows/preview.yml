@@ -1,0 +1,276 @@
+# =============================================================================
+# AETH-1 Platform - Preview Deployment Workflow
+# =============================================================================
+# Deploys preview environments for pull requests
+# Automatically comments preview URL on PRs
+# Cleans up previews when PRs are closed
+# =============================================================================
+
+name: Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main, develop]
+
+# Cancel in-progress preview deployments for the same PR
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  BUN_VERSION: '1.1.0'
+  VERCEL_TYPE: 'preview'
+  NEXT_TELEMETRY_DISABLED: '1'
+
+jobs:
+  # ===========================================================================
+  # Job 1: Deploy Preview
+  # ===========================================================================
+  deploy-preview:
+    name: 👀 Deploy Preview
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.preview-url }}
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐢 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: ⚡ Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-preview-${{ hashFiles('**/bun.lock', '**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-preview-
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: 🔧 Generate Prisma client
+        run: bunx prisma generate
+
+      - name: 🚀 Deploy to Vercel (Preview)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--no-wait'
+
+      - name: 📋 Preview deployment summary
+        run: |
+          echo "## 👀 Preview Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Preview URL** | ${{ steps.deploy.outputs.preview-url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **PR Number** | #${{ github.event.pull_request.number }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.head_ref }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Author** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # Job 2: Comment Preview URL on PR
+  # ===========================================================================
+  comment-preview:
+    name: 💬 Comment Preview URL
+    runs-on: ubuntu-latest
+    needs: deploy-preview
+    if: github.event.action != 'closed' && needs.deploy-preview.result == 'success'
+    permissions:
+      pull-requests: write
+    
+    steps:
+      - name: 💬 Find existing comment
+        uses: actions/github-script@v7
+        id: find-comment
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100
+            });
+            
+            const botComment = comments.find(c => 
+              c.user.type === 'Bot' && 
+              c.body.includes('👀 Preview Deployment')
+            );
+            
+            return botComment?.id || null;
+
+      - name: ✏️ Create or update comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ needs.deploy-preview.outputs.preview-url }}';
+            const commentId = '${{ steps.find-comment.outputs.result }}';
+            
+            const body = `## 👀 Preview Deployment Ready! 🔗
+            
+            | Property | Value |
+            |----------|-------|
+            | **Preview URL** | ${previewUrl} |
+            | **PR** | #${context.issue.number} |
+            | **Branch** | \`${context.payload.pull_request.head.ref}\` |
+            | **Commit** | \`${context.sha.substring(0, 7)}\` |
+            | **Updated** | ${new Date().toISOString()} |
+            
+            > ⚠️ This preview will be updated on every push to this PR.
+            > It will be automatically cleaned up when the PR is closed.
+            
+            ---
+            
+            ### Quick Checks
+            - [ ] Visual review of changes
+            - [ ] API endpoints working correctly
+            - [ ] Responsive design check
+            - [ ] Browser console errors
+            `;
+            
+            if (commentId) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: parseInt(commentId),
+                body: body
+              });
+              console.log('Updated existing comment:', commentId);
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+              console.log('Created new comment');
+            }
+
+  # ===========================================================================
+  # Job 3: Cleanup Preview when PR closes
+  # ===========================================================================
+  cleanup-preview:
+    name: 🧹 Cleanup Preview
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+    timeout-minutes: 5
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🗑️ Remove Vercel Preview
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: 'remove ${{ github.event.pull_request.head.sha }}'
+        continue-on-error: true
+
+      - name: 💬 Comment cleanup confirmation
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const body = `## 🧹 Preview Cleaned Up
+            
+            The preview environment for this PR has been removed.
+            
+            | Property | Value |
+            |----------|-------|
+            | **PR** | #${context.issue.number} |
+            | **Closed by** | @${context.actor} |
+            | **Time** | ${new Date().toISOString()} |
+            `;
+            
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            } catch (e) {
+              console.log('Could not create cleanup comment:', e.message);
+            }
+
+  # ===========================================================================
+  # Job 4: Run basic checks for PR (optional quality gate)
+  # ===========================================================================
+  pr-checks:
+    name: ✅ PR Quality Checks
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed' && github.event.pull_request.base.ref == 'main'
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐢 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: ⚡ Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-pr-checks-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pr-checks-
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: 🔎 Quick lint check
+        id: lint
+        run: bun run lint -- --max-warnings=0 src/
+        continue-on-error: true
+
+      - name: 📊 Check commit messages
+        id: commits
+        run: |
+          echo "::group::Recent Commits"
+          git log --oneline origin/main..HEAD
+          echo "::endgroup::"
+          
+          # Check for conventional commits pattern
+          COMMITS=$(git log --format='%s' origin/main..HEAD)
+          if echo "$COMMITS" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .+"; then
+            echo "✅ Commit messages follow conventional format"
+          else
+            echo "⚠️ Some commits don't follow conventional commit format"
+            echo "Consider using: feat:, fix:, docs:, etc."
+          fi
+        continue-on-error: true
+
+      - name: 📋 PR checks summary
+        if: always()
+        run: |
+          echo "## ✅ PR Quality Checks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Linting | ${{ steps.lint.outcome == 'success' && '✅ Passed' || '❌ Issues found' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commits | ${{ steps.commits.outcome == 'success' && '✅ OK' || '⚠️ Review suggested' }} |" >> $GITHUB_STEP_SUMMARY

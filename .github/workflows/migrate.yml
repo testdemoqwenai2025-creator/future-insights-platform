@@ -1,0 +1,348 @@
+# =============================================================================
+# AETH-1 Platform - Database Migration Workflow
+# =============================================================================
+# Handles database schema migrations for different environments
+# Runs automatically on deploy or can be triggered manually
+# Supports Prisma migrations for SQLite/PostgreSQL
+# =============================================================================
+
+name: Database Migration
+
+on:
+  # Trigger after successful deployment to main
+  workflow_run:
+    workflows: ["AETH-1 CI/CD Pipeline"]
+    types: [completed]
+    branches: [main]
+  
+  # Manual trigger for specific environments
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+        default: staging
+      migration_command:
+        description: 'Migration command'
+        required: false
+        type: choice
+        options:
+          - migrate deploy      # Apply pending migrations (production)
+          - db push             # Push schema changes (development)
+          - migrate dev         # Create new migration
+          - migrate reset       # Reset database (dangerous!)
+        default: 'migrate deploy'
+      confirm_reset:
+        description: 'Confirm database reset (required if using reset)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  BUN_VERSION: '1.1.0'
+
+jobs:
+  # ===========================================================================
+  # Job 1: Check if deployment was successful
+  # ===========================================================================
+  check-deployment:
+    name: ✅ Check Deployment Status
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run'
+    
+    steps:
+      - name: 📋 Check workflow result
+        run: |
+          echo "Workflow Run ID: ${{ github.event.workflow_run.id }}"
+          echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
+          
+          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
+            echo "❌ Deployment failed, skipping migrations"
+            exit 1
+          fi
+          
+          echo "✅ Deployment succeeded, proceeding with migrations"
+
+  # ===========================================================================
+  # Job 2: Production Migration
+  # ===========================================================================
+  migrate-production:
+    name: 🗄️ Migrate Production Database
+    runs-on: ubuntu-latest
+    needs: [check-deployment] if: github.event_name == 'workflow_run'
+    if: |
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://aeth-1.vercel.app
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐢 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: ⚡ Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-migrate-${{ hashFiles('**/bun.lock') }}
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: 🔧 Generate Prisma client
+        run: bunx prisma generate
+
+      - name: 📊 Show current migration status
+        id: status
+        run: |
+          echo "::group::Migration Status"
+          bunx prisma migrate status || echo "No migrations found or fresh database"
+          echo "::endgroup::"
+
+      - name: 🚀 Apply production migrations
+        id: migrate
+        run: |
+          echo "::group::Running Migrations"
+          echo "🔒 Running in safe mode for production..."
+          
+          # Use migrate deploy for production (applies only pending migrations)
+          bunx prisma migrate deploy
+          
+          echo "::endgroup::"
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          PRISMA_MIGRATE_SKIP_GENERATE: 'true'
+
+      - name: ✅ Verify migration
+        if: success()
+        run: |
+          echo "::group::Post-Migration Verification"
+          echo "✅ Migration completed successfully"
+          bunx prisma migrate status
+          echo "::endgroup::"
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+      - name: 📋 Migration summary
+        if: always()
+        run: |
+          echo "## 🗄️ Production Migration" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | Production |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ steps.migrate.outcome }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Time** | $(date -u '+%Y-%m-%d %H:%M:%S UTC') |" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # Job 3: Staging Migration
+  # ===========================================================================
+  migrate-staging:
+    name: 🎭 Migrate Staging Database
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      github.event.inputs.environment == 'staging'
+    environment:
+      name: staging
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐢 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: ⚡ Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-migrate-${{ hashFiles('**/bun.lock') }}
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: 🔧 Generate Prisma client
+        run: bunx prisma generate
+
+      - name: 🚀 Apply staging migrations
+        run: |
+          echo "Applying migrations to staging..."
+          case "${{ github.event.inputs.migration_command }}" in
+            "migrate deploy")
+              bunx prisma migrate deploy
+              ;;
+            "db push")
+              bunx prisma db push --accept-data-loss
+              ;;
+            *)
+              bunx prisma migrate deploy
+              ;;
+          esac
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: 📋 Staging summary
+        run: |
+          echo "## 🎭 Staging Migration Complete" >> $GITHUB_STEP_SUMMARY
+          echo "**Command:** \`${{ github.event.inputs.migration_command }}\`" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # Job 4: Development/Migration Creation
+  # ===========================================================================
+  migrate-dev:
+    name: 💻 Development / Create Migration
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      github.event.inputs.environment == 'development'
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐢 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: ⚡ Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-migrate-dev-${{ hashFiles('**/bun.lock') }}
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: 🔧 Generate Prisma client
+        run: bunx prisma generate
+
+      - name: 💾 Execute development command
+        id: dev-command
+        run: |
+          case "${{ github.event.inputs.migration_command }}" in
+            "migrate dev")
+              echo "Creating new migration..."
+              bunx prisma migrate dev --name auto_migration_${{ github.run_id }}
+              ;;
+            "db push")
+              echo "Pushing schema changes..."
+              bunx prisma db push --accept-data-loss
+              ;;
+            "migrate reset")
+              if [ "${{ github.event.inputs.confirm_reset }}" != "true" ]; then
+                echo "❌ ERROR: You must confirm database reset by checking 'confirm_reset'"
+                exit 1
+              fi
+              echo "⚠️ RESETTING DATABASE..."
+              bunx prisma migrate reset --force
+              ;;
+            *)
+              echo "Running migrate deploy..."
+              bunx prisma migrate deploy
+              ;;
+          esac
+        env:
+          DATABASE_URL: file:./dev.db
+
+      - name: 📤 Commit and push migration files (if created)
+        if: github.event.inputs.migration_command == 'migrate dev'
+        run: |
+          git config user.name "aeth1-bot[bot]"
+          git config user.email "aeth1-bot@users.noreply.github.com"
+          
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(db): add migration from CI"
+            git push origin develop
+            echo "✅ Migration files committed and pushed"
+          else
+            echo "ℹ️ No new migration files to commit"
+          fi
+
+      - name: 📋 Dev summary
+        run: |
+          echo "## 💻 Development Migration" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Command** | \`${{ github.event.inputs.migration_command }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ steps.dev-command.outcome }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # Job 5: Seed Database (optional)
+  # ===========================================================================
+  seed-database:
+    name: 🌱 Seed Database
+    runs-on: ubuntu-latest
+    needs: [migrate-production]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.seed == 'true'
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐢 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: 🌱 Run seed script
+        run: |
+          if [ -f "prisma/seed.ts" ]; then
+            bunx tsx prisma/seed.ts
+          elif [ -f "prisma/seed.js" ]; then
+            bun prisma/seed.js
+          else
+            echo "⚠️ No seed file found"
+          fi
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+  # ===========================================================================
+  # Notification
+  # ===========================================================================
+  notify:
+    name: 📢 Notify Team
+    runs-on: ubuntu-latest
+    needs: [migrate-production, migrate-staging, migrate-dev]
+    if: always() && github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: 📢 Send notification
+        run: |
+          echo "## 🗄️ Migration Pipeline Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | Status |" >> $GITHUB_STEP_SUMMARY
+          echo"|-------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Production | ${{ needs.migrate-production.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Staging | ${{ needs.migrate-staging.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Development | ${{ needs.migrate-dev.result || 'skipped' }} |" >> $GITHUB_STEP_SUMMARY
