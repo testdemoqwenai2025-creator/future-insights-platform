@@ -1,0 +1,1082 @@
+     1→/**
+     2→ * Integration Tests - System APIs
+     3→ * 
+     4→ * Tests for:
+     5→ * - GET /api/status (health checks)
+     6→ * - GET /api/data (connectors list)
+     7→ * - GET /api/storage (containers)
+     8→ */
+     9→
+    10→import { NextRequest } from 'next/server';
+    11→import { GET as statusHandler } from '@/app/api/status/route';
+    12→import { GET as dataConnectorsHandler, POST as startConnectorHandler } from '@/app/api/data/route';
+    13→import { GET as storageHandler, POST as createContainerHandler } from '@/app/api/storage/route';
+    14→import { generateToken, UserRole, AuthUser } from '@/middleware/auth';
+    15→
+    16→// Helper to create mock requests
+    17→function createMockRequest(overrides: Record<string, any> = {}): NextRequest {
+    18→  const headers = new Headers();
+    19→  
+    20→  if (overrides.authorization) {
+    21→    headers.set('authorization', overrides.authorization);
+    22→  }
+    23→  if (overrides.contentType !== undefined) {
+    24→    if (overrides.contentType) {
+    25→      headers.set('content-type', overrides.contentType);
+    26→    }
+    27→  } else {
+    28→    headers.set('content-type', 'application/json');
+    29→  }
+    30→
+    31→  let url = overrides.url || 'http://localhost:3000/api/status';
+    32→  if (overrides.searchParams) {
+    33→    const params = new URLSearchParams(overrides.searchParams).toString();
+    34→    url = `${url}?${params}`;
+    35→  }
+    36→  
+    37→  return {
+    38→    headers,
+    39→    method: overrides.method || 'GET',
+    40→    url,
+    41→    json: () => Promise.resolve(overrides.body || {}),
+    42→    ip: '127.0.0.1'
+    43→  } as unknown as NextRequest;
+    44→}
+    45→
+    46→// Helper to parse response
+    47→async function getResponseBody(response: Response): Promise<any> {
+    48→  const text = await response.text();
+    49→  try {
+    50→    return JSON.parse(text);
+    51→  } catch {
+    52→    return text;
+    53→  }
+    54→}
+    55→
+    56→// Generate tokens for different user roles
+    57→function getAdminToken(): string {
+    58→  const user: AuthUser = {
+    59→    id: 'usr_1',
+    60→    email: 'admin@aeth-1.science',
+    61→    name: 'AETH-1 Admin',
+    62→    role: UserRole.ADMIN
+    63→  };
+    64→  return generateToken(user);
+    65→}
+    66→
+    67→function getResearcherToken(): string {
+    68→  const user: AuthUser = {
+    69→    id: 'usr_2',
+    70→    email: 'researcher@example.com',
+    71→    name: 'Dr. Jane Smith',
+    72→    role: UserRole.RESEARCHER
+    73→  };
+    74→  return generateToken(user);
+    75→}
+    76→
+    77→describe('System API Integration Tests', () => {
+    78→  
+    79→  // ==========================================
+    80→  // GET /api/status - System Health
+    81→  // ==========================================
+    82→  describe('GET /api/status - System Health Endpoint', () => {
+    83→    
+    84→    describe('Basic Health Check', () => {
+    85→      it('should return healthy system status', async () => {
+    86→        const request = createMockRequest();
+    87→
+    88→        const response = await statusHandler(request);
+    89→        const body = await getResponseBody(response);
+    90→
+    91→        expect(response.status).toBe(200);
+    92→        expect(body.success).toBe(true);
+    93→        expect(body.data.status).toBeDefined();
+    94→        expect(['healthy', 'degraded', 'down']).toContain(body.data.status);
+    95→      });
+    96→
+    97→      it('should include uptime information', async () => {
+    98→        const request = createMockRequest();
+    99→
+   100→        const response = await statusHandler(request);
+   101→        const body = await getResponseBody(response);
+   102→
+   103→        expect(body.data.uptime).toBeDefined();
+   104→        expect(typeof body.data.uptime).toBe('string');
+   105→      });
+   106→
+   107→      it('should include version information', async () => {
+   108→        const request = createMockRequest();
+   109→
+   110→        const response = await statusHandler(request);
+   111→        const body = await getResponseBody(response);
+   112→
+   113→        expect(body.data.version).toBeDefined();
+   114→        expect(typeof body.data.version).toBe('string');
+   115→      });
+   116→    });
+   117→
+   118→    describe('Components Status', () => {
+   119→      it('should list all system components', async () => {
+   120→        const request = createMockRequest();
+   121→
+   122→        const response = await statusHandler(request);
+   123→        const body = await getResponseBody(response);
+   124→
+   125→        expect(body.data.components).toBeDefined();
+   126→        expect(Array.isArray(body.data.components)).toBe(true);
+   127→        expect(body.data.components.length).toBeGreaterThan(0);
+   128→      });
+   129→
+   130→      it('each component should have required fields', async () => {
+   131→        const request = createMockRequest();
+   132→
+   133→        const response = await statusHandler(request);
+   134→        const body = await getResponseBody(response);
+   135→
+   136→        body.data.components.forEach((component: any) => {
+   137→          expect(component.name).toBeDefined();
+   138→          expect(typeof component.name).toBe('string');
+   139→          
+   140→          expect(component.status).toBeDefined();
+   141→          expect(['operational', 'degraded', 'outage']).toContain(component.status);
+   142→        });
+   143→      });
+   144→
+   145→      it('some components should include latency data', async () => {
+   146→        const request = createMockRequest();
+   147→
+   148→        const response = await statusHandler(request);
+   149→        const body = await getResponseBody(response);
+   150→
+   151→        const componentsWithLatency = body.data.components.filter(
+   152→          (c: any) => c.latency !== undefined
+   153→        );
+   154→        
+   155→        // At least some components should have latency
+   156→        expect(componentsWithLatency.length).toBeGreaterThan(0);
+   157→        
+   158→        componentsWithLatency.forEach((component: any) => {
+   159→          expect(typeof component.latency).toBe('number');
+   160→          expect(component.latency).toBeGreaterThanOrEqual(0);
+   161→        });
+   162→      });
+   163→
+   164→      it('some components should include message field', async () => {
+   165→        const request = createMockRequest();
+   166→
+   167→        const response = await statusHandler(request);
+   168→        const body = await getResponseBody(response);
+   169→
+   170→        const componentsWithMessage = body.data.components.filter(
+   171→          (c: any) => c.message !== undefined
+   172→        );
+   173→
+   174→        expect(componentsWithMessage.length).toBeGreaterThan(0);
+   175→      });
+   176→
+   177→      it('should identify API Gateway component', async () => {
+   178→        const request = createMockRequest();
+   179→
+   180→        const response = await statusHandler(request);
+   181→        const body = await getResponseBody(response);
+   182→
+   183→        const apiGateway = body.data.components.find(
+   184→          (c: any) => c.name === 'API Gateway'
+   185→        );
+   186→
+   187→        expect(apiGateway).toBeDefined();
+   188→        expect(apiGateway.status).toBe('operational');
+   189→      });
+   190→    });
+   191→
+   192→    describe('System Metrics', () => {
+   193→      it('should include performance metrics', async () => {
+   194→        const request = createMockRequest();
+   195→
+   196→        const response = await statusHandler(request);
+   197→        const body = await getResponseBody(response);
+   198→
+   199→        expect(body.data.metrics).toBeDefined();
+   200→      });
+   201→
+   202→      it('metrics should include active users count', async () => {
+   203→        const request = createMockRequest();
+   204→
+   205→        const response = await statusHandler(request);
+   206→        const body = await getResponseBody(response);
+   207→
+   208→        expect(body.data.metrics.activeUsers).toBeDefined();
+   209→        expect(typeof body.data.metrics.activeUsers).toBe('number');
+   210→        expect(body.data.metrics.activeUsers).toBeGreaterThan(0);
+   211→      });
+   212→
+   213→      it('metrics should include requests per second', async () => {
+   214→        const request = createMockRequest();
+   215→
+   216→        const response = await statusHandler(request);
+   217→        const body = await getResponseBody(response);
+   218→
+   219→        expect(body.data.metrics.requestsPerSecond).toBeDefined();
+   220→        expect(typeof body.data.metrics.requestsPerSecond).toBe('number');
+   221→        expect(body.data.metrics.requestsPerSecond).toBeGreaterThan(0);
+   222→      });
+   223→
+   224→      it('metrics should include average response time', async () => {
+   225→        const request = createMockRequest();
+   226→
+   227→        const response = await statusHandler(request);
+   228→        const body = await getResponseBody(response);
+   229→
+   230→        expect(body.data.metrics.avgResponseTime).toBeDefined();
+   231→        expect(typeof body.data.metrics.avgResponseTime).toBe('number');
+   232→      });
+   233→
+   234→      it('metrics should include error rate', async () => {
+   235→        const request = createMockRequest();
+   236→
+   237→        const response = await statusHandler(request);
+   238→        const body = await getResponseBody(response);
+   239→
+   240→        expect(body.data.metrics.errorRate).toBeDefined();
+   241→        expect(typeof body.data.metrics.errorRate).toBe('number');
+   242→        expect(body.data.metrics.errorRate).toBeGreaterThanOrEqual(0);
+   243→        expect(body.data.metrics.errorRate).toBeLessThanOrEqual(1);
+   244→      });
+   245→
+   246→      it('metrics should include storage information', async () => {
+   247→        const request = createMockRequest();
+   248→
+   249→        const response = await statusHandler(request);
+   250→        const body = await getResponseBody(response);
+   251→
+   252→        expect(body.data.metrics.storageUsed).toBeDefined();
+   253→        expect(body.data.metrics.storageTotal).toBeDefined();
+   254→      });
+   255→    });
+   256→
+   257→    describe('Detailed Mode', () => {
+   258→      it('should return extended information when detailed=true', async () => {
+   259→        const request = createMockRequest({
+   260→          searchParams: { detailed: 'true' }
+   261→        });
+   262→
+   263→        const response = await statusHandler(request);
+   264→        const body = await getResponseBody(response);
+   265→
+   266→        expect(response.status).toBe(200);
+   267→        expect(body.data.environment).toBeDefined();
+   268→        expect(body.data.region).toBeDefined();
+   269→      });
+   270→
+   271→      it('should include deployment info in detailed mode', async () => {
+   272→        const request = createMockRequest({
+   273→          searchParams: { detailed: 'true' }
+   274→        });
+   275→
+   276→        const response = await statusHandler(request);
+   277→        const body = await getResponseBody(response);
+   278→
+   279→        expect(body.data.deploymentInfo).toBeDefined();
+   280→        expect(body.data.deploymentInfo.deployedAt).toBeDefined();
+   281→        expect(body.data.deploymentInfo.commitSha).toBeDefined();
+   282→        expect(body.data.deploymentInfo.imageTag).toBeDefined();
+   283→      });
+   284→
+   285→      it('should include recent incidents in detailed mode', async () => {
+   286→        const request = createMockRequest({
+   287→          searchParams: { detailed: 'true' }
+   288→        });
+   289→
+   290→        const response = await statusHandler(request);
+   291→        const body = await getResponseBody(response);
+   292→
+   293→        expect(body.data.recentIncidents).toBeDefined();
+   294→        expect(Array.isArray(body.data.recentIncidents)).toBe(true);
+   295→        
+   296→        if (body.data.recentIncidents.length > 0) {
+   297→          const incident = body.data.recentIncidents[0];
+   298→          expect(incident.id).toBeDefined();
+   299→          expect(incident.title).toBeDefined();
+   300→          expect(incident.severity).toBeDefined();
+   301→          expect(incident.status).toBeDefined();
+   302→        }
+   303→      });
+   304→
+   305→      it('should include upcoming maintenance in detailed mode', async () => {
+   306→        const request = createMockRequest({
+   307→          searchParams: { detailed: 'true' }
+   308→        });
+   309→
+   310→        const response = await statusHandler(request);
+   311→        const body = await getResponseBody(response);
+   312→
+   313→        expect(body.data.upcomingMaintenance).toBeDefined();
+   314→        expect(Array.isArray(body.data.upcomingMaintenance)).toBe(true);
+   315→      });
+   316→
+   317→      it('should not include extra fields when detailed=false', async () => {
+   318→        const request = createMockRequest({
+   319→          searchParams: { detailed: 'false' }
+   320→        });
+   321→
+   322→        const response = await statusHandler(request);
+   323→        const body = await getResponseBody(response);
+   324→
+   325→        expect(body.data.environment).toBeUndefined();
+   326→        expect(body.data.deploymentInfo).toBeUndefined();
+   327→        expect(body.data.recentIncidents).toBeUndefined();
+   328→      });
+   329→    });
+   330→
+   331→    describe('Timestamp Handling', () => {
+   332→      it('should include lastUpdated timestamp', async () => {
+   333→        const beforeRequest = new Date().toISOString();
+   334→        
+   335→        const request = createMockRequest();
+   336→        const response = await statusHandler(request);
+   337→        const body = await getResponseBody(response);
+   338→        
+   339→        const afterRequest = new Date().toISOString();
+   340→
+   341→        expect(body.data.lastUpdated).toBeDefined();
+   342→        expect(body.data.lastUpdated >= beforeRequest).toBe(true);
+   343→        expect(body.data.lastUpdated <= afterRequest).toBe(true);
+   344→      });
+   345→
+   346→      it('should have valid ISO format timestamp', async () => {
+   347→        const request = createMockRequest();
+   348→        const response = await statusHandler(request);
+   349→        const body = await getResponseBody(response);
+   350→
+   351→        const date = new Date(body.data.lastUpdated);
+   352→        expect(date.getTime()).not.toBeNaN();
+   353→      });
+   354→    });
+   355→  });
+   356→
+   357→  // ==========================================
+   358→  // GET /api/data - Data Connectors
+   359→  // ==========================================
+   360→  describe('GET /api/data/connectors - Data Connectors Endpoint', () => {
+   361→    
+   362→    describe('Connector Listing', () => {
+   363→      it('should return list of connectors with summary', async () => {
+   364→        const request = createMockRequest({ url: 'http://localhost:3000/api/data/connectors' });
+   365→
+   366→        const response = await dataConnectorsHandler(request);
+   367→        const body = await getResponseBody(response);
+   368→
+   369→        expect(response.status).toBe(200);
+   370→        expect(body.success).toBe(true);
+   371→        expect(body.data.connectors).toBeDefined();
+   372→        expect(Array.isArray(body.data.connectors)).toBe(true);
+   373→        expect(body.data.summary).toBeDefined();
+   374→      });
+   375→
+   376→      it('should return all available connectors (4 total)', async () => {
+   377→        const request = createMockRequest({ url: 'http://localhost:3000/api/data/connectors' });
+   378→
+   379→        const response = await dataConnectorsHandler(request);
+   380→        const body = await getResponseBody(response);
+   381→
+   382→        expect(body.data.connectors.length).toBe(4);
+   383→        expect(body.data.summary.total).toBe(4);
+   384→      });
+   385→
+   386→      it('each connector should have required fields', async () => {
+   387→        const request = createMockRequest({ url: 'http://localhost:3000/api/data/connectors' });
+   388→
+   389→        const response = await dataConnectorsHandler(request);
+   390→        const body = await getResponseBody(response);
+   391→
+   392→        body.data.connectors.forEach((connector: any) => {
+   393→          expect(connector.id).toBeDefined();
+   394→          expect(connector.name).toBeDefined();
+   395→          expect(connector.type).toBeDefined();
+   396→          expect(connector.version).toBeDefined();
+   397→          expect(connector.status).toBeDefined();
+   398→          expect(connector.config).toBeDefined();
+   399→          expect(connector.stats).toBeDefined();
+   400→          expect(connector.dataSources).toBeDefined();
+   401→        });
+   402→      });
+   403→    });
+   404→
+   405→    describe('Connector Types', () => {
+   406→      it('should include satellite connector', async () => {
+   407→        const request = createMockRequest({ 
+   408→          url: 'http://localhost:3000/api/data/connectors',
+   409→          searchParams: { type: 'satellite' }
+   410→        });
+   411→
+   412→        const response = await dataConnectorsHandler(request);
+   413→        const body = await getResponseBody(response);
+   414→
+   415→        expect(body.data.connectors.length).toBeGreaterThan(0);
+   416→        body.data.connectors.forEach((c: any) => {
+   417→          expect(c.type).toBe('satellite');
+   418→        });
+   419→      });
+   420→
+   421→      it('should include particle accelerator connector', async () => {
+   422→        const request = createMockRequest({ 
+   423→          url: 'http://localhost:3000/api/data/connectors',
+   424→          searchParams: { type: 'particle_accelerator' }
+   425→        });
+   426→
+   427→        const response = await dataConnectorsHandler(request);
+   428→        const body = await getResponseBody(response);
+   429→
+   430→        expect(body.data.connectors.length).toBeGreaterThan(0);
+   431→      });
+   432→
+   433→      it('should include climate connector', async () => {
+   434→        const request = createMockRequest({ 
+   435→          url: 'http://localhost:3000/api/data/connectors',
+   436→          searchParams: { type: 'climate' }
+   437→        });
+   438→
+   439→        const response = await dataConnectorsHandler(request);
+   440→        const body = await getResponseBody(response);
+   441→
+   442→        expect(body.data.connectors.length).toBeGreaterThan(0);
+   443→      });
+   444→
+   445→      it('should include genomic connector', async () => {
+   446→        const request = createMockRequest({ 
+   447→          url: 'http://localhost:3000/api/data/connectors',
+   448→          searchParams: { type: 'genomic' }
+   449→        });
+   450→
+   451→        const response = await dataConnectorsHandler(request);
+   452→        const body = await getResponseBody(response);
+   453→
+   454→        expect(body.data.connectors.length).toBeGreaterThan(0);
+   455→      });
+   456→    });
+   457→
+   458→    describe('Connector Status Filtering', () => {
+   459→      it('should filter by ACTIVE status', async () => {
+   460→        const request = createMockRequest({ 
+   461→          url: 'http://localhost:3000/api/data/connectors',
+   462→          searchParams: { status: 'active' }
+   463→        });
+   464→
+   465→        const response = await dataConnectorsHandler(request);
+   466→        const body = await getResponseBody(response);
+   467→
+   468→        body.data.connectors.forEach((connector: any) => {
+   469→          expect(connector.status).toBe('active');
+   470→        });
+   471→      });
+   472→
+   473→      it('should filter by INACTIVE status', async () => {
+   474→        const request = createMockRequest({ 
+   475→          url: 'http://localhost:3000/api/data/connectors',
+   476→          searchParams: { status: 'inactive' }
+   477→        });
+   478→
+   479→        const response = await dataConnectorsHandler(request);
+   480→        const body = await getResponseBody(response);
+   481→
+   482→        body.data.connectors.forEach((connector: any) => {
+   483→          expect(connector.status).toBe('inactive');
+   484→        });
+   485→      });
+   486→
+   487→      it('should filter by SYNCING status', async () => {
+   488→        const request = createMockRequest({ 
+   489→          url: 'http://localhost:3000/api/data/connectors',
+   490→          searchParams: { status: 'syncing' }
+   491→        });
+   492→
+   493→        const response = await dataConnectorsHandler(request);
+   494→        const body = await getResponseBody(response);
+   495→
+   496→        body.data.connectors.forEach((connector: any) => {
+   497→          expect(connector.status).toBe('syncing');
+   498→        });
+   499→      });
+   500→    });
+   501→
+   502→    describe('Connector Statistics', () => {
+   503→      it('summary should include correct counts', async () => {
+   504→        const request = createMockRequest({ url: 'http://localhost:3000/api/data/connectors' });
+   505→
+   506→        const response = await dataConnectorsHandler(request);
+   507→        const body = await getResponseBody(response);
+   508→
+   509→        expect(body.data.summary.total).toBe(4);
+   510→        expect(body.data.summary.active).toBeGreaterThan(0);
+   511→        expect(typeof body.data.summary.syncing).toBe('number');
+   512→        expect(typeof body.data.summary.errors).toBe('number');
+   513→      });
+   514→
+   515→      it('summary should include total records processed', async () => {
+   516→        const request = createMockRequest({ url: 'http://localhost:3000/api/data/connectors' });
+   517→
+   518→        const response = await dataConnectorsHandler(request);
+   519→        const body = await getResponseBody(response);
+   520→
+   521→        expect(body.data.summary.totalRecordsProcessed).toBeDefined();
+   522→        expect(typeof body.data.summary.totalRecordsProcessed).toBe('number');
+   523→        expect(body.data.summary.totalRecordsProcessed).toBeGreaterThan(0);
+   524→      });
+   525→
+   526→      it('individual connector stats should be valid', async () => {
+   527→        const request = createMockRequest({ url: 'http://localhost:3000/api/data/connectors' });
+   528→
+   529→        const response = await dataConnectorsHandler(request);
+   530→        const body = await getResponseBody(response);
+   531→
+   532→        body.data.connectors.forEach((connector: any) => {
+   533→          expect(connector.stats.recordsProcessed).toBeDefined();
+   534→          expect(typeof connector.stats.recordsProcessed).toBe('number');
+   535→          expect(connector.stats.errorRate).toBeDefined();
+   536→          expect(typeof connector.stats.errorRate).toBe('number');
+   537→          expect(connector.stats.throughput).toBeDefined();
+   538→          expect(typeof connector.stats.throughput).toBe('string');
+   539→        });
+   540→      });
+   541→    });
+   542→
+   543→    describe('Data Sources', () => {
+   544→      it('connectors should have associated data sources', async () => {
+   545→        const request = createMockRequest({ url: 'http://localhost:3000/api/data/connectors' });
+   546→
+   547→        const response = await dataConnectorsHandler(request);
+   548→        const body = await getResponseBody(response);
+   549→
+   550→        body.data.connectors.forEach((connector: any) => {
+   551→          expect(connector.dataSources.length).toBeGreaterThan(0);
+   552→          connector.dataSources.forEach((source: any) => {
+   553→            expect(source.name).toBeDefined();
+   554→            expect(source.url).toBeDefined();
+   555→            expect(source.format).toBeDefined();
+   556→          });
+   557→        });
+   558→      });
+   559→    });
+   560→  });
+   561→
+   562→  // ==========================================
+   563→  // GET /api/storage - Storage Containers
+   564→  // ==========================================
+   565→  describe('GET /api/storage - Storage Containers Endpoint', () => {
+   566→    
+   567→    describe('Container Listing', () => {
+   568→      it('should return list of containers with summary', async () => {
+   569→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   570→
+   571→        const response = await storageHandler(request);
+   572→        const body = await getResponseBody(response);
+   573→
+   574→        expect(response.status).toBe(200);
+   575→        expect(body.success).toBe(true);
+   576→        expect(body.data.containers).toBeDefined();
+   577→        expect(Array.isArray(body.data.containers)).toBe(true);
+   578→        expect(body.data.summary).toBeDefined();
+   579→      });
+   580→
+   581→      it('should return all storage containers (4 total)', async () => {
+   582→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   583→
+   584→        const response = await storageHandler(request);
+   585→        const body = await getResponseBody(response);
+   586→
+   587→        expect(body.data.containers.length).toBe(4);
+   588→        expect(body.data.summary.totalContainers).toBe(4);
+   589→      });
+   590→
+   591→      it('each container should have required fields', async () => {
+   592→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   593→
+   594→        const response = await storageHandler(request);
+   595→        const body = await getResponseBody(response);
+   596→
+   597→        body.data.containers.forEach((container: any) => {
+   598→          expect(container.id).toBeDefined();
+   599→          expect(container.name).toBeDefined();
+   600→          expect(container.containerPath).toBeDefined();
+   601→          expect(container.storageClass).toBeDefined();
+   602→          expect(container.sizeBytes).toBeDefined();
+   603→          expect(container.objectCount).toBeDefined();
+   604→          expect(container.versionsEnabled).toBeDefined();
+   605→          expect(container.lifecycleRules).toBeDefined();
+   606→          expect(container.createdAt).toBeDefined();
+   607→          expect(container.lastModified).toBeDefined();
+   608→          expect(container.accessCount).toBeDefined();
+   609→        });
+   610→      });
+   611→    });
+   612→
+   613→    describe('Storage Class Filtering', () => {
+   614→      it('should filter by HOT_REALTIME class', async () => {
+   615→        const request = createMockRequest({ 
+   616→          url: 'http://localhost:3000/api/storage',
+   617→          searchParams: { class: 'blob:hot-realtime' }
+   618→        });
+   619→
+   620→        const response = await storageHandler(request);
+   621→        const body = await getResponseBody(response);
+   622→
+   623→        body.data.containers.forEach((container: any) => {
+   624→          expect(container.storageClass).toBe('blob:hot-realtime');
+   625→        });
+   626→      });
+   627→
+   628→      it('should filter by WARM_RECENT class', async () => {
+   629→        const request = createMockRequest({ 
+   630→          url: 'http://localhost:3000/api/storage',
+   631→          searchParams: { class: 'blob:warm-recent' }
+   632→        });
+   633→
+   634→        const response = await storageHandler(request);
+   635→        const body = await getResponseBody(response);
+   636→
+   637→        body.data.containers.forEach((container: any) => {
+   638→          expect(container.storageClass).toBe('blob:warm-recent');
+   639→        });
+   640→      });
+   641→
+   642→      it('should filter by COLD_ARCHIVE class', async () => {
+   643→        const request = createMockRequest({ 
+   644→          url: 'http://localhost:3000/api/storage',
+   645→          searchParams: { class: 'blob:cold-archive' }
+   646→        });
+   647→
+   648→        const response = await storageHandler(request);
+   649→        const body = await getResponseBody(response);
+   650→
+   651→        body.data.containers.forEach((container: any) => {
+   652→          expect(container.storageClass).toBe('blob:cold-archive');
+   653→        });
+   654→      });
+   655→    });
+   656→
+   657→    describe('Size Formatting', () => {
+   658→      it('should format size as human-readable string', async () => {
+   659→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   660→
+   661→        const response = await storageHandler(request);
+   662→        const body = await getResponseBody(response);
+   663→
+   664→        body.data.containers.forEach((container: any) => {
+   665→          expect(container.sizeFormatted).toBeDefined();
+   666→          expect(typeof container.sizeFormatted).toBe('string');
+   667→          // Should match pattern like "847.3 TB", "25.0 GB", etc.
+   668→          expect(container.sizeFormatted).toMatch(/^\d+\.\d+ [KMGTPE]?B$/);
+   669→        });
+   670→      });
+   671→
+   672→      it('should correctly format terabyte sizes', async () => {
+   673→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   674→
+   675→        const response = await storageHandler(request);
+   676→        const body = await getResponseBody(response);
+   677→
+   678→        const largeContainer = body.data.containers.find(
+   679→          (c: any) => c.sizeBytes > Math.pow(1024, 4) // > 1 TB
+   680→        );
+   681→
+   682→        if (largeContainer) {
+   683→          expect(largeContainer.sizeFormatted).toContain('TB');
+   684→        }
+   685→      });
+   686→
+   687→      it('should correctly format gigabyte sizes', async () => {
+   688→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   689→
+   690→        const response = await storageHandler(request);
+   691→        const body = await getResponseBody(response);
+   692→
+   693→        const gbContainer = body.data.containers.find(
+   694→          (c: any) => c.sizeBytes > Math.pow(1024, 3) && c.sizeBytes < Math.pow(1024, 4)
+   695→        );
+   696→
+   697→        if (gbContainer) {
+   698→          expect(gbContainer.sizeFormatted).toContain('GB');
+   699→        }
+   700→      });
+   701→    });
+   702→
+   703→    describe('Summary Information', () => {
+   704→      it('should calculate total size across all containers', async () => {
+   705→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   706→
+   707→        const response = await storageHandler(request);
+   708→        const body = await getResponseBody(response);
+   709→
+   710→        expect(body.data.summary.totalSize).toBeDefined();
+   711→        expect(body.data.summary.totalSizeBytes).toBeDefined();
+   712→        expect(typeof body.data.summary.totalSizeBytes).toBe('number');
+   713→        expect(body.data.summary.totalSizeBytes).toBeGreaterThan(0);
+   714→      });
+   715→
+   716→      it('should calculate total object count', async () => {
+   717→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   718→
+   719→        const response = await storageHandler(request);
+   720→        const body = await getResponseBody(response);
+   721→
+   722→        expect(body.data.summary.totalObjects).toBeDefined();
+   723→        expect(typeof body.data.summary.totalObjects).toBe('number');
+   724→        expect(body.data.summary.totalObjects).toBeGreaterThan(0);
+   725→      });
+   726→
+   727→      it('should calculate average access count', async () => {
+   728→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   729→
+   730→        const response = await storageHandler(request);
+   731→        const body = await getResponseBody(response);
+   732→
+   733→        expect(body.data.summary.averageAccessCount).toBeDefined();
+   734→        expect(typeof body.data.summary.averageAccessCount).toBe('number');
+   735→      });
+   736→    });
+   737→
+   738→    describe('Storage Tiers', () => {
+   739→      it('should categorize containers into hot/warm/cold tiers', async () => {
+   740→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   741→
+   742→        const response = await storageHandler(request);
+   743→        const body = await getResponseBody(response);
+   744→
+   745→        expect(body.data.tiers).toBeDefined();
+   746→        expect(body.data.tiers.hot).toBeDefined();
+   747→        expect(body.data.tiers.warm).toBeDefined();
+   748→        expect(body.data.tiers.cold).toBeDefined();
+   749→      });
+   750→
+   751→      it('hot tier should contain count and size', async () => {
+   752→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   753→
+   754→        const response = await storageHandler(request);
+   755→        const body = await getResponseBody(response);
+   756→
+   757→        expect(typeof body.data.tiers.hot.count).toBe('number');
+   758→        expect(typeof body.data.tiers.hot.size).toBe('string');
+   759→      });
+   760→
+   761→      it('warm tier should contain count and size', async () => {
+   762→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   763→
+   764→        const response = await storageHandler(request);
+   765→        const body = await getResponseBody(response);
+   766→
+   767→        expect(typeof body.data.tiers.warm.count).toBe('number');
+   768→        expect(typeof body.data.tiers.warm.size).toBe('string');
+   769→      });
+   770→
+   771→      it('cold tier should contain count and size', async () => {
+   772→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   773→
+   774→        const response = await storageHandler(request);
+   775→        const body = await getResponseBody(response);
+   776→
+   777→        expect(typeof body.data.tiers.cold.count).toBe('number');
+   778→        expect(typeof body.data.tiers.cold.size).toBe('string');
+   779→      });
+   780→
+   781→      it('tier counts should sum to total containers', async () => {
+   782→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   783→
+   784→        const response = await storageHandler(request);
+   785→        const body = await getResponseBody(response);
+   786→
+   787→        const tierSum = body.data.tiers.hot.count + 
+   788→                       body.data.tiers.warm.count + 
+   789→                       body.data.tiers.cold.count;
+   790→        
+   791→        expect(tierSum).toBe(body.data.summary.totalContainers);
+   792→      });
+   793→    });
+   794→
+   795→    describe('Lifecycle Rules', () => {
+   796→      it('containers may have lifecycle rules defined', async () => {
+   797→        const request = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+   798→
+   799→        const response = await storageHandler(request);
+   800→        const body = await getResponseBody(response);
+   801→
+   802→        const containerWithRules = body.data.containers.find(
+   803→          (c: any) => c.lifecycleRules && c.lifecycleRules.length > 0
+   804→        );
+   805→
+   806→        if (containerWithRules) {
+   807→          containerWithRules.lifecycleRules.forEach((rule: any) => {
+   808→            expect(rule.action).toBeDefined();
+   809→            expect(rule.days).toBeDefined();
+   810→          });
+   811→        }
+   812→      });
+   813→    });
+   814→  });
+   815→
+   816→  // ==========================================
+   817→  // POST /api/storage/container - Create Container
+   818→  // ==========================================
+   819→  describe('POST /api/storage/container - Create Storage Container', () => {
+   820→    
+   821→    describe('Successful Creation', () => {
+   822→      it('should create container with valid data as admin', async () => {
+   823→        const timestamp = Date.now();
+   824→        const request = createMockRequest({
+   825→          method: 'POST',
+   826→          url: 'http://localhost:3000/api/storage/container',
+   827→          authorization: `Bearer ${getAdminToken()}`,
+   828→          body: {
+   829→            name: `test-container-${timestamp}`,
+   830→            containerPath: `/data/test/${timestamp}/`,
+   831→            storageClass: 'blob:warm-recent'
+   832→          }
+   833→        });
+   834→
+   835→        const response = await createContainerHandler(request);
+   836→        const body = await getResponseBody(response);
+   837→
+   838→        expect(response.status).toBe(200);
+   839→        expect(body.success).toBe(true);
+   840→        expect(body.data.name).toBe(`test-container-${timestamp}`);
+   841→        expect(body.data.containerPath).toBe(`/data/test/${timestamp}/`);
+   842→        expect(body.data.storageClass).toBe('blob:warm-recent');
+   843→        expect(body.data.sizeBytes).toBe(0);
+   844→        expect(body.data.objectCount).toBe(0);
+   845→      });
+   846→
+   847→      it('should set default versionsEnabled to true', async () => {
+   848→        const timestamp = Date.now();
+   849→        const request = createMockRequest({
+   850→          method: 'POST',
+   851→          url: 'http://localhost:3000/api/storage/container',
+   852→          authorization: `Bearer ${getAdminToken()}`,
+   853→          body: {
+   854→            name: `versions-test-${timestamp}`,
+   855→            containerPath: `/data/versions/${timestamp}/`,
+   856→            storageClass: 'blob:hot-active'
+   857→          }
+   858→        });
+   859→
+   860→        const response = await createContainerHandler(request);
+   861→        const body = await getResponseBody(response);
+   862→
+   863→        expect(body.data.versionsEnabled).toBe(true);
+   864→      });
+   865→
+   866→      it('should allow custom versionsEnabled setting', async () => {
+   867→        const timestamp = Date.now();
+   868→        const request = createMockRequest({
+   869→          method: 'POST',
+   870→          url: 'http://localhost:3000/api/storage/container',
+   871→          authorization: `Bearer ${getAdminToken()}`,
+   872→          body: {
+   873→            name: `no-versions-${timestamp}`,
+   874→            containerPath: `/data/noversions/${timestamp}/`,
+   875→            storageClass: 'blob:cold-archive',
+   876→            versionsEnabled: false
+   877→          }
+   878→        });
+   879→
+   880→        const response = await createContainerHandler(request);
+   881→        const body = await getResponseBody(response);
+   882→
+   883→        expect(body.data.versionsEnabled).toBe(false);
+   884→      });
+   885→
+   886→      it('should accept lifecycle rules', async () => {
+   887→        const timestamp = Date.now();
+   888→        const request = createMockRequest({
+   889→          method: 'POST',
+   890→          url: 'http://localhost:3000/api/storage/container',
+   891→          authorization: `Bearer ${getAdminToken()}`,
+   892→          body: {
+   893→            name: `lifecycle-test-${timestamp}`,
+   894→            containerPath: `/data/lifecycle/${timestamp}/`,
+   895→            storageClass: 'blob:hot-active',
+   896→            lifecycleRules: [
+   897→              { action: 'tier', days: 30, targetClass: 'blob:warm-recent' },
+   898→              { action: 'delete', days: 365 }
+   899→            ]
+   900→          }
+   901→        });
+   902→
+   903→        const response = await createContainerHandler(request);
+   904→        const body = await getResponseBody(response);
+   905→
+   906→        expect(response.status).toBe(200);
+   907→        expect(body.data.lifecycleRules).toHaveLength(2);
+   908→      });
+   909→
+   910→      it('should return formatted size of 0 B for new container', async () => {
+   911→        const timestamp = Date.now();
+   912→        const request = createMockRequest({
+   913→          method: 'POST',
+   914→          url: 'http://localhost:3000/api/storage/container',
+   915→          authorization: `Bearer ${getAdminToken()}`,
+   916→          body: {
+   917→            name: `empty-${timestamp}`,
+   918→            containerPath: `/data/empty/${timestamp}/`,
+   919→            storageClass: 'blob:warm-recent'
+   920→          }
+   921→        });
+   922→
+   923→        const response = await createContainerHandler(request);
+   924→        const body = await getResponseBody(response);
+   925→
+   926→        expect(body.data.sizeFormatted).toBe('0 B');
+   927→      });
+   928→    });
+   929→
+   930→    describe('Failed Creation', () => {
+   931→      it('should reject unauthenticated requests', async () => {
+   932→        const request = createMockRequest({
+   933→          method: 'POST',
+   934→          url: 'http://localhost:3000/api/storage/container',
+   935→          body: {
+   936→            name: 'unauthorized-container',
+   937→            containerPath: '/data/unauth/',
+   938→            storageClass: 'blob:warm-recent'
+   939→          }
+   940→        });
+   941→
+   942→        const response = await createContainerHandler(request);
+   943→
+   944→        expect(response.status).toBe(401);
+   945→      });
+   946→
+   947→      it('should reject non-admin users', async () => {
+   948→        const request = createMockRequest({
+   949→          method: 'POST',
+   950→          url: 'http://localhost:3000/api/storage/container',
+   951→          authorization: `Bearer ${getResearcherToken()}`,
+   952→          body: {
+   953→            name: 'researcher-container',
+   954→            containerPath: '/data/researcher/',
+   955→            storageClass: 'blob:warm-recent'
+   956→          }
+   957→        });
+   958→
+   959→        const response = await createContainerHandler(request);
+   960→
+   961→        expect(response.status).toBe(403);
+   962→      });
+   963→
+   964→      it('should require name field', async () => {
+   965→        const request = createMockRequest({
+   966→          method: 'POST',
+   967→          url: 'http://localhost:3000/api/storage/container',
+   968→          authorization: `Bearer ${getAdminToken()}`,
+   969→          body: {
+   970→            containerPath: '/data/test/',
+   971→            storageClass: 'blob:warm-recent'
+   972→          }
+   973→        });
+   974→
+   975→        const response = await createContainerHandler(request);
+   976→        const body = await getResponseBody(response);
+   977→
+   978→        expect(response.status).toBe(422);
+   979→        expect(body.error).toBeDefined();
+   980→      });
+   981→
+   982→      it('should require containerPath field', async () => {
+   983→        const request = createMockRequest({
+   984→          method: 'POST',
+   985→          url: 'http://localhost:3000/api/storage/container',
+   986→          authorization: `Bearer ${getAdminToken()}`,
+   987→          body: {
+   988→            name: 'no-path-container',
+   989→            storageClass: 'blob:warm-recent'
+   990→          }
+   991→        });
+   992→
+   993→        const response = await createContainerHandler(request);
+   994→        const body = await getResponseBody(response);
+   995→
+   996→        expect(response.status).toBe(422);
+   997→      });
+   998→
+   999→      it('should require storageClass field', async () => {
+  1000→        const request = createMockRequest({
+  1001→          method: 'POST',
+  1002→          url: 'http://localhost:3000/api/storage/container',
+  1003→          authorization: `Bearer ${getAdminToken()}`,
+  1004→          body: {
+  1005→            name: 'no-class-container',
+  1006→            containerPath: '/data/noclass/'
+  1007→          }
+  1008→        });
+  1009→
+  1010→        const response = await createContainerHandler(request);
+  1011→        const body = await getResponseBody(response);
+  1012→
+  1013→        expect(response.status).toBe(422);
+  1014→      });
+  1015→    });
+  1016→  });
+  1017→
+  1018→  // ==========================================
+  1019→  // Edge Cases & Error Handling
+  1020→  // ==========================================
+  1021→  describe('Edge Cases & Cross-API Consistency', () => {
+  1022→    
+  1023→    it('all endpoints should return consistent success response structure', async () => {
+  1024→      const statusReq = createMockRequest({ url: 'http://localhost:3000/api/status' });
+  1025→      const dataReq = createMockRequest({ url: 'http://localhost:3000/api/data/connectors' });
+  1026→      const storageReq = createMockRequest({ url: 'http://localhost:3000/api/storage' });
+  1027→
+  1028→      const [statusRes, dataRes, storageRes] = await Promise.all([
+  1029→        statusHandler(statusReq),
+  1030→        dataConnectorsHandler(dataReq),
+  1031→        storageHandler(storageReq)
+  1032→      ]);
+  1033→
+  1034→      const [statusBody, dataBody, storageBody] = await Promise.all([
+  1035→        getResponseBody(statusRes),
+  1036→        getResponseBody(dataRes),
+  1037→        getResponseBody(storageRes)
+  1038→      ]);
+  1039→
+  1040→      // All should have success and data fields
+  1041→      expect(statusBody.success).toBe(true);
+  1042→      expect(dataBody.success).toBe(true);
+  1043→      expect(storageBody.success).toBe(true);
+  1044→
+  1045→      expect(statusBody.data).toBeDefined();
+  1046→      expect(dataBody.data).toBeDefined();
+  1047→      expect(storageBody.data).toBeDefined();
+  1048→
+  1049→      // All should have timestamps
+  1050→      expect(statusBody.timestamp).toBeDefined();
+  1051→      expect(dataBody.timestamp).toBeDefined();
+  1052→      expect(storageBody.timestamp).toBeDefined();
+  1053→    });
+  1054→
+  1055→    it('should handle invalid query parameters gracefully', async () => {
+  1056→      const request = createMockRequest({ 
+  1057→        url: 'http://localhost:3000/api/status',
+  1058→        searchParams: { invalid_param: 'value' }
+  1059→      });
+  1060→
+  1061→      const response = await statusHandler(request);
+  1062→
+  1063→      expect(response.status).toBe(200); // Should ignore unknown params
+  1064→    });
+  1065→
+  1066→    it('should handle malformed JSON for POST endpoints', async () => {
+  1067→      const request = {
+  1068→        ...createMockRequest({ 
+  1069→          method: 'POST', 
+  1070→          url: 'http://localhost:3000/api/storage/container',
+  1071→          authorization: `Bearer ${getAdminToken()}`
+  1072→        }),
+  1073→        json: () => Promise.reject(new Error('Invalid JSON'))
+  1074→      } as NextRequest;
+  1075→
+  1076→      const response = await createContainerHandler(request);
+  1077→
+  1078→      expect([400, 422, 500]).toContain(response.status);
+  1079→    });
+  1080→  });
+  1081→});
+  1082→

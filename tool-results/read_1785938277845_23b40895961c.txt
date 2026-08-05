@@ -1,0 +1,1325 @@
+     1→'use client';
+     2→
+     3→import { useState, useCallback, useEffect } from 'react';
+     4→import { 
+     5→  FileCode, 
+     6→  Folder, 
+     7→  FolderOpen, 
+     8→  ChevronRight, 
+     9→  ChevronDown,
+    10→  Terminal,
+    11→  Eye,
+    12→  LayoutDashboard,
+    13→  Star,
+    14→  GitBranch,
+    15→  Settings,
+    16→  Maximize2,
+    17→  PanelLeftClose,
+    18→  PanelLeft,
+    19→  Copy,
+    20→  Check,
+    21→  ExternalLink,
+    22→  Atom,
+    23→  Activity,
+    24→  Cpu,
+    25→  Shield,
+    26→  Zap,
+    27→  Database,
+    28→  Rocket,
+    29→  BookOpen,
+    30→  Github,
+    31→  Mail,
+    32→  Heart,
+    33→  AlertTriangle,
+    34→  Sparkles,
+    35→  Code2,
+    36→  Brain,
+    37→  Bot,
+    38→  ArrowRight,
+    39→  CheckCircle2,
+    40→  Clock,
+    41→  ArrowUpDown,
+    42→  Globe,
+    43→  Server,
+    44→  HardDrive,
+    45→  RefreshCw,
+    46→  Lightbulb,
+    47→  Target,
+    48→  Network,
+    49→  Lock,
+    50→  Users,
+    51→  TrendingUp,
+    52→  Compass,
+    53→  Microscope,
+    54→  Dna,
+    55→  Beaker,
+    56→  Telescope,
+    57→  GraduationCap,
+    58→  Building2,
+    59→  Award,
+    60→  ChevronDown as ChevronDownIcon,
+    61→  Menu,
+    62→  X,
+    63→  Play,
+    64→  Layers,
+    65→  Puzzle,
+    66→  TreePine,
+    67→  Globe2,
+    68→  MessageSquare,
+    69→  Workflow,
+    70→  BarChart3,
+    71→  LineChart,
+    72→  PieChart,
+    73→  Box,
+    74→  Package,
+    75→  Infinity,
+    76→  Waves,
+    77→  Hexagon,
+    78→  Triangle,
+    79→  CircleDot,
+    80→  MousePointerClick,
+    81→  Fingerprint,
+    82→  KeyRound,
+    83→  ShieldCheck,
+    84→  BadgeCheck,
+    85→  Crown,
+    86→  Diamond,
+    87→  Sparkle,
+    88→  Wand2,
+    89→  BrainCircuit,
+    90→  Neuron,
+    91→  Pulse,
+    92→  HeartHandshake,
+    93→  Handshake,
+    94→  GitFork,
+    95→  GitPullRequest,
+    96→  Commit,
+    97→  Merge,
+    98→  CodeBranch,
+    99→  Repository,
+   100→  Clone,
+   101→  Download,
+   102→  Upload,
+   103→  Share2,
+   104→  Link2,
+   105→  Plug,
+   106→  Power,
+   107→  Battery,
+   108→  Wifi,
+   109→  Satellite,
+   110→  Orbit,
+   111→  Planet,
+   112→  Moon,
+   113→  Sun,
+   114→  Sunrise,
+   115→  Sunset,
+   116→  CloudSun,
+   117→  CloudMoon,
+   118→  Snowflake,
+   119→  Thermometer,
+   120→  Droplets,
+   121→  Wind,
+   122→  Gauge,
+   123→  Speedometer,
+   124→  Timer,
+   125→  Stopwatch,
+   126→  AlarmClock,
+   127→  Calendar,
+   128→  Hourglass,
+   129→  Bell,
+   130→  BellRing,
+   131→  Notification,
+   132→  AlertCircle,
+   133→  Info,
+   134→  HelpCircle,
+   135→  QuestionMark,
+   136→  XCircle,
+   137→  MinusCircle,
+   138→  PlusCircle,
+   139→  Dot,
+   140→  Ellipsis,
+   141→  MoreHorizontal,
+   142→  MoreVertical,
+   143→  GripVertical,
+   144→  Move,
+   145→  Expand,
+   146→  Shrink,
+   147→  Maximize,
+   148→  Minimize,
+   149→  ZoomIn,
+   150→  ZoomOut,
+   151→  RotateCw,
+   152→  Crop,
+   153→  Scissors,
+   154→  Clipboard,
+   155→  ClipboardCopy,
+   156→  ClipboardList,
+   157→  ClipboardCheck,
+   158→  FileText,
+   159→  FilePlus,
+   160→  FileMinus,
+   161→  FileSearch,
+   162→  Image,
+   163→  Music,
+   164→  Video,
+   165→  Film,
+   166→  Camera,
+   167→  Mic,
+   168→  Volume2,
+   169→  Tv,
+   170→  Monitor,
+   171→  Smartphone,
+   172→  Tablet,
+   173→  Laptop,
+   174→  Cloud,
+   175→  CloudDownload,
+   176→  CloudUpload,
+   177→  Rain,
+   178→  Thunder,
+   179→  Lightning,
+   180→  SunDim,
+   181→  MoonStar,
+   182→  MessageSquareQuote
+   183→} from 'lucide-react';
+   184→
+   185→// ==================== FILE TREE DATA ====================
+   186→interface FileNode {
+   187→  name: string;
+   188→  type: 'file' | 'folder';
+   189→  path: string;
+   190→  children?: FileNode[];
+   191→  language?: string;
+   192→  content?: string;
+   193→}
+   194→
+   195→const fileTree: FileNode[] = [
+   196→  {
+   197→    name: 'application',
+   198→    type: 'folder',
+   199→    path: '/application',
+   200→    children: [
+   201→      {
+   202→        name: 'app',
+   203→        type: 'folder',
+   204→        path: '/application/app',
+   205→        children: [
+   206→          { name: 'page.tsx', type: 'file', path: '/application/app/page.tsx', language: 'TypeScript React', content: 'Main landing page entry point' },
+   207→          { name: 'layout.tsx', type: 'file', path: '/application/app/layout.tsx', language: 'TypeScript React', content: 'Root layout with metadata' },
+   208→        ]
+   209→      },
+   210→      {
+   211→        name: 'components',
+   212→        type: 'folder',
+   213→        path: '/application/components',
+   214→        children: [
+   215→          {
+   216→            name: 'landing',
+   217→            type: 'folder',
+   218→            path: '/application/components/landing',
+   219→            children: [
+   220→              { name: 'HeroSection.tsx', type: 'file', path: '/application/components/landing/HeroSection.tsx', language: 'TypeScript React', content: 'Animated hero section' },
+   221→              { name: 'ProblemSection.tsx', type: 'file', path: '/application/components/landing/ProblemSection.tsx', language: 'TypeScript React', content: 'Problem showcase' },
+   222→              { name: 'SolutionSection.tsx', type: 'file', path: '/application/components/landing/SolutionSection.tsx', language: 'TypeScript React', content: 'Solution flow diagram' },
+   223→              { name: 'ArchitectureSection.tsx', type: 'file', path: '/application/components/landing/ArchitectureSection.tsx', language: 'TypeScript React', content: 'Tech architecture' },
+   224→              { name: 'SystemStatusSection.tsx', type: 'file', path: '/application/components/landing/SystemStatusSection.tsx', language: 'TypeScript React', content: 'System health dashboard' },
+   225→              { name: 'CTASection.tsx', type: 'file', path: '/application/components/landing/CTASection.tsx', language: 'TypeScript React', content: 'Call-to-action section' },
+   226→              { name: 'Footer.tsx', type: 'file', path: '/application/components/landing/Footer.tsx', language: 'TypeScript React', content: 'Footer navigation' },
+   227→            ]
+   228→          },
+   229→          {
+   230→            name: 'dashboard',
+   231→            type: 'folder',
+   232→            path: '/application/components/dashboard',
+   233→            children: [
+   234→              { name: 'QuickActionsPanel.tsx', type: 'file', path: '/application/components/dashboard/QuickActionsPanel.tsx', language: 'TypeScript React', content: 'Quick actions panel' },
+   235→              { name: 'DataFlowVisualization.tsx', type: 'file', path: '/application/components/dashboard/DataFlowVisualization.tsx', language: 'TypeScript React', content: 'Data flow diagrams' },
+   236→              { name: 'ResourceCharts.tsx', type: 'file', path: '/application/components/dashboard/ResourceCharts.tsx', language: 'TypeScript React', content: 'Resource charts' },
+   237→              { name: 'AlertsPanel.tsx', type: 'file', path: '/application/components/dashboard/AlertsPanel.tsx', language: 'TypeScript React', content: 'Alerts panel' },
+   238→            ]
+   239→          },
+   240→          { name: 'ui/', type: 'folder', path: '/application/components/ui', children: [] }
+   241→        ]
+   242→      },
+   243→      { name: 'lib/', type: 'folder', path: '/application/lib', children: [] },
+   244→      { name: 'hooks/', type: 'folder', path: '/application/hooks', children: [] },
+   245→    ]
+   246→  },
+   247→  {
+   248→    name: 'docs',
+   249→    type: 'folder',
+   250→    path: '/docs',
+   251→    children: [
+   252→      { name: 'STRATEGIC_INSIGHTS.md', type: 'file', path: '/docs/STRATEGIC_INSIGHTS.md', language: 'Markdown', content: 'Strategic analysis' },
+   253→      { name: 'ARCHITECTURE.md', type: 'file', path: '/docs/ARCHITECTURE.md', language: 'Markdown', content: 'Technical architecture' },
+   254→    ]
+   255→  },
+   256→];
+   257→
+   258→// ==================== THEME CONFIGURATIONS ====================
+   259→type ThemeMode = 'cosmic' | 'molecular' | 'quantum' | 'neural' | 'bio';
+   260→
+   261→interface ThemeConfig {
+   262→  name: string;
+   263→  gradient: string;
+   264→  accent: string;
+   265→  bgGradient: string;
+   266→  particleColor: string;
+   267→  glowColor: string;
+   268→}
+   269→
+   270→const themes: Record<ThemeMode, ThemeConfig> = {
+   271→  cosmic: {
+   272→    name: 'Cosmic Deep Space',
+   273→    gradient: 'from-violet-600 via-fuchsia-500 to-cyan-400',
+   274→    accent: 'text-violet-400',
+   275→    bgGradient: 'bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900',
+   276→    particleColor: 'rgba(167, 139, 250, 0.6)',
+   277→    glowColor: 'rgba(167, 139, 250, 0.3)',
+   278→  },
+   279→  molecular: {
+   280→    name: 'Molecular Structure',
+   281→    gradient: 'from-emerald-600 via-teal-500 to-cyan-400',
+   282→    accent: 'text-emerald-400',
+   283→    bgGradient: 'bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900',
+   284→    particleColor: 'rgba(52, 211, 153, 0.6)',
+   285→    glowColor: 'rgba(52, 211, 153, 0.3)',
+   286→  },
+   287→  quantum: {
+   288→    name: 'Quantum Computing',
+   289→    gradient: 'from-blue-600 via-indigo-500 to-purple-400',
+   290→    accent: 'text-blue-400',
+   291→    bgGradient: 'bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900',
+   292→    particleColor: 'rgba(96, 165, 250, 0.6)',
+   293→    glowColor: 'rgba(96, 165, 250, 0.3)',
+   294→  },
+   295→  neural: {
+   296→    name: 'Neural Network',
+   297→    gradient: 'from-pink-600 via-rose-500 to-orange-400',
+   298→    accent: 'text-pink-400',
+   299→    bgGradient: 'bg-gradient-to-br from-slate-950 via-pink-950 to-slate-900',
+   300→    particleColor: 'rgba(244, 114, 182, 0.6)',
+   301→    glowColor: 'rgba(244, 114, 182, 0.3)',
+   302→  },
+   303→  bio: {
+   304→    name: 'Bio-Medical',
+   305→    gradient: 'from-red-600 via-orange-500 to-yellow-400',
+   306→    accent: 'text-red-400',
+   307→    bgGradient: 'bg-gradient-to-br from-slate-950 via-red-950 to-slate-900',
+   308→    particleColor: 'rgba(248, 113, 113, 0.6)',
+   309→    glowColor: 'rgba(248, 113, 113, 0.3)',
+   310→  }
+   311→};
+   312→
+   313→// ==================== AI DISCOVERY MODES ====================
+   314→interface AIDiscoveryMode {
+   315→  id: string;
+   316→  title: string;
+   317→  icon: React.ReactNode;
+   318→  description: string;
+   319→  capabilities: string[];
+   320→  useCases: string[];
+   321→  status: 'active' | 'beta' | 'upcoming';
+   322→}
+   323→
+   324→const aiDiscoveryModes: AIDiscoveryMode[] = [
+   325→  {
+   326→    id: 'hypothesis',
+   327→    title: 'Hypothesis Generation',
+   328→    icon: <Lightbulb className="w-6 h-6" />,
+   329→    description: 'AI-driven generation of novel scientific hypotheses for new laws and theories.',
+   330→    capabilities: ['Pattern recognition in multi-domain datasets', 'Automated theory formation', 'Cross-paradigm insight generation'],
+   331→    useCases: ['Drug target identification', 'Materials property prediction'],
+   332→    status: 'active'
+   333→  },
+   334→  {
+   335→    id: 'pattern-recognition',
+   336→    title: 'Pattern Recognition',
+   337→    icon: <BrainCircuit className="w-6 h-6" />,
+   338→    description: 'Advanced pattern detection across massive scientific datasets using deep learning.',
+   339→    capabilities: ['Multi-modal data fusion', 'Anomaly detection', 'Temporal pattern analysis'],
+   340→    useCases: ['Genomic sequence analysis', 'Clinical trial outcomes'],
+   341→    status: 'active'
+   342→  },
+   343→  {
+   344→    id: 'theory-testing',
+   345→    title: 'Automated Theory Testing',
+   346→    icon: <Beaker className="w-6 h-6" />,
+   347→    description: 'Systematic automated testing and validation of scientific theories.',
+   348→    capabilities: ['Experimental design optimization', 'Statistical significance testing', 'Reproducibility verification'],
+   349→    useCases: ['Replication studies', 'Theory validation'],
+   350→    status: 'beta'
+   351→  },
+   352→  {
+   353→    id: 'cross-paradigm',
+   354→    title: 'Cross-Paradigm Insights',
+   355→    icon: <Network className="w-6 h-6" />,
+   356→    description: 'Generate breakthrough insights by connecting concepts across disciplines.',
+   357→    capabilities: ['Interdisciplinary mapping', 'Analogy detection', 'Concept transfer learning'],
+   358→    useCases: ['Biomimetic drug design', 'Physics-inspired ML'],
+   359→    status: 'upcoming'
+   360→  }
+   361→];
+   362→
+   363→// ==================== ROADMAP PHASES ====================
+   364→interface RoadmapPhase {
+   365→  phase: number;
+   366→  title: string;
+   367→  period: string;
+   368→  theme: string;
+   369→  status: 'completed' | 'in-progress' | 'planned' | 'future';
+   370→  objectives: string[];
+   371→  milestones: string[];
+   372→  icon: React.ReactNode;
+   373→}
+   374→
+   375→const roadmapPhases: RoadmapPhase[] = [
+   376→  {
+   377→    phase: 5,
+   378→    title: 'AI Backend & Molecules',
+   379→    period: '2025-2026',
+   380→    theme: 'Intelligence Foundation',
+   381→    status: 'in-progress',
+   382→    objectives: ['Real LLM streaming integration', '3D Molecular visualization', 'Production hardening'],
+   383→    milestones: ['/api/ai/chat endpoint', '3Dmol.js viewer', 'Error boundaries'],
+   384→    icon: <Brain className="w-5 h-5" />
+   385→  },
+   386→  {
+   387→    phase: 6,
+   388→    title: 'Collaboration & Knowledge',
+   389→    period: '2026-2027',
+   390→    theme: 'Connect & Learn',
+   391→    status: 'planned',
+   392→    objectives: ['Real-time collaboration', 'Living knowledge graph', 'Enterprise pilots'],
+   393→    milestones: ['WebSocket sync', 'ChEMBL/PubChem integration', 'AlphaFold viewer'],
+   394→    icon: <Users className="w-5 h-5" />
+   395→  },
+   396→  {
+   397→    phase: 7,
+   398→    title: 'Intelligence Expansion',
+   399→    period: '2027-2028',
+   400→    theme: 'Think & Predict',
+   401→    status: 'future',
+   402→    objectives: ['Autonomous experiment design', 'Quantum-classical hybrid', 'Regulatory support'],
+   403→    milestones: ['AI Scientist workspace', 'Quantum workflows', 'IND-enabling module'],
+   404→    icon: <Sparkles className="w-5 h-5" />
+   405→  },
+   406→  {
+   407→    phase: 8,
+   408→    title: 'Platform Ecosystem',
+   409→    period: '2028-2029',
+   410→    theme: 'Extend & Collaborate',
+   411→    status: 'future',
+   412→    objectives: ['Plugin marketplace', 'Federated learning', 'Mobile platform'],
+   413→    milestones: ['Plugin SDK', 'Pharma consortium', 'Mobile apps'],
+   414→    icon: <Puzzle className="w-5 h-5" />
+   415→  },
+   416→  {
+   417→    phase: 9,
+   418→    title: 'Scientific Frontier',
+   419→    period: '2030-2031',
+   420→    theme: 'Discover & Innovate',
+   421→    status: 'future',
+   422→    objectives: ['Molecule generation', 'Digital twins', 'AI co-authorship'],
+   423→    milestones: ['De novo synthesis', 'Organism simulation', 'Auto-publication'],
+   424→    icon: <Rocket className="w-5 h-5" />
+   425→  },
+   426→  {
+   427→    phase: 10,
+   428→    title: 'Global Platform',
+   429→    period: '2031-2041',
+   430→    theme: 'Transform & Lead',
+   431→    status: 'future',
+   432→    objectives: ['100K+ researchers', 'Global standards', 'Frontier science'],
+   433→    milestones: ['University adoption', 'WHO/FDA integration', 'Novel discovery'],
+   434→    icon: <Globe2 className="w-5 h-5" />
+   435→  }
+   436→];
+   437→
+   438→// ==================== STRATEGIC POSITIONING ====================
+   439→const strategicPositioning = [
+   440→  { label: 'Modern Web Stack', desc: 'Browser-based, no installation', icon: <Globe className="w-5 h-5" />, position: { x: 20, y: 25 } },
+   441→  { label: 'High AI Integration', desc: 'AI-native architecture', icon: <Brain className="w-5 h-5" />, position: { x: 80, y: 25 } },
+   442→  { label: 'Open Source Core', desc: 'Community-driven innovation', icon: <Github className="w-5 h-5" />, position: { x: 20, y: 75 } },
+   443→  { label: 'Full Pipeline Coverage', desc: 'Discovery → Clinical', icon: <Workflow className="w-5 h-5" />, position: { x: 80, y: 75 } },
+   444→];
+   445→
+   446→const roadmapPrinciples = [
+   447→  { icon: <Lock className="w-5 h-5" />, title: 'Open Source First', description: 'Core platform remains open-source; enterprise features commercial' },
+   448→  { icon: <Bot className="w-5 h-5" />, title: 'AI-Native', description: 'Every feature designed with AI integration as primary requirement' },
+   449→  { icon: <Plug className="w-5 h-5" />, title: 'Interoperability', description: 'Standards-based, API-first, format-agnostic' },
+   450→  { icon: <Users className="w-5 h-5" />, title: 'Community Driven', description: 'Plugin ecosystem, contribution guidelines, governance' },
+   451→  { icon: <Shield className="w-5 h-5" />, title: 'Compliance Ready', description: 'Enterprise/GxP features available but optional' },
+   452→  { icon: <TrendingUp className="w-5 h-5" />, title: 'Sustainable', description: 'Revenue through enterprise support, not core feature gating' },
+   453→];
+   454→
+   455→// ==================== MAIN COMPONENT ====================
+   456→export default function AethelgardLandingPage() {
+   457→  const [sidebarOpen, setSidebarOpen] = useState(true);
+   458→  const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
+   459→  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['application']));
+   460→  const [activeTab, setActiveTab] = useState<string>('frontend');
+   461→  const [currentTheme, setCurrentTheme] = useState<ThemeMode>('cosmic');
+   462→  const [selectedAIMode, setSelectedAIMode] = useState<string>('hypothesis');
+   463→  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   464→  const [copiedPath, setCopiedPath] = useState<string | null>(null);
+   465→
+   466→  const theme = themes[currentTheme];
+   467→
+   468→  // Particle animation state
+   469→  const [particles, setParticles] = useState<Array<{id: number; x: number; y: number; size: number; duration: number; delay: number}>>([]);
+   470→
+   471→  useEffect(() => {
+   472→    const newParticles = Array.from({ length: 50 }, (_, i) => ({
+   473→      id: i,
+   474→      x: Math.random() * 100,
+   475→      y: Math.random() * 100,
+   476→      size: Math.random() * 4 + 1,
+   477→      duration: Math.random() * 20 + 10,
+   478→      delay: Math.random() * 5
+   479→    }));
+   480→    setParticles(newParticles);
+   481→  }, []);
+   482→
+   483→  const toggleFolder = useCallback((path: string) => {
+   484→    setExpandedFolders(prev => {
+   485→      const next = new Set(prev);
+   486→      if (next.has(path)) {
+   487→        next.delete(path);
+   488→      } else {
+   489→        next.add(path);
+   490→      }
+   491→      return next;
+   492→    });
+   493→  }, []);
+   494→
+   495→  const copyFilePath = useCallback((path: string) => {
+   496→    navigator.clipboard.writeText(path);
+   497→    setCopiedPath(path);
+   498→    setTimeout(() => setCopiedPath(null), 2000);
+   499→  }, []);
+   500→
+   501→  const renderFileTree = useCallback((nodes: FileNode[], depth = 0) => {
+   502→    return nodes.map((node) => {
+   503→      const isExpanded = expandedFolders.has(node.path);
+   504→      const isSelected = selectedFile?.path === node.path;
+   505→
+   506→      if (node.type === 'folder') {
+   507→        return (
+   508→          <div key={node.path}>
+   509→            <button
+   510→              onClick={() => toggleFolder(node.path)}
+   511→              className="flex items-center gap-1.5 w-full px-2 py-1 text-left text-xs hover:bg-slate-800/50 rounded transition-colors"
+   512→              style={{ paddingLeft: `${depth * 12 + 8}px` }}
+   513→            >
+   514→              {isExpanded ? (
+   515→                <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+   516→              ) : (
+   517→                <ChevronRight className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+   518→              )}
+   519→              {isExpanded ? (
+   520→                <FolderOpen className="w-4 h-4 text-amber-400 flex-shrink-0" />
+   521→              ) : (
+   522→                <Folder className="w-4 h-4 text-amber-400/60 flex-shrink-0" />
+   523→              )}
+   524→              <span className={`truncate ${isSelected ? 'text-white' : 'text-slate-300'}`}>{node.name}</span>
+   525→            </button>
+   526→            {isExpanded && node.children && (
+   527→              <div>{renderFileTree(node.children, depth + 1)}</div>
+   528→            )}
+   529→          </div>
+   530→        );
+   531→      }
+   532→
+   533→      return (
+   534→        <button
+   535→          key={node.path}
+   536→          onClick={() => setSelectedFile(node)}
+   537→          className="flex items-center gap-1.5 w-full px-2 py-1 text-left text-xs hover:bg-slate-800/50 rounded transition-colors group"
+   538→          style={{ paddingLeft: `${depth * 12 + 20}px` }}
+   539→        >
+   540→          <FileCode className="w-4 h-4 text-violet-400 flex-shrink-0" />
+   541→          <span className={`truncate flex-1 ${isSelected ? 'text-white' : 'text-slate-400'}`}>{node.name}</span>
+   542→          <Copy
+   543→            onClick={(e) => { e.stopPropagation(); copyFilePath(node.path); }}
+   544→            className="w-3 h-3 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-white transition-opacity flex-shrink-0"
+   545→          />
+   546→        </button>
+   547→      );
+   548→    });
+   549→  }, [expandedFolders, selectedFile, toggleFolder, copyFilePath]);
+   550→
+   551→  return (
+   552→    <div className={`min-h-screen ${theme.bgGradient} text-white overflow-x-hidden`}>
+   553→      {/* Animated Background Particles */}
+   554→      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+   555→        {particles.map((particle) => (
+   556→          <div
+   557→            key={particle.id}
+   558→            className="absolute rounded-full animate-pulse"
+   559→            style={{
+   560→              left: `${particle.x}%`,
+   561→              top: `${particle.y}%`,
+   562→              width: `${particle.size}px`,
+   563→              height: `${particle.size}px`,
+   564→              backgroundColor: theme.particleColor,
+   565→              boxShadow: `0 0 ${particle.size * 2}px ${theme.glowColor}`,
+   566→              animation: `float ${particle.duration}s ease-in-out infinite`,
+   567→              animationDelay: `${particle.delay}s`
+   568→            }}
+   569→          />
+   570→        ))}
+   571→      </div>
+   572→
+   573→      {/* Navigation Header */}
+   574→      <header className="relative z-50 border-b border-white/10 backdrop-blur-xl bg-black/20">
+   575→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   576→          <div className="flex items-center justify-between h-16">
+   577→            {/* Logo */}
+   578→            <div className="flex items-center gap-3">
+   579→              <div className="relative">
+   580→                <Atom className="w-8 h-8 text-violet-400 animate-spin-slow" strokeWidth={1.5} />
+   581→                <div className="absolute inset-0 bg-violet-400/20 rounded-full blur-lg" />
+   582→              </div>
+   583→              <div>
+   584→                <h1 className="text-xl font-bold bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+   585→                  AETHELGARD IDE Studio
+   586→                </h1>
+   587→                <p className="text-[10px] text-slate-400 -mt-1">v6.0 · Interactive Explorer</p>
+   588→              </div>
+   589→            </div>
+   590→
+   591→            {/* Desktop Navigation */}
+   592→            <nav className="hidden md:flex items-center gap-1">
+   593→              {['Frontend Overview', 'Dashboard View', 'Hero Section', 'Problem/Solution', 'Architecture', 'CTA/Footer'].map((tab) => (
+   594→                <button
+   595→                  key={tab}
+   596→                  onClick={() => setActiveTab(tab.toLowerCase().replace(/\s+/g, '-').replace('/', '-'))}
+   597→                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+   598→                    activeTab === tab.toLowerCase().replace(/\s+/g, '-').replace('/', '-')
+   599→                      ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
+   600→                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+   601→                  }`}
+   602→                >
+   603→                  {tab}
+   604→                </button>
+   605→              ))}
+   606→            </nav>
+   607→
+   608→            {/* Right Actions */}
+   609→            <div className="flex items-center gap-3">
+   610→              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+   611→                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+   612→                <span className="text-xs text-emerald-300 font-medium">Live Preview</span>
+   613→              </div>
+   614→              <a
+   615→                href="#"
+   616→                target="_blank"
+   617→                rel="noopener noreferrer"
+   618→                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-sm font-semibold transition-all shadow-lg shadow-violet-500/25"
+   619→              >
+   620→                <ExternalLink className="w-4 h-4" />
+   621→                Open in New Tab
+   622→              </a>
+   623→              <button
+   624→                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+   625→                className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+   626→              >
+   627→                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+   628→              </button>
+   629→            </div>
+   630→          </div>
+   631→        </div>
+   632→
+   633→        {/* Mobile Menu */}
+   634→        {mobileMenuOpen && (
+   635→          <div className="md:hidden border-t border-white/10 backdrop-blur-xl bg-black/40">
+   636→            <div className="px-4 py-3 space-y-1">
+   637→              {['Frontend Overview', 'Dashboard View', 'Hero Section', 'Problem/Solution', 'Architecture', 'CTA/Footer'].map((tab) => (
+   638→                <button
+   639→                  key={tab}
+   640→                  onClick={() => {
+   641→                    setActiveTab(tab.toLowerCase().replace(/\s+/g, '-').replace('/', '-'));
+   642→                    setMobileMenuOpen(false);
+   643→                  }}
+   644→                  className={`block w-full text-left px-3 py-2 rounded-md text-sm ${
+   645→                    activeTab === tab.toLowerCase().replace(/\s+/g, '-').replace('/', '-')
+   646→                      ? 'bg-violet-500/20 text-violet-300'
+   647→                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+   648→                  }`}
+   649→                >
+   650→                  {tab}
+   651→                </button>
+   652→              ))}
+   653→            </div>
+   654→          </div>
+   655→        )}
+   656→      </header>
+   657→
+   658→      <div className="flex relative z-10">
+   659→        {/* Sidebar - File Explorer */}
+   660→        <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} transition-all duration-300 border-r border-white/10 bg-black/20 backdrop-blur-xl overflow-hidden flex-shrink-0`}>
+   661→          <div className="w-72 h-[calc(100vh-4rem)] overflow-y-auto">
+   662→            {/* Sidebar Header */}
+   663→            <div className="sticky top-0 z-10 p-4 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+   664→              <div className="flex items-center justify-between mb-3">
+   665→                <h2 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Explorer</h2>
+   666→                <div className="flex items-center gap-1">
+   667→                  <button className="p-1 rounded hover:bg-white/10 transition-colors" title="New File">
+   668→                    <FileCode className="w-4 h-4 text-slate-400" />
+   669→                  </button>
+   670→                  <button className="p-1 rounded hover:bg-white/10 transition-colors" title="Settings">
+   671→                    <Settings className="w-4 h-4 text-slate-400" />
+   672→                  </button>
+   673→                </div>
+   674→              </div>
+   675→              
+   676→              {/* Project Root */}
+   677→              <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/10">
+   678→                <FolderOpen className="w-4 h-4 text-amber-400" />
+   679→                <span className="text-xs font-medium text-slate-200 truncate">Aethelgard-Strategic-Insights</span>
+   680→                <GitBranch className="w-3.5 h-3.5 text-slate-500 ml-auto" />
+   681→              </div>
+   682→            </div>
+   683→
+   684→            {/* File Tree */}
+   685→            <div className="p-2">{renderFileTree(fileTree)}</div>
+   686→
+   687→            {/* Selected File Info */}
+   688→            {selectedFile && (
+   689→              <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-black/60 backdrop-blur-xl">
+   690→                <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Selected File</p>
+   691→                <p className="text-sm font-medium text-white truncate">{selectedFile.name}</p>
+   692→                <p className="text-xs text-slate-400 mt-1">{selectedFile.language}</p>
+   693→              </div>
+   694→            )}
+   695→          </div>
+   696→        </aside>
+   697→
+   698→        {/* Main Content Area */}
+   699→        <main className="flex-1 min-h-[calc(100vh-4rem)] overflow-y-auto">
+   700→          {/* Toggle Sidebar Button */}
+   701→          <button
+   702→            onClick={() => setSidebarOpen(!sidebarOpen)}
+   703→            className="fixed top-20 z-40 p-2 rounded-r-lg bg-slate-800 border border-slate-700 border-l-0 hover:bg-slate-700 transition-all"
+   704→            style={{ left: sidebarOpen ? '288px' : '0' }}
+   705→          >
+   706→            {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
+   707→          </button>
+   708→
+   709→          {/* ==================== ENHANCED LANDING PAGE CONTENT ==================== */}
+   710→          
+   711→          {/* SECTION 1: HERO - "The GitHub for Scientific Society" */}
+   712→          <section className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+   713→            {/* Gradient Orbs */}
+   714→            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl animate-pulse" />
+   715→            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+   716→
+   717→            <div className="relative max-w-6xl mx-auto text-center">
+   718→              {/* Badge */}
+   719→              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 mb-8">
+   720→                <Sparkles className="w-4 h-4 text-violet-400" />
+   721→                <span className="text-sm text-violet-300">World&apos;s First Open-Source AI Drug Discovery Platform</span>
+   722→              </div>
+   723→
+   724→              {/* Main Title */}
+   725→              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+   726→                <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+   727→                  AETHELGARD
+   728→                </span>
+   729→              </h1>
+   730→
+   731→              {/* Tagline - GitHub for Science */}
+   732→              <div className="mb-8">
+   733→                <p className="text-2xl sm:text-3xl text-slate-200 font-light mb-4">
+   734→                  The <span className="font-semibold text-transparent bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text">GitHub for Molecular Research</span>
+   735→                </p>
+   736→                <p className="text-lg text-slate-400 max-w-3xl mx-auto">
+   737→                  The Autonomous Research Collaborator for AI-Driven Drug Discovery
+   738→                </p>
+   739→              </div>
+   740→
+   741→              {/* Version Badge */}
+   742→              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-white/5 border border-white/10 mb-12">
+   743→                <span className="text-sm font-mono text-slate-300">AETH-1.0.0</span>
+   744→                <span className="text-slate-600">·</span>
+   745→                <span className="text-sm text-emerald-400">Open Source</span>
+   746→                <span className="text-slate-600">·</span>
+   747→                <span className="text-sm text-cyan-400">Physics-Grounded</span>
+   748→              </div>
+   749→
+   750→              {/* Theme Switcher Dropdown */}
+   751→              <div className="mb-12">
+   752→                <p className="text-sm text-slate-500 mb-3">Experience different visual themes:</p>
+   753→                <div className="inline-flex flex-wrap items-center justify-center gap-2">
+   754→                  {(Object.keys(themes) as ThemeMode[]).map((mode) => (
+   755→                    <button
+   756→                      key={mode}
+   757→                      onClick={() => setCurrentTheme(mode)}
+   758→                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
+   759→                        currentTheme === mode
+   760→                          ? `bg-gradient-to-r ${themes[mode].gradient} text-white border-transparent shadow-lg`
+   761→                          : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10 hover:text-white'
+   762→                      }`}
+   763→                    >
+   764→                      <span className={`inline-block w-2 h-2 rounded-full mr-2 bg-gradient-to-r ${themes[mode].gradient}`} />
+   765→                      {themes[mode].name}
+   766→                    </button>
+   767→                  ))}
+   768→                </div>
+   769→              </div>
+   770→
+   771→              {/* CTA Buttons */}
+   772→              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+   773→                <button className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-lg font-semibold transition-all shadow-2xl shadow-violet-500/25 overflow-hidden">
+   774→                  <span className="relative z-10 flex items-center gap-2">
+   775→                    Get Started
+   776→                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+   777→                  </span>
+   778→                </button>
+   779→                <button className="group px-8 py-4 rounded-xl bg-white/5 border border-white/20 hover:bg-white/10 hover:border-white/30 text-lg font-semibold transition-all flex items-center gap-2">
+   780→                  <Eye className="w-5 h-5" />
+   781→                  View Dashboard
+   782→                </button>
+   783→              </div>
+   784→
+   785→              {/* Stats Row */}
+   786→              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-4xl mx-auto">
+   787→                {[
+   788→                  { value: '99.97%', label: 'Uptime SLA', icon: <Monitor className="w-4 h-4" /> },
+   789→                  { value: '2.4 TB', label: 'Data Processed', icon: <Database className="w-4 h-4" /> },
+   790→                  { value: '12+', label: 'Active Pipelines', icon: <Workflow className="w-4 h-4" /> },
+   791→                  { value: '7/7', label: 'Components Online', icon: <CheckCircle2 className="w-4 h-4" /> },
+   792→                ].map((stat, i) => (
+   793→                  <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
+   794→                    <div className="text-violet-400 mb-2">{stat.icon}</div>
+   795→                    <p className="text-2xl font-bold text-white">{stat.value}</p>
+   796→                    <p className="text-xs text-slate-400">{stat.label}</p>
+   797→                  </div>
+   798→                ))}
+   799→              </div>
+   800→            </div>
+   801→          </section>
+   802→
+   803→          {/* SECTION 2: AI-DRIVEN FUNDAMENTAL DISCOVERY - Dynamic Dropdown */}
+   804→          <section className="relative py-24 px-4">
+   805→            <div className="max-w-7xl mx-auto">
+   806→              {/* Section Header */}
+   807→              <div className="text-center mb-16">
+   808→                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 mb-6">
+   809→                  <BrainCircuit className="w-4 h-4 text-fuchsia-400" />
+   810→                  <span className="text-sm text-fuchsia-300">Core Intelligence</span>
+   811→                </div>
+   812→                <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+   813→                  <span className="bg-gradient-to-r from-fuchsia-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+   814→                    AI-Driven Fundamental Discovery
+   815→                  </span>
+   816→                </h2>
+   817→                <p className="text-lg text-slate-400 max-w-3xl mx-auto">
+   818→                  Harness artificial intelligence to generate new scientific hypotheses, recognize patterns in massive datasets, 
+   819→                  and automate theory formation across multiple domains.
+   820→                </p>
+   821→              </div>
+   822→
+   823→              {/* Dynamic Mode Selector */}
+   824→              <div className="grid lg:grid-cols-2 gap-8 mb-12">
+   825→                {/* Mode Selector Panel */}
+   826→                <div className="rounded-2xl bg-slate-900/60 border border-white/10 backdrop-blur-xl p-6">
+   827→                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+   828→                    <MousePointerClick className="w-5 h-5 text-violet-400" />
+   829→                    Select Discovery Mode
+   830→                  </h3>
+   831→                  
+   832→                  <div className="space-y-3">
+   833→                    {aiDiscoveryModes.map((mode) => (
+   834→                      <button
+   835→                        key={mode.id}
+   836→                        onClick={() => setSelectedAIMode(mode.id)}
+   837→                        className={`w-full text-left p-4 rounded-xl border transition-all group ${
+   838→                          selectedAIMode === mode.id
+   839→                            ? 'bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border-violet-500/50 shadow-lg shadow-violet-500/10'
+   840→                            : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
+   841→                        }`}
+   842→                      >
+   843→                        <div className="flex items-start gap-3">
+   844→                          <div className={`p-2 rounded-lg ${selectedAIMode === mode.id ? 'bg-violet-500/30' : 'bg-white/10'} text-violet-400`}>
+   845→                            {mode.icon}
+   846→                          </div>
+   847→                          <div className="flex-1">
+   848→                            <div className="flex items-center gap-2 mb-1">
+   849→                              <span className="font-semibold text-white">{mode.title}</span>
+   850→                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${
+   851→                                mode.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' :
+   852→                                mode.status === 'beta' ? 'bg-amber-500/20 text-amber-300' :
+   853→                                'bg-slate-500/20 text-slate-400'
+   854→                              }`}>
+   855→                                {mode.status}
+   856→                              </span>
+   857→                            </div>
+   858→                            <p className="text-sm text-slate-400 line-clamp-2">{mode.description}</p>
+   859→                          </div>
+   860→                          <ChevronRight className={`w-5 h-5 text-slate-500 transition-transform ${selectedAIMode === mode.id ? 'rotate-90 text-violet-400' : ''}`} />
+   861→                        </div>
+   862→                      </button>
+   863→                    ))}
+   864→                  </div>
+   865→                </div>
+   866→
+   867→                {/* Mode Details Panel */}
+   868→                <div className="rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-800/60 border border-violet-500/30 backdrop-blur-xl p-6">
+   869→                  {(() => {
+   870→                    const mode = aiDiscoveryModes.find(m => m.id === selectedAIMode)!;
+   871→                    return (
+   872→                      <>
+   873→                        <div className="flex items-center gap-3 mb-6">
+   874→                          <div className="p-3 rounded-xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 text-violet-300">
+   875→                            {mode.icon}
+   876→                          </div>
+   877→                          <div>
+   878→                            <h3 className="text-xl font-bold text-white">{mode.title}</h3>
+   879→                            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium uppercase mt-1 ${
+   880→                              mode.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' :
+   881→                              mode.status === 'beta' ? 'bg-amber-500/20 text-amber-300' :
+   882→                              'bg-slate-500/20 text-slate-400'
+   883→                            }`}>
+   884→                              {mode.status === 'active' ? '✓ Production Ready' : mode.status === 'beta' ? 'β Beta Testing' : '◦ Coming Soon'}
+   885→                            </span>
+   886→                          </div>
+   887→                        </div>
+   888→
+   889→                        <p className="text-slate-300 mb-6">{mode.description}</p>
+   890→
+   891→                        <div className="space-y-4">
+   892→                          <div>
+   893→                            <h4 className="text-sm font-semibold text-violet-300 mb-2 flex items-center gap-2">
+   894→                              <Zap className="w-4 h-4" />
+   895→                              Core Capabilities
+   896→                            </h4>
+   897→                            <ul className="space-y-2">
+   898→                              {mode.capabilities.map((cap, i) => (
+   899→                                <li key={i} className="flex items-center gap-2 text-sm text-slate-300">
+   900→                                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+   901→                                  {cap}
+   902→                                </li>
+   903→                              ))}
+   904→                            </ul>
+   905→                          </div>
+   906→
+   907→                          <div>
+   908→                            <h4 className="text-sm font-semibold text-fuchsia-300 mb-2 flex items-center gap-2">
+   909→                              <Target className="w-4 h-4" />
+   910→                              Use Cases
+   911→                            </h4>
+   912→                            <div className="flex flex-wrap gap-2">
+   913→                              {mode.useCases.map((useCase, i) => (
+   914→                                <span key={i} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
+   915→                                  {useCase}
+   916→                                </span>
+   917→                              ))}
+   918→                            </div>
+   919→                          </div>
+   920→                        </div>
+   921→
+   922→                        <button className="w-full mt-6 px-4 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 font-semibold transition-all flex items-center justify-center gap-2">
+   923→                          <Play className="w-4 h-4" />
+   924→                          Explore {mode.title}
+   925→                        </button>
+   926→                      </>
+   927→                    );
+   928→                  })()}
+   929→                </div>
+   930→              </div>
+   931→            </div>
+   932→          </section>
+   933→
+   934→          {/* SECTION 3: STRATEGIC POSITIONING QUADRANT */}
+   935→          <section className="relative py-24 px-4 bg-black/20">
+   936→            <div className="max-w-7xl mx-auto">
+   937→              <div className="text-center mb-16">
+   938→                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/30 mb-6">
+   939→                  <Target className="w-4 h-4 text-cyan-400" />
+   940→                  <span className="text-sm text-cyan-300">Market Position</span>
+   941→                </div>
+   942→                <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+   943→                  <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+   944→                    Unique Strategic Positioning
+   945→                  </span>
+   946→                </h2>
+   947→                <p className="text-lg text-slate-400 max-w-3xl mx-auto">
+   948→                  Aethelgard occupies a unique market quadrant with no major competitors.
+   949→                </p>
+   950→              </div>
+   951→
+   952→              {/* Quadrant Grid */}
+   953→              <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+   954→                {strategicPositioning.map((item, i) => (
+   955→                  <div
+   956→                    key={i}
+   957→                    className="group p-6 rounded-2xl bg-slate-900/60 border border-white/10 backdrop-blur-sm hover:border-cyan-500/50 hover:bg-slate-800/60 transition-all cursor-pointer"
+   958→                  >
+   959→                    <div className="flex items-start gap-4">
+   960→                      <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 text-cyan-400 group-hover:scale-110 transition-transform">
+   961→                        {item.icon}
+   962→                      </div>
+   963→                      <div>
+   964→                        <h3 className="text-lg font-semibold text-white mb-1">{item.label}</h3>
+   965→                        <p className="text-sm text-slate-400">{item.desc}</p>
+   966→                      </div>
+   967→                    </div>
+   968→                  </div>
+   969→                ))}
+   970→              </div>
+   971→
+   972→              {/* No Competitor Note */}
+   973→              <div className="mt-8 text-center">
+   974→                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+   975→                  <Sparkles className="w-4 h-4 text-emerald-400" />
+   976→                  <span className="text-sm text-emerald-300">⚡ No major competitor occupies this quadrant</span>
+   977→                </div>
+   978→              </div>
+   979→            </div>
+   980→          </section>
+   981→
+   982→          {/* SECTION 4: ROADMAP PRINCIPLES */}
+   983→          <section className="relative py-24 px-4">
+   984→            <div className="max-w-7xl mx-auto">
+   985→              <div className="text-center mb-16">
+   986→                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6">
+   987→                  <Compass className="w-4 h-4 text-emerald-400" />
+   988→                  <span className="text-sm text-emerald-300">Guiding Principles</span>
+   989→                </div>
+   990→                <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+   991→                  <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+   992→                    Roadmap Principles
+   993→                  </span>
+   994→                </h2>
+   995→              </div>
+   996→
+   997→              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+   998→                {roadmapPrinciples.map((principle, i) => (
+   999→                  <div
+  1000→                    key={i}
+  1001→                    className="group p-6 rounded-2xl bg-slate-900/60 border border-white/10 backdrop-blur-sm hover:border-emerald-500/50 hover:bg-slate-800/60 transition-all"
+  1002→                  >
+  1003→                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-110 transition-transform">
+  1004→                      {principle.icon}
+  1005→                    </div>
+  1006→                    <h3 className="text-lg font-semibold text-white mb-2">{principle.title}</h3>
+  1007→                    <p className="text-sm text-slate-400">{principle.description}</p>
+  1008→                  </div>
+  1009→                ))}
+  1010→              </div>
+  1011→            </div>
+  1012→          </section>
+  1013→
+  1014→          {/* SECTION 5: PHASE 5-10 INTERACTIVE ROADMAP TIMELINE */}
+  1015→          <section className="relative py-24 px-4 bg-black/20">
+  1016→            <div className="max-w-7xl mx-auto">
+  1017→              <div className="text-center mb-16">
+  1018→                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 mb-6">
+  1019→                  <LineChart className="w-4 h-4 text-amber-400" />
+  1020→                  <span className="text-sm text-amber-300">Evolution Pathway</span>
+  1021→                </div>
+  1022→                <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+  1023→                  <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+  1024→                    Phase 5-10 Development Roadmap
+  1025→                  </span>
+  1026→                </h2>
+  1027→                <p className="text-lg text-slate-400 max-w-3xl mx-auto">
+  1028→                  From AI backend integration to becoming the global standard for molecular research.
+  1029→                </p>
+  1030→              </div>
+  1031→
+  1032→              {/* Timeline Cards */}
+  1033→              <div className="space-y-8">
+  1034→                {roadmapPhases.map((phase, i) => (
+  1035→                  <div key={phase.phase} className="relative">
+  1036→                    <div className={`p-6 rounded-2xl border backdrop-blur-sm transition-all hover:scale-[1.01] ${
+  1037→                      phase.status === 'in-progress'
+  1038→                        ? 'bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border-violet-500/50 shadow-lg shadow-violet-500/10'
+  1039→                        : phase.status === 'completed'
+  1040→                        ? 'bg-emerald-500/10 border-emerald-500/30'
+  1041→                        : 'bg-slate-900/60 border-white/10 hover:border-white/20'
+  1042→                    }`}>
+  1043→                      <div className="flex items-start gap-4">
+  1044→                        <div className={`p-3 rounded-xl ${
+  1045→                          phase.status === 'in-progress'
+  1046→                            ? 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white'
+  1047→                            : 'bg-white/10 text-slate-300'
+  1048→                        }`}>
+  1049→                          {phase.icon}
+  1050→                        </div>
+  1051→                        <div className="flex-1">
+  1052→                          <div className="flex items-center gap-3 mb-2">
+  1053→                            <span className="text-xs font-mono text-slate-500">PHASE {phase.phase}</span>
+  1054→                            <h3 className="text-xl font-bold text-white">{phase.title}</h3>
+  1055→                            <span className={`px-2 py-1 rounded-full text-xs font-medium uppercase ${
+  1056→                              phase.status === 'completed' ? 'bg-emerald-500/20 text-emerald-300' :
+  1057→                              phase.status === 'in-progress' ? 'bg-violet-500/20 text-violet-300' :
+  1058→                              phase.status === 'planned' ? 'bg-amber-500/20 text-amber-300' :
+  1059→                              'bg-slate-500/20 text-slate-400'
+  1060→                            }`}>
+  1061→                              {phase.status.replace('-', ' ')}
+  1062→                            </span>
+  1063→                          </div>
+  1064→                          <p className="text-sm text-slate-400 mb-2">{phase.theme} · {phase.period}</p>
+  1065→                          
+  1066→                          <div className="grid md:grid-cols-2 gap-4 mt-4">
+  1067→                            <div>
+  1068→                              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Objectives</p>
+  1069→                              <ul className="space-y-1">
+  1070→                                {phase.objectives.map((obj, j) => (
+  1071→                                  <li key={j} className="flex items-center gap-2 text-sm text-slate-400">
+  1072→                                    <CheckCircle2 className="w-4 h-4 text-violet-400 flex-shrink-0" />
+  1073→                                    {obj}
+  1074→                                  </li>
+  1075→                                ))}
+  1076→                              </ul>
+  1077→                            </div>
+  1078→                            <div>
+  1079→                              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Milestones</p>
+  1080→                              <div className="flex flex-wrap gap-2">
+  1081→                                {phase.milestones.map((milestone, k) => (
+  1082→                                  <span key={k} className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300">
+  1083→                                    {milestone}
+  1084→                                  </span>
+  1085→                                ))}
+  1086→                              </div>
+  1087→                            </div>
+  1088→                          </div>
+  1089→                        </div>
+  1090→                      </div>
+  1091→                    </div>
+  1092→                  </div>
+  1093→                ))}
+  1094→              </div>
+  1095→
+  1096→              {/* Vision Statement */}
+  1097→              <div className="mt-16 text-center">
+  1098→                <div className="max-w-4xl mx-auto p-8 rounded-3xl bg-gradient-to-br from-violet-500/10 via-fuchsia-500/10 to-cyan-500/10 border border-violet-500/30 backdrop-blur-xl">
+  1099→                  <MessageSquareQuote className="w-12 h-12 text-violet-400 mx-auto mb-4" />
+  1100→                  <blockquote className="text-xl text-slate-200 leading-relaxed mb-4">
+  1101→                    To become the foundational open-source platform for AI-driven scientific discovery, enabling researchers worldwide 
+  1102→                    to accelerate breakthroughs in drug discovery, materials science, and beyond.
+  1103→                  </blockquote>
+  1104→                  <cite className="text-sm text-slate-400 not-italic">— AETHELGARD Vision Statement</cite>
+  1105→                </div>
+  1106→              </div>
+  1107→            </div>
+  1108→          </section>
+  1109→
+  1110→          {/* SECTION 6: LONG TERM VISION - GitHub for Molecular Research */}
+  1111→          <section className="relative py-24 px-4 overflow-hidden">
+  1112→            <div className="absolute inset-0 bg-gradient-to-b from-violet-500/5 via-transparent to-fuchsia-500/5" />
+  1113→            
+  1114→            <div className="max-w-7xl mx-auto relative">
+  1115→              <div className="text-center mb-16">
+  1116→                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 mb-6">
+  1117→                  <Diamond className="w-4 h-4 text-amber-400" />
+  1118→                  <span className="text-sm text-amber-300">Long-Term Vision</span>
+  1119→                </div>
+  1120→                <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+  1121→                  <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+  1122→                    The GitHub for Molecular Research
+  1123→                  </span>
+  1124→                </h2>
+  1125→              </div>
+  1126→
+  1127→              <div className="grid lg:grid-cols-2 gap-12 items-center">
+  1128→                {/* Left: Vision Description */}
+  1129→                <div className="space-y-6">
+  1130→                  <div className="p-6 rounded-2xl bg-slate-900/60 border border-white/10 backdrop-blur-sm">
+  1131→                    <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+  1132→                      <Target className="w-5 h-5 text-amber-400" />
+  1133→                      Ultimate Objective
+  1134→                    </h3>
+  1135→                    <p className="text-slate-300 leading-relaxed">
+  1136→                      The ultimate objective for AETH-1 is to serve as the foundational infrastructure for molecular research. 
+  1137→                      By integrating directly with lab automation (robotic synthesis) and supporting regulatory submission standards (eCTD), 
+  1138→                      AETH-1 will create a network-effect-driven ecosystem.
+  1139→                    </p>
+  1140→                  </div>
+  1141→
+  1142→                  <div className="p-6 rounded-2xl bg-slate-900/60 border border-white/10 backdrop-blur-sm">
+  1143→                    <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+  1144→                      <Network className="w-5 h-5 text-cyan-400" />
+  1145→                      Network Effect Ecosystem
+  1146→                    </h3>
+  1147→                    <p className="text-slate-300 leading-relaxed">
+  1148→                      As more researchers contribute data and workflows, the platform will evolve from a tool into the 
+  1149→                      industry-standard repository for chemical intelligence—effectively becoming the &quot;GitHub for molecular research.&quot;
+  1150→                    </p>
+  1151→                  </div>
+  1152→
+  1153→                  <div className="grid grid-cols-2 gap-4">
+  1154→                    <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/30 text-center">
+  1155→                      <Github className="w-8 h-8 text-violet-400 mx-auto mb-2" />
+  1156→                      <p className="text-2xl font-bold text-white">GitHub Model</p>
+  1157→                      <p className="text-xs text-slate-400">Open collaboration</p>
+  1158→                    </div>
+  1159→                    <div className="p-4 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/30 text-center">
+  1160→                      <Atom className="w-8 h-8 text-fuchsia-400 mx-auto mb-2" />
+  1161→                      <p className="text-2xl font-bold text-white">Molecular Focus</p>
+  1162→                      <p className="text-xs text-slate-400">Domain-specific</p>
+  1163→                    </div>
+  1164→                  </div>
+  1165→                </div>
+  1166→
+  1167→                {/* Right: Integration Diagram */}
+  1168→                <div className="relative">
+  1169→                  <div className="aspect-square max-w-lg mx-auto relative">
+  1170→                    {/* Central Hub */}
+  1171→                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-2xl shadow-violet-500/30 z-10">
+  1172→                      <div className="text-center">
+  1173→                        <Atom className="w-10 h-10 text-white mx-auto mb-1 animate-spin-slow" />
+  1174→                        <span className="text-xs font-bold text-white">AETH-1</span>
+  1175→                      </div>
+  1176→                    </div>
+  1177→
+  1178→                    {/* Orbiting Elements */}
+  1179→                    {[
+  1180→                      { icon: <Microscope className="w-6 h-6" />, label: 'Lab Automation', angle: 0 },
+  1181→                      { icon: <FileText className="w-6 h-6" />, label: 'eCTD Regulatory', angle: 60 },
+  1182→                      { icon: <Users className="w-6 h-6" />, label: 'Researchers', angle: 120 },
+  1183→                      { icon: <Database className="w-6 h-6" />, label: 'Data Ecosystem', angle: 180 },
+  1184→                      { icon: <Building2 className="w-6 h-6" />, label: 'Pharma', angle: 240 },
+  1185→                      { icon: <GraduationCap className="w-6 h-6" />, label: 'Academia', angle: 300 },
+  1186→                    ].map((item, i) => {
+  1187→                      const radius = 160;
+  1188→                      const radian = (item.angle * Math.PI) / 180;
+  1189→                      const x = Math.cos(radian) * radius;
+  1190→                      const y = Math.sin(radian) * radius;
+  1191→
+  1192→                      return (
+  1193→                        <div
+  1194→                          key={i}
+  1195→                          className="absolute top-1/2 left-1/2"
+  1196→                          style={{
+  1197→                            transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`
+  1198→                          }}
+  1199→                        >
+  1200→                          <div className="group relative">
+  1201→                            <div className="p-3 rounded-xl bg-slate-800 border border-slate-600 hover:border-violet-500 transition-all cursor-pointer">
+  1202→                              <div className="text-violet-400">{item.icon}</div>
+  1203→                            </div>
+  1204→                            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+  1205→                              <span className="text-xs text-slate-300 bg-slate-800 px-2 py-1 rounded">{item.label}</span>
+  1206→                            </div>
+  1207→                          </div>
+  1208→                        </div>
+  1209→                      );
+  1210→                    })}
+  1211→                  </div>
+  1212→                </div>
+  1213→              </div>
+  1214→            </div>
+  1215→          </section>
+  1216→
+  1217→          {/* SECTION 7: CTA / FOOTER */}
+  1218→          <footer className="relative py-16 px-4 border-t border-white/10 bg-black/30">
+  1219→            <div className="max-w-7xl mx-auto">
+  1220→              <div className="text-center mb-12">
+  1221→                <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+  1222→                  <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+  1223→                    Ready to Accelerate Discovery?
+  1224→                  </span>
+  1225→                </h2>
+  1226→                <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
+  1227→                  Join the open-source revolution in AI-driven drug discovery.
+  1228→                </p>
+  1229→                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+  1230→                  <button className="px-8 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 font-semibold transition-all shadow-lg shadow-violet-500/25 flex items-center gap-2">
+  1231→                    <Github className="w-5 h-5" />
+  1232→                    Star on GitHub
+  1233→                  </button>
+  1234→                  <button className="px-8 py-4 rounded-xl bg-white/5 border border-white/20 hover:bg-white/10 font-semibold transition-all flex items-center gap-2">
+  1235→                    <BookOpen className="w-5 h-5" />
+  1236→                    Read Documentation
+  1237→                  </button>
+  1238→                </div>
+  1239→              </div>
+  1240→
+  1241→              {/* Footer Links */}
+  1242→              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-white/10">
+  1243→                <div>
+  1244→                  <h4 className="font-semibold text-white mb-4">Platform</h4>
+  1245→                  <ul className="space-y-2 text-sm text-slate-400">
+  1246→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Features</a></li>
+  1247→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Roadmap</a></li>
+  1248→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Changelog</a></li>
+  1249→                  </ul>
+  1250→                </div>
+  1251→                <div>
+  1252→                  <h4 className="font-semibold text-white mb-4">Resources</h4>
+  1253→                  <ul className="space-y-2 text-sm text-slate-400">
+  1254→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Documentation</a></li>
+  1255→                    <li><a href="#" className="hover:text-violet-400 transition-colors">API Reference</a></li>
+  1256→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Tutorials</a></li>
+  1257→                  </ul>
+  1258→                </div>
+  1259→                <div>
+  1260→                  <h4 className="font-semibold text-white mb-4">Community</h4>
+  1261→                  <ul className="space-y-2 text-sm text-slate-400">
+  1262→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Discord</a></li>
+  1263→                    <li><a href="#" className="hover:text-violet-400 transition-colors">GitHub Discussions</a></li>
+  1264→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Contributing</a></li>
+  1265→                  </ul>
+  1266→                </div>
+  1267→                <div>
+  1268→                  <h4 className="font-semibold text-white mb-4">Legal</h4>
+  1269→                  <ul className="space-y-2 text-sm text-slate-400">
+  1270→                    <li><a href="#" className="hover:text-violet-400 transition-colors">License (MIT)</a></li>
+  1271→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Privacy</a></li>
+  1272→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Security</a></li>
+  1273→                  </ul>
+  1274→                </div>
+  1275→              </div>
+  1276→
+  1277→              {/* Copyright */}
+  1278→              <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+  1279→                <div className="flex items-center gap-2">
+  1280→                  <Atom className="w-5 h-5 text-violet-400" />
+  1281→                  <span className="text-sm text-slate-400">
+  1282→                    © 2026 AETHELGARD. Open Source under MIT License.
+  1283→                  </span>
+  1284→                </div>
+  1285→                <div className="flex items-center gap-4 text-sm text-slate-500">
+  1286→                  <span className="flex items-center gap-1">
+  1287→                    <Heart className="w-4 h-4 text-red-400" />
+  1288→                    Built for the scientific community
+  1289→                  </span>
+  1290→                </div>
+  1291→              </div>
+  1292→            </div>
+  1293→          </footer>
+  1294→        </main>
+  1295→      </div>
+  1296→
+  1297→      {/* Global Styles */}
+  1298→      <style jsx global>{`
+  1299→        @keyframes float {
+  1300→          0%, 100% { transform: translateY(0) translateX(0); }
+  1301→          25% { transform: translateY(-20px) translateX(10px); }
+  1302→          50% { transform: translateY(-10px) translateX(-10px); }
+  1303→          75% { transform: translateY(-30px) translateX(5px); }
+  1304→        }
+  1305→        
+  1306→        @keyframes spin-slow {
+  1307→          from { transform: rotate(0deg); }
+  1308→          to { transform: rotate(360deg); }
+  1309→        }
+  1310→        
+  1311→        .animate-spin-slow {
+  1312→          animation: spin-slow 8s linear infinite;
+  1313→        }
+  1314→        
+  1315→        .line-clamp-2 {
+  1316→          display: -webkit-box;
+  1317→          -webkit-line-clamp: 2;
+  1318→          -webkit-box-orient: vertical;
+  1319→          overflow: hidden;
+  1320→        }
+  1321→      `}</style>
+  1322→    </div>
+  1323→  );
+  1324→}
+  1325→

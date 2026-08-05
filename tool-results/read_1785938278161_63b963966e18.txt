@@ -1,0 +1,1702 @@
+     1→'use client';
+     2→
+     3→import { useState, useCallback, useEffect } from 'react';
+     4→import { 
+     5→  FileCode, 
+     6→  Folder, 
+     7→  FolderOpen, 
+     8→  ChevronRight, 
+     9→  ChevronDown,
+    10→  Eye,
+    11→  LayoutDashboard,
+    12→  Star,
+    13→  GitBranch,
+    14→  Settings,
+    15→  Maximize2,
+    16→  PanelLeftClose,
+    17→  PanelLeft,
+    18→  Copy,
+    19→  Check,
+    20→  ExternalLink,
+    21→  Atom,
+    22→  Activity,
+    23→  Cpu,
+    24→  Shield,
+    25→  Zap,
+    26→  Database,
+    27→  Rocket,
+    28→  BookOpen,
+    29→  Github,
+    30→  Mail,
+    31→  Heart,
+    32→  AlertTriangle,
+    33→  Sparkles,
+    34→  Code2,
+    35→  Brain,
+    36→  Bot,
+    37→  ArrowRight,
+    38→  CheckCircle2,
+    39→  Clock,
+    40→  ArrowUpDown,
+    41→  Globe,
+    42→  Server,
+    43→  HardDrive,
+    44→  RefreshCw,
+    45→  Lightbulb,
+    46→  Target,
+    47→  Network,
+    48→  Lock,
+    49→  Users,
+    50→  TrendingUp,
+    51→  Compass,
+    52→  Microscope,
+    53→  Dna,
+    54→  Beaker,
+    55→  Telescope,
+    56→  GraduationCap,
+    57→  Building2,
+    58→  Award,
+    59→  ChevronDown as ChevronDownIcon,
+    60→  Menu,
+    61→  X,
+    62→  Play,
+    63→  Layers,
+    64→  Puzzle,
+    65→  TreePine,
+    66→  Globe2,
+    67→  MessageSquare,
+    68→  Workflow,
+    69→  BarChart3,
+    70→  LineChart,
+    71→  PieChart,
+    72→  Box,
+    73→  Package,
+    74→  Infinity,
+    75→  Waves,
+    76→  Hexagon,
+    77→  Triangle,
+    78→  CircleDot,
+    79→  MousePointerClick,
+    80→  Fingerprint,
+    81→  KeyRound,
+    82→  ShieldCheck,
+    83→  BadgeCheck,
+    84→  Crown,
+    85→  Diamond,
+    86→  Sparkle,
+    87→  Wand2,
+    88→  BrainCircuit,
+    89→  Neuron,
+    90→  Pulse,
+    91→  HeartHandshake,
+    92→  Handshake,
+    93→  GitFork,
+    94→  GitPullRequest,
+    95→  Commit,
+    96→  Merge,
+    97→  CodeBranch,
+    98→  Repository,
+    99→  Clone,
+   100→  Download,
+   101→  Upload,
+   102→  Share2,
+   103→  Link2,
+   104→  Plug,
+   105→  Power,
+   106→  Battery,
+   107→  Wifi,
+   108→  Satellite,
+   109→  Orbit,
+   110→  Planet,
+   111→  Moon,
+   112→  Sun,
+   113→  Sunrise,
+   114→  Sunset,
+   115→  CloudSun,
+   116→  CloudMoon,
+   117→  Snowflake,
+   118→  Thermometer,
+   119→  Droplets,
+   120→  Wind,
+   121→  Gauge,
+   122→  Speedometer,
+   123→  Timer,
+   124→  Stopwatch,
+   125→  AlarmClock,
+   126→  Calendar,
+   127→  Hourglass,
+   128→  Bell,
+   129→  BellRing,
+   130→  Notification,
+   131→  AlertCircle,
+   132→  Info,
+   133→  HelpCircle,
+   134→  QuestionMark,
+   135→  XCircle,
+   136→  MinusCircle,
+   137→  PlusCircle,
+   138→  Dot,
+   139→  Ellipsis,
+   140→  MoreHorizontal,
+   141→  MoreVertical,
+   142→  GripVertical,
+   143→  Move,
+   144→  Expand,
+   145→  Shrink,
+   146→  ZoomIn,
+   147→  ZoomOut,
+   148→  RotateCw,
+   149→  Crop,
+   150→  Scissors,
+   151→  Clipboard,
+   152→  ClipboardCopy,
+   153→  ClipboardList,
+   154→  ClipboardCheck,
+   155→  FileText,
+   156→  FilePlus,
+   157→  FileMinus,
+   158→  FileSearch,
+   159→  Image,
+   160→  Music,
+   161→  Video,
+   162→  Film,
+   163→  Camera,
+   164→  Mic,
+   165→  Volume2,
+   166→  Tv,
+   167→  Monitor,
+   168→  Smartphone,
+   169→  Tablet,
+   170→  Laptop,
+   171→  Cloud,
+   172→  CloudDownload,
+   173→  CloudUpload,
+   174→  Rain,
+   175→  Thunder,
+   176→  Lightning,
+   177→  SunDim,
+   178→  MoonStar,
+   179→  MessageSquareQuote,
+   180→  Filter,
+   181→  SlidersHorizontal,
+   182→  ToggleLeft,
+   183→  ToggleRight,
+   184→  PlugZap,
+   185→  Unplug,
+   186→  Connection,
+   187→  Pipeline,
+   188→  Route,
+   189→  Waypoints,
+   190→  Crosshair,
+   191→  Radio,
+   192→  Bluetooth,
+   193→  Usb,
+   194→  Hdmi,
+   195→  Cable,
+   196→  Ethernet,
+   197→  WifiOff,
+   198→  Signal,
+   199→  SignalHigh,
+   200→  SignalLow,
+   201→  SignalMedium,
+   202→  PowerOff,
+   203→  CircleEllipsis,
+   204→  Braces,
+   205→  Brackets,
+   206→  Parentheses,
+   207→  FunctionSquare,
+   208→  Sigma,
+   209→  Pi,
+   210→  Infinity as InfinityIcon,
+   211→  Recycle,
+   212→  RefreshCcw,
+   213→  RotateCcw,
+   214→  Undo2,
+   215→  Redo2,
+   216→  History,
+   217→  TimerReset,
+   218→  FlipHorizontal2,
+   219→  FlipVertical2,
+   220→  ArrowDownUp,
+   221→  ArrowLeftRight,
+   222→  ArrowsPointingOut,
+   223→  MoveRight,
+   224→  MoveLeft,
+   225→  MoveUp,
+   226→  MoveDown,
+   227→  Pointer,
+   228→  MousePointer,
+   229→  Touchpad,
+   230→  PenTool,
+   231→  Eraser,
+   232→  Highlighter,
+   233→  Type,
+   234→  Bold,
+   235→  Italic,
+   236→  Underline,
+   237→  Strikethrough,
+   238→  AlignLeft,
+   239→  AlignCenter,
+   240→  AlignRight,
+   241→  AlignJustify,
+   242→  List,
+   243→  ListOrdered,
+   244→  Indent,
+   245→  Outdent,
+   246→  Minus as MinusIcon,
+   247→  Plus,
+   248→  Divide,
+   249→  Equal,
+   250→  NotEqual,
+   251→  ApproximatelyEqual,
+   252→  Percent,
+   253→  Hash,
+   254→  AtSign,
+   255→} from 'lucide-react';
+   256→
+   257→// ==================== FILE TREE DATA ====================
+   258→interface FileNode {
+   259→  name: string;
+   260→  type: 'file' | 'folder';
+   261→  path: string;
+   262→  children?: FileNode[];
+   263→  language?: string;
+   264→  content?: string;
+   265→}
+   266→
+   267→const fileTree: FileNode[] = [
+   268→  {
+   269→    name: 'DemoClientPhase10',
+   270→    type: 'folder',
+   271→    path: '/DemoClientPhase10',
+   272→    children: [
+   273→      {
+   274→        name: 'src',
+   275→        type: 'folder',
+   276→        path: '/src',
+   277→        children: [
+   278→          { name: 'app', type: 'folder', path: '/src/app', children: [
+   279→            { name: 'page.tsx', type: 'file', path: '/src/app/page.tsx', language: 'TypeScript React', content: 'Dynamic AI Discovery Module' },
+   280→            { name: 'layout.tsx', type: 'file', path: '/src/app/layout.tsx', language: 'TypeScript React', content: 'Root layout' },
+   281→          ]},
+   282→          { name: 'components', type: 'folder', path: '/src/components', children: [
+   283→            { name: 'ai-discovery/', type: 'folder', path: '/src/components/ai-discovery', children: [
+   284→              { name: 'DiscoveryEngine.tsx', type: 'file', path: '/src/components/ai-discovery/DiscoveryEngine.tsx', language: 'TypeScript', content: 'Core AI engine' },
+   285→              { name: 'ConnectorHub.tsx', type: 'file', path: '/src/components/ai-discovery/ConnectorHub.tsx', language: 'TypeScript', content: 'Data connector system' },
+   286→              { name: 'HypothesisGenerator.tsx', type: 'file', path: '/src/components/ai-discovery/HypothesisGenerator.tsx', language: 'TypeScript', content: 'Hypothesis generation' },
+   287→              { name: 'PatternRecognizer.tsx', type: 'file', path: '/src/components/ai-discovery/PatternRecognizer.tsx', language: 'TypeScript', content: 'Pattern recognition' },
+   288→            ]},
+   289→            { name: 'connectors/', type: 'folder', path: '/src/components/connectors', children: [
+   290→              { name: 'DataSourceDropdown.tsx', type: 'file', path: '/src/components/connectors/DataSourceDropdown.tsx', language: 'TypeScript', content: 'Data source selector' },
+   291→              { name: 'PipelineVisualizer.tsx', type: 'file', path: '/src/components/connectors/PipelineVisualizer.tsx', language: 'TypeScript', content: 'Pipeline visualization' },
+   292→              { name: 'FreeFlowConnector.tsx', type: 'file', path: '/src/components/connectors/FreeFlowConnector.tsx', language: 'TypeScript', content: 'Free data flow' },
+   293→            ]},
+   294→            { name: 'ui/', type: 'folder', path: '/src/components/ui', children: [] }
+   295→          ]},
+   296→          { name: 'hooks/', type: 'folder', path: '/src/hooks', children: [] },
+   297→          { name: 'lib/', type: 'folder', path: '/src/lib', children: [] },
+   298→        ]
+   299→      },
+   300→      {
+   301→        name: 'docs',
+   302→        type: 'folder',
+   303→        path: '/docs',
+   304→        children: [
+   305→          { name: 'README.md', type: 'file', path: '/docs/README.md', language: 'Markdown', content: 'Project documentation' },
+   306→          { name: 'investorstory.txt', type: 'file', path: '/docs/investorstory.txt', language: 'Text', content: '15 investment highlights' },
+   307→          { name: 'marketplace-value.txt', type: 'file', path: '/docs/marketplace-value.txt', language: 'Text', content: 'Market value analysis' },
+   308→        ]
+   309→      },
+   310→    ]
+   311→  }
+   312→];
+   313→
+   314→// ==================== ENHANCED THEME CONFIGURATIONS ====================
+   315→type ThemeMode = 'cosmic' | 'molecular' | 'quantum' | 'neural' | 'bio' | 'arctic' | 'solar' | 'midnight';
+   316→
+   317→interface ThemeConfig {
+   318→  name: string;
+   319→  gradient: string;
+   320→  accent: string;
+   321→  bgGradient: string;
+   322→  particleColor: string;
+   323→  glowColor: string;
+   324→  secondaryGlow: string;
+   325→  cardBg: string;
+   326→  borderColor: string;
+   327→}
+   328→
+   329→const themes: Record<ThemeMode, ThemeConfig> = {
+   330→  cosmic: {
+   331→    name: 'Cosmic Deep Space',
+   332→    gradient: 'from-violet-600 via-fuchsia-500 to-cyan-400',
+   333→    accent: 'text-violet-400',
+   334→    bgGradient: 'bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900',
+   335→    particleColor: 'rgba(167, 139, 250, 0.6)',
+   336→    glowColor: 'rgba(167, 139, 250, 0.3)',
+   337→    secondaryGlow: 'rgba(236, 72, 153, 0.2)',
+   338→    cardBg: 'bg-slate-900/60',
+   339→    borderColor: 'border-white/10'
+   340→  },
+   341→  molecular: {
+   342→    name: 'Molecular Structure',
+   343→    gradient: 'from-emerald-600 via-teal-500 to-cyan-400',
+   344→    accent: 'text-emerald-400',
+   345→    bgGradient: 'bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900',
+   346→    particleColor: 'rgba(52, 211, 153, 0.6)',
+   347→    glowColor: 'rgba(52, 211, 153, 0.3)',
+   348→    secondaryGlow: 'rgba(20, 184, 166, 0.2)',
+   349→    cardBg: 'bg-emerald-900/20',
+   350→    borderColor: 'border-emerald-500/20'
+   351→  },
+   352→  quantum: {
+   353→    name: 'Quantum Computing',
+   354→    gradient: 'from-blue-600 via-indigo-500 to-purple-400',
+   355→    accent: 'text-blue-400',
+   356→    bgGradient: 'bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900',
+   357→    particleColor: 'rgba(96, 165, 250, 0.6)',
+   358→    glowColor: 'rgba(96, 165, 250, 0.3)',
+   359→    secondaryGlow: 'rgba(139, 92, 246, 0.2)',
+   360→    cardBg: 'bg-blue-900/20',
+   361→    borderColor: 'border-blue-500/20'
+   362→  },
+   363→  neural: {
+   364→    name: 'Neural Network',
+   365→    gradient: 'from-pink-600 via-rose-500 to-orange-400',
+   366→    accent: 'text-pink-400',
+   367→    bgGradient: 'bg-gradient-to-br from-slate-950 via-pink-950 to-slate-900',
+   368→    particleColor: 'rgba(244, 114, 182, 0.6)',
+   369→    glowColor: 'rgba(244, 114, 182, 0.3)',
+   370→    secondaryGlow: 'rgba(251, 146, 60, 0.2)',
+   371→    cardBg: 'bg-pink-900/20',
+   372→    borderColor: 'border-pink-500/20'
+   373→  },
+   374→  bio: {
+   375→    name: 'Bio-Medical',
+   376→    gradient: 'from-red-600 via-orange-500 to-yellow-400',
+   377→    accent: 'text-red-400',
+   378→    bgGradient: 'bg-gradient-to-br from-slate-950 via-red-950 to-slate-900',
+   379→    particleColor: 'rgba(248, 113, 113, 0.6)',
+   380→    glowColor: 'rgba(248, 113, 113, 0.3)',
+   381→    secondaryGlow: 'rgba(251, 146, 60, 0.2)',
+   382→    cardBg: 'bg-red-900/20',
+   383→    borderColor: 'border-red-500/20'
+   384→  },
+   385→  arctic: {
+   386→    name: 'Arctic Frost',
+   387→    gradient: 'from-cyan-400 via-teal-300 to-emerald-400',
+   388→    accent: 'text-cyan-300',
+   389→    bgGradient: 'bg-gradient-to-br from-slate-900 via-cyan-950 to-slate-800',
+   390→    particleColor: 'rgba(103, 232, 249, 0.6)',
+   391→    glowColor: 'rgba(103, 232, 249, 0.3)',
+   392→    secondaryGlow: 'rgba(52, 211, 153, 0.2)',
+   393→    cardBg: 'bg-cyan-900/20',
+   394→    borderColor: 'border-cyan-500/20'
+   395→  },
+   396→  solar: {
+   397→    name: 'Solar Flare',
+   398→    gradient: 'from-yellow-500 via-orange-500 to-red-500',
+   399→    accent: 'text-yellow-400',
+   400→    bgGradient: 'bg-gradient-to-br from-amber-950 via-orange-950 to-slate-900',
+   401→    particleColor: 'rgba(250, 204, 21, 0.6)',
+   402→    glowColor: 'rgba(250, 204, 21, 0.3)',
+   403→    secondaryGlow: 'rgba(249, 115, 22, 0.2)',
+   404→    cardBg: 'bg-amber-900/20',
+   405→    borderColor: 'border-amber-500/20'
+   406→  },
+   407→  midnight: {
+   408→    name: 'Midnight Eclipse',
+   409→    gradient: 'from-slate-400 via-zinc-300 to-neutral-400',
+   410→    accent: 'text-slate-300',
+   411→    bgGradient: 'bg-gradient-to-br from-zinc-950 via-slate-950 to-zinc-900',
+   412→    particleColor: 'rgba(212, 212, 212, 0.5)',
+   413→    glowColor: 'rgba(212, 212, 212, 0.2)',
+   414→    secondaryGlow: 'rgba(161, 161, 161, 0.15)',
+   415→    cardBg: 'bg-zinc-900/40',
+   416→    borderColor: 'border-zinc-500/20'
+   417→  }
+   418→};
+   419→
+   420→// ==================== DATA SOURCE CONNECTORS ====================
+   421→interface DataSource {
+   422→  id: string;
+   423→  name: string;
+   424→  icon: React.ReactNode;
+   425→  category: 'chemical' | 'biological' | 'clinical' | 'custom' | 'streaming';
+   426→  status: 'connected' | 'available' | 'configuring';
+   427→  dataTypes: string[];
+   428→  accessLevel: 'free' | 'api-key' | 'subscription';
+   429→}
+   430→
+   431→const dataSources: DataSource[] = [
+   432→  { id: 'pubchem', name: 'PubChem', icon: <Beaker className="w-4 h-4" />, category: 'chemical', status: 'available', dataTypes: ['SDF', 'MOL', 'SMILES'], accessLevel: 'free' },
+   433→  { id: 'chembl', name: 'ChEMBL', icon: <Microscope className="w-4 h-4" />, category: 'biological', status: 'available', dataTypes: ['Bioactivity', 'Assays'], accessLevel: 'free' },
+   434→  { id: 'pdb', name: 'Protein Data Bank', icon: <Dna className="w-4 h-4" />, category: 'biological', status: 'connected', dataTypes: ['PDB', 'CIF', 'mmCIF'], accessLevel: 'free' },
+   435→  { id: 'clinical', name: 'ClinicalTrials.gov', icon: <HeartHandshake className="w-4 h-4" />, category: 'clinical', status: 'available', dataTypes: ['Trials', 'Results'], accessLevel: 'free' },
+   436→  { id: 'alphaFold', name: 'AlphaFold DB', icon: <Brain className="w-4 h-4" />, category: 'biological', status: 'configuring', dataTypes: ['Structures', 'Predictions'], accessLevel: 'free' },
+   437→  { id: 'custom', name: 'Custom Upload', icon: <Upload className="w-4 h-4" />, category: 'custom', status: 'available', dataTypes: ['Any Format'], accessLevel: 'free' },
+   438→  { id: 'streaming', name: 'Live Stream', icon: <Wifi className="w-4 h-4" />, category: 'streaming', status: 'configuring', dataTypes: ['Real-time'], accessLevel: 'api-key' },
+   439→  { id: 'genomics', name: 'NCBI Genomics', icon: <GitBranch className="w-4 h-4" />, category: 'biological', status: 'available', dataTypes: ['Genomic', 'Sequences'], accessLevel: 'free' },
+   440→];
+   441→
+   442→// ==================== ENHANCED AI DISCOVERY MODES ====================
+   443→interface AIDiscoveryMode {
+   444→  id: string;
+   445→  title: string;
+   446→  icon: React.ReactNode;
+   447→  description: string;
+   448→  capabilities: string[];
+   449→  useCases: string[];
+   450→  status: 'active' | 'beta' | 'upcoming';
+   451→  connectors: string[];
+   452→  outputFormat: string;
+   453→  processingTime: string;
+   454→  confidenceScore: string;
+   455→}
+   456→
+   457→const aiDiscoveryModes: AIDiscoveryMode[] = [
+   458→  {
+   459→    id: 'hypothesis',
+   460→    title: 'Hypothesis Generation',
+   461→    icon: <Lightbulb className="w-6 h-6" />,
+   462→    description: 'AI-driven generation of novel scientific hypotheses for new laws and theories. Leverages pattern recognition across multi-domain datasets to propose testable scientific conjectures.',
+   463→    capabilities: ['Multi-domain pattern synthesis', 'Automated theory formation', 'Cross-paradigm insight generation', 'Statistical significance estimation'],
+   464→    useCases: ['Drug target identification', 'Materials property prediction', 'Novel pathway discovery'],
+   465→    status: 'active',
+   466→    connectors: ['pubchem', 'chembl', 'pdb', 'custom'],
+   467→    outputFormat: 'JSON / PDF Report',
+   468→    processingTime: '30s - 5min',
+   469→    confidenceScore: '85-95%'
+   470→  },
+   471→  {
+   472→    id: 'pattern-recognition',
+   473→    title: 'Pattern Recognition',
+   474→    icon: <BrainCircuit className="w-6 h-6" />,
+   475→    description: 'Advanced deep learning-based pattern detection across massive scientific datasets. Identifies hidden correlations, anomalies, and temporal patterns invisible to traditional analysis.',
+   476→    capabilities: ['Multi-modal data fusion', 'Anomaly detection', 'Temporal pattern analysis', 'Clustering & classification'],
+   477→    useCases: ['Genomic sequence analysis', 'Clinical trial outcome prediction', 'Adverse event detection'],
+   478→    status: 'active',
+   479→    connectors: ['chembl', 'clinical', 'genomics', 'alphaFold', 'streaming'],
+   480→    outputFormat: 'Interactive Dashboard',
+   481→    processingTime: '10s - 3min',
+   482→    confidenceScore: '90-98%'
+   483→  },
+   484→  {
+   485→    id: 'theory-testing',
+   486→    title: 'Automated Theory Testing',
+   487→    icon: <Beaker className="w-6 h-6" />,
+   488→    description: 'Systematic automated testing and validation of scientific theories against available datasets. Provides reproducibility verification and statistical validation.',
+   489→    capabilities: ['Experimental design optimization', 'Statistical significance testing', 'Reproducibility verification', 'Meta-analysis automation'],
+   490→    useCases: ['Replication studies', 'Theory validation', 'Literature consensus building'],
+   491→    status: 'beta',
+   492→    connectors: ['pubchem', 'chembl', 'clinical', 'custom'],
+   493→    outputFormat: 'Validation Report / Score',
+   494→    processingTime: '1 - 15min',
+   495→    confidenceScore: '80-92%'
+   496→  },
+   497→  {
+   498→    id: 'cross-paradigm',
+   499→    title: 'Cross-Paradigm Insights',
+   500→    icon: <Network className="w-6 h-6" />,
+   501→    description: 'Generate breakthrough insights by connecting concepts across traditionally separate disciplines. Discovers analogies and transferable principles.',
+   502→    capabilities: ['Interdisciplinary mapping', 'Analogy detection', 'Concept transfer learning', 'Knowledge graph traversal'],
+   503→    useCases: ['Biomimetic drug design', 'Physics-inspired ML', 'Ecology-to-medicine translation'],
+   504→    status: 'upcoming',
+   505→    connectors: ['pubchem', 'pdb', 'alphaFold', 'genomics', 'custom'],
+   506→    outputFormat: 'Insight Map / Graph',
+   507→    processingTime: '2 - 10min',
+   508→    confidenceScore: '70-88%'
+   509→  }
+   510→];
+   511→
+   512→// ==================== ROADMAP PHASES (ENHANCED) ====================
+   513→interface RoadmapPhase {
+   514→  phase: number;
+   515→  title: string;
+   516→  period: string;
+   517→  theme: string;
+   518→  status: 'completed' | 'in-progress' | 'planned' | 'future';
+   519→  objectives: string[];
+   520→  milestones: string[];
+   521→  icon: React.ReactNode;
+   522→  kpis: string[];
+   523→  budget: string;
+   524→  teamSize: string;
+   525→}
+   526→
+   527→const roadmapPhases: RoadmapPhase[] = [
+   528→  {
+   529→    phase: 5,
+   530→    title: 'AI Backend & Molecules',
+   531→    period: '2025-2026',
+   532→    theme: 'Intelligence Foundation',
+   533→    status: 'in-progress',
+   534→    objectives: ['Real LLM streaming integration', '3D Molecular visualization (3Dmol.js)', 'Production hardening & error handling'],
+   535→    milestones: ['/api/ai/chat SSE endpoint', 'MoleculeViewer component', 'ErrorBoundaryWrapper', 'WCAG 2.1 AA compliance'],
+   536→    icon: <Brain className="w-5 h-5" />,
+   537→    kpis: ['< 2s response time', '99.5% uptime', '< 1% error rate'],
+   538→    budget: '$500K - $750K',
+   539→    teamSize: '4-6 engineers'
+   540→  },
+   541→  {
+   542→    phase: 6,
+   543→    title: 'Collaboration & Knowledge',
+   544→    period: '2026-2027',
+   545→    theme: 'Connect & Learn',
+   546→    status: 'planned',
+   547→    objectives: ['Real-time WebSocket collaboration', 'Living knowledge graph', 'Enterprise pilot programs', 'ChEMBL/PubChem integration'],
+   548→    milestones: ['WebSocket sync engine', 'ChEMBL API integration', 'AlphaFold structure viewer', 'First 5 enterprise pilots'],
+   549→    icon: <Users className="w-5 h-5" />,
+   550→    kpis: ['100+ concurrent users', '10K knowledge nodes', '5 enterprise pilots'],
+   551→    budget: '$750K - $1.2M',
+   552→    teamSize: '8-12 engineers'
+   553→  },
+   554→  {
+   555→    phase: 7,
+   556→    title: 'Intelligence Expansion',
+   557→    period: '2027-2028',
+   558→    theme: 'Think & Predict',
+   559→    status: 'future',
+   560→    objectives: ['Autonomous experiment design', 'Quantum-classical hybrid computing', 'Regulatory support (IND-enabling)', 'Advanced AI Scientist workspace'],
+   561→    milestones: ['AI Scientist v1.0', 'Quantum workflow integration', 'IND submission module', 'Predictive models for ADME/Tox'],
+   562→    icon: <Sparkles className="w-5 h-5" />,
+   563→    kpis: ['50% reduction in experiment time', 'Regulatory acceptance', '100+ AI-designed experiments'],
+   564→    budget: '$1.2M - $2M',
+   565→    teamSize: '12-18 engineers'
+   566→  },
+   567→  {
+   568→    phase: 8,
+   569→    title: 'Platform Ecosystem',
+   570→    period: '2028-2029',
+   571→    theme: 'Extend & Collaborate',
+   572→    status: 'future',
+   573→    objectives: ['Plugin marketplace launch', 'Federated learning consortium', 'Mobile platform (React Native)', 'Third-party integrations'],
+   574→    milestones: ['Plugin SDK release', 'Mobile apps (iOS/Android)', 'Pharma consortium formation', '100+ community plugins'],
+   575→    icon: <Puzzle className="w-5 h-5" />,
+   576→    kpis: ['1000+ plugin downloads', '50K mobile users', '10 pharma partners'],
+   577→    budget: '$2M - $3.5M',
+   578→    teamSize: '18-25 engineers'
+   579→  },
+   580→  {
+   581→    phase: 9,
+   582→    title: 'Scientific Frontier',
+   583→    period: '2030-2031',
+   584→    theme: 'Discover & Innovate',
+   585→    status: 'future',
+   586→    objectives: ['De novo molecule generation', 'Digital twin organisms', 'AI co-authorship of papers', 'Lab automation integration'],
+   587→    milestones: ['Generative chemistry models', 'Organism simulation v1', 'Auto-publication pipeline', 'Robot arm integration'],
+   588→    icon: <Rocket className="w-5 h-5" />,
+   589→    kpis: ['10 generated molecules in trials', '5 AI co-authored papers', '1 lab automation partner'],
+   590→    budget: '$3.5M - $5M',
+   591→    teamSize: '25-35 engineers'
+   592→  },
+   593→  {
+   594→    phase: 10,
+   595→    title: 'Global Platform',
+   596→    period: '2031-2041',
+   597→    theme: 'Transform & Lead',
+   598→    status: 'future',
+   599→    objectives: ['100K+ researcher user base', 'Global regulatory standards adoption', 'WHO/FDA platform recognition', 'Frontier science discoveries'],
+   600→    milestones: ['University standard curriculum', 'FDA accepted computational method', 'Nobel-adjacent discovery support', 'Global research infrastructure'],
+   601→    icon: <Globe2 className="w-5 h-5" />,
+   602→    kpis: ['100K+ active researchers', '50+ countries', '$100M+ ARR', 'Industry standard status'],
+   603→    budget: '$10M - $20M',
+   604→    teamSize: '50-100 employees'
+   605→  }
+   606→];
+   607→
+   608→// ==================== STRATEGIC POSITIONING ====================
+   609→const strategicPositioning = [
+   610→  { label: 'Modern Web Stack', desc: 'Browser-based, zero installation required', icon: <Globe className="w-5 h-5" />, color: 'cyan' },
+   611→  { label: 'High AI Integration', desc: 'AI-native architecture from day one', icon: <Brain className="w-5 h-5" />, color: 'violet' },
+   612→  { label: 'Open Source Core', desc: 'Community-driven innovation (MIT License)', icon: <Github className="w-5 h-5" />, color: 'emerald' },
+   613→  { label: 'Full Pipeline Coverage', desc: 'Discovery → Clinical → Regulatory', icon: <Workflow className="w-5 h-5" />, color: 'fuchsia' },
+   614→];
+   615→
+   616→const roadmapPrinciples = [
+   617→  { icon: <Lock className="w-5 h-5" />, title: 'Open Source First', description: 'Core platform remains open-source; enterprise features commercial', metric: 'MIT License' },
+   618→  { icon: <Bot className="w-5 h-5" />, title: 'AI-Native', description: 'Every feature designed with AI integration as primary requirement', metric: '100% AI-Ready' },
+   619→  { icon: <Plug className="w-5 h-5" />, title: 'Interoperability', description: 'Standards-based, API-first, format-agnostic architecture', metric: 'REST + GraphQL' },
+   620→  { icon: <Users className="w-5 h-5" />, title: 'Community Driven', description: 'Plugin ecosystem, contribution guidelines, transparent governance', metric: 'Open Governance' },
+   621→  { icon: <Shield className="w-5 h-5" />, title: 'Compliance Ready', description: 'Enterprise/GxP features available but optional modules', metric: 'GxP Optional' },
+   622→  { icon: <TrendingUp className="w-5 h-5" />, title: 'Sustainable', description: 'Revenue through enterprise support, not core feature gating', metric: 'Support Model' },
+   623→];
+   624→
+   625→// ==================== LIVE STATISTICS (Dynamic) ====================
+   626→interface LiveStat {
+   627→  id: string;
+   628→  label: string;
+   629→  value: string;
+   630→  unit: string;
+   631→  trend: 'up' | 'down' | 'stable';
+   632→  icon: React.ReactNode;
+   633→  history: number[];
+   634→}
+   635→
+   636→const liveStats: LiveStat[] = [
+   637→  { id: 'uptime', label: 'System Uptime', value: '99.97', unit: '%', trend: 'up', icon: <Monitor className="w-4 h-4" />, history: [99.95, 99.96, 99.97, 99.97, 99.97] },
+   638→  { id: 'data', label: 'Data Processed', value: '2.4', unit: 'TB', trend: 'up', icon: <Database className="w-4 h-4" />, history: [2.1, 2.2, 2.3, 2.35, 2.4] },
+   639→  { id: 'pipelines', label: 'Active Pipelines', value: '12', unit: '', trend: 'stable', icon: <Workflow className="w-4 h-4" />, history: [11, 11, 12, 12, 12] },
+   640→  { id: 'users', label: 'Active Users', value: '847', unit: '', trend: 'up', icon: <Users className="w-4 h-4" />, history: [720, 765, 798, 823, 847] },
+   641→  { id: 'experiments', label: 'Experiments Run', value: '3,429', unit: '', trend: 'up', icon: <Beaker className="w-4 h-4" />, history: [2900, 3050, 3200, 3315, 3429] },
+   642→  { id: 'ai-queries', label: 'AI Queries Today', value: '14.2K', unit: '', trend: 'up', icon: <Sparkles className="w-4 h-4" />, history: [12000, 12500, 13200, 13800, 14200] },
+   643→];
+   644→
+   645→// ==================== MAIN COMPONENT ====================
+   646→export default function DemoClientPhase10Landing() {
+   647→  const [sidebarOpen, setSidebarOpen] = useState(true);
+   648→  const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
+   649→  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['DemoClientPhase10', 'src', 'docs']));
+   650→  const [activeTab, setActiveTab] = useState<string>('dynamic-discovery');
+   651→  const [currentTheme, setCurrentTheme] = useState<ThemeMode>('cosmic');
+   652→  const [selectedAIMode, setSelectedAIMode] = useState<string>('hypothesis');
+   653→  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   654→  const [copiedPath, setCopiedPath] = useState<string | null>(null);
+   655→  
+   656→  // Dynamic connector states
+   657→  const [selectedDataSource, setSelectedDataSource] = useState<string>('pdb');
+   658→  const [connectorDropdownOpen, setConnectorDropdownOpen] = useState(false);
+   659→  const [pipelineRunning, setPipelineRunning] = useState(false);
+   660→  const [pipelineProgress, setPipelineProgress] = useState(0);
+   661→  const [activeConnections, setActiveConnections] = useState<string[]>(['pdb', 'pubchem']);
+   662→  const [showPipelineView, setShowPipelineView] = useState(false);
+   663→
+   664→  // Roadmap interaction states
+   665→  const [selectedPhase, setSelectedPhase] = useState<number>(5);
+   666→  const [phaseDetailOpen, setPhaseDetailOpen] = useState(true);
+   667→
+   668→  const theme = themes[currentTheme];
+   669→
+   670→  // Particle animation state
+   671→  const [particles, setParticles] = useState<Array<{id: number; x: number; y: number; size: number; duration: number; delay: number}>>([]);
+   672→
+   673→  useEffect(() => {
+   674→    const newParticles = Array.from({ length: 60 }, (_, i) => ({
+   675→      id: i,
+   676→      x: Math.random() * 100,
+   677→      y: Math.random() * 100,
+   678→      size: Math.random() * 4 + 1,
+   679→      duration: Math.random() * 20 + 10,
+   680→      delay: Math.random() * 5
+   681→    }));
+   682→    setParticles(newParticles);
+   683→  }, []);
+   684→
+   685→  // Simulated pipeline execution
+   686→  useEffect(() => {
+   687→    if (pipelineRunning) {
+   688→      const interval = setInterval(() => {
+   689→        setPipelineProgress(prev => {
+   690→          if (prev >= 100) {
+   691→            setPipelineRunning(false);
+   692→            return 100;
+   693→          }
+   694→          return prev + Math.random() * 8;
+   695→        });
+   696→      }, 200);
+   697→      return () => clearInterval(interval);
+   698→    }
+   699→  }, [pipelineRunning]);
+   700→
+   701→  const toggleFolder = useCallback((path: string) => {
+   702→    setExpandedFolders(prev => {
+   703→      const next = new Set(prev);
+   704→      if (next.has(path)) {
+   705→        next.delete(path);
+   706→      } else {
+   707→        next.add(path);
+   708→      }
+   709→      return next;
+   710→    });
+   711→  }, []);
+   712→
+   713→  const copyFilePath = useCallback((path: string) => {
+   714→    navigator.clipboard.writeText(path);
+   715→    setCopiedPath(path);
+   716→    setTimeout(() => setCopiedPath(null), 2000);
+   717→  }, []);
+   718→
+   719→  const toggleConnection = useCallback((sourceId: string) => {
+   720→    setActiveConnections(prev => {
+   721→      if (prev.includes(sourceId)) {
+   722→        return prev.filter(id => id !== sourceId);
+   723→      } else {
+   724→        return [...prev, sourceId];
+   725→      }
+   726→    });
+   727→  }, []);
+   728→
+   729→  const runPipeline = useCallback(() => {
+   730→    setPipelineProgress(0);
+   731→    setPipelineRunning(true);
+   732→  }, []);
+   733→
+   734→  const renderFileTree = useCallback((nodes: FileNode[], depth = 0) => {
+   735→    return nodes.map((node) => {
+   736→      const isExpanded = expandedFolders.has(node.path);
+   737→      const isSelected = selectedFile?.path === node.path;
+   738→
+   739→      if (node.type === 'folder') {
+   740→        return (
+   741→          <div key={node.path}>
+   742→            <button
+   743→              onClick={() => toggleFolder(node.path)}
+   744→              className="flex items-center gap-1.5 w-full px-2 py-1 text-left text-xs hover:bg-slate-800/50 rounded transition-colors"
+   745→              style={{ paddingLeft: `${depth * 12 + 8}px` }}
+   746→            >
+   747→              {isExpanded ? (
+   748→                <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+   749→              ) : (
+   750→                <ChevronRight className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+   751→              )}
+   752→              {isExpanded ? (
+   753→                <FolderOpen className="w-4 h-4 text-amber-400 flex-shrink-0" />
+   754→              ) : (
+   755→                <Folder className="w-4 h-4 text-amber-400/60 flex-shrink-0" />
+   756→              )}
+   757→              <span className={`truncate ${isSelected ? 'text-white' : 'text-slate-300'}`}>{node.name}</span>
+   758→            </button>
+   759→            {isExpanded && node.children && (
+   760→              <div>{renderFileTree(node.children, depth + 1)}</div>
+   761→            )}
+   762→          </div>
+   763→        );
+   764→      }
+   765→
+   766→      return (
+   767→        <button
+   768→          key={node.path}
+   769→          onClick={() => setSelectedFile(node)}
+   770→          className="flex items-center gap-1.5 w-full px-2 py-1 text-left text-xs hover:bg-slate-800/50 rounded transition-colors group"
+   771→          style={{ paddingLeft: `${depth * 12 + 20}px` }}
+   772→        >
+   773→          <FileCode className="w-4 h-4 text-violet-400 flex-shrink-0" />
+   774→          <span className={`truncate flex-1 ${isSelected ? 'text-white' : 'text-slate-400'}`}>{node.name}</span>
+   775→          <Copy
+   776→            onClick={(e) => { e.stopPropagation(); copyFilePath(node.path); }}
+   777→            className="w-3 h-3 opacity-0 group-hover:opacity-100 text-slate-500 hover:text-white transition-opacity flex-shrink-0"
+   778→          />
+   779→        </button>
+   780→      );
+   781→    });
+   782→  }, [expandedFolders, selectedFile, toggleFolder, copyFilePath]);
+   783→
+   784→  return (
+   785→    <div className={`min-h-screen ${theme.bgGradient} text-white overflow-x-hidden`}>
+   786→      {/* Animated Background Particles */}
+   787→      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+   788→        {particles.map((particle) => (
+   789→          <div
+   790→            key={particle.id}
+   791→            className="absolute rounded-full animate-pulse"
+   792→            style={{
+   793→              left: `${particle.x}%`,
+   794→              top: `${particle.y}%`,
+   795→              width: `${particle.size}px`,
+   796→              height: `${particle.size}px`,
+   797→              backgroundColor: theme.particleColor,
+   798→              boxShadow: `0 0 ${particle.size * 2}px ${theme.glowColor}`,
+   799→              animation: `float ${particle.duration}s ease-in-out infinite`,
+   800→              animationDelay: `${particle.delay}s`
+   801→            }}
+   802→          />
+   803→        ))}
+   804→        {/* Secondary glow effect */}
+   805→        <div className={`absolute top-1/4 right-1/4 w-[500px] h-[500px] rounded-full blur-[150px] opacity-30`} 
+   806→             style={{ backgroundColor: theme.secondaryGlow.replace('rgba(', 'rgb(').replace(', 0.2)', ')') }} />
+   807→      </div>
+   808→
+   809→      {/* Navigation Header */}
+   810→      <header className="relative z-50 border-b border-white/10 backdrop-blur-xl bg-black/20">
+   811→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   812→          <div className="flex items-center justify-between h-16">
+   813→            {/* Logo */}
+   814→            <div className="flex items-center gap-3">
+   815→              <div className="relative">
+   816→                <Atom className="w-8 h-8 text-violet-400 animate-spin-slow" strokeWidth={1.5} />
+   817→                <div className="absolute inset-0 bg-violet-400/20 rounded-full blur-lg" />
+   818→              </div>
+   819→              <div>
+   820→                <h1 className="text-xl font-bold bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+   821→                  AETHELGARD Phase 10
+   822→                </h1>
+   823→                <p className="text-[10px] text-slate-400 -mt-1">Dynamic Discovery Edition</p>
+   824→              </div>
+   825→            </div>
+   826→
+   827→            {/* Desktop Navigation */}
+   828→            <nav className="hidden md:flex items-center gap-1">
+   829→              {['Dynamic Discovery', 'Connectors', 'Roadmap Timeline', 'Strategic Position', 'Market Value', 'Documentation'].map((tab) => (
+   830→                <button
+   831→                  key={tab}
+   832→                  onClick={() => setActiveTab(tab.toLowerCase().replace(/\s+/g, '-'))}
+   833→                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+   834→                    activeTab === tab.toLowerCase().replace(/\s+/g, '-')
+   835→                      ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
+   836→                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+   837→                  }`}
+   838→                >
+   839→                  {tab}
+   840→                </button>
+   841→              ))}
+   842→            </nav>
+   843→
+   844→            {/* Right Actions */}
+   845→            <div className="flex items-center gap-3">
+   846→              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+   847→                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+   848→                <span className="text-xs text-emerald-300 font-medium">Dynamic Features Active</span>
+   849→              </div>
+   850→              <a
+   851→                href="#"
+   852→                target="_blank"
+   853→                rel="noopener noreferrer"
+   854→                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-sm font-semibold transition-all shadow-lg shadow-violet-500/25"
+   855→              >
+   856→                <ExternalLink className="w-4 h-4" />
+   857→                Launch App
+   858→              </a>
+   859→              <button
+   860→                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+   861→                className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+   862→              >
+   863→                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+   864→              </button>
+   865→            </div>
+   866→          </div>
+   867→        </div>
+   868→
+   869→        {/* Mobile Menu */}
+   870→        {mobileMenuOpen && (
+   871→          <div className="md:hidden border-t border-white/10 backdrop-blur-xl bg-black/40">
+   872→            <div className="px-4 py-3 space-y-1">
+   873→              {['Dynamic Discovery', 'Connectors', 'Roadmap Timeline', 'Strategic Position', 'Market Value', 'Documentation'].map((tab) => (
+   874→                <button
+   875→                  key={tab}
+   876→                  onClick={() => {
+   877→                    setActiveTab(tab.toLowerCase().replace(/\s+/g, '-'));
+   878→                    setMobileMenuOpen(false);
+   879→                  }}
+   880→                  className={`block w-full text-left px-3 py-2 rounded-md text-sm ${
+   881→                    activeTab === tab.toLowerCase().replace(/\s+/g, '-')
+   882→                      ? 'bg-violet-500/20 text-violet-300'
+   883→                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+   884→                  }`}
+   885→                >
+   886→                  {tab}
+   887→                </button>
+   888→              ))}
+   889→            </div>
+   890→          </div>
+   891→        )}
+   892→      </header>
+   893→
+   894→      <div className="flex relative z-10">
+   895→        {/* Sidebar - File Explorer */}
+   896→        <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} transition-all duration-300 border-r border-white/10 bg-black/20 backdrop-blur-xl overflow-hidden flex-shrink-0`}>
+   897→          <div className="w-72 h-[calc(100vh-4rem)] overflow-y-auto">
+   898→            {/* Sidebar Header */}
+   899→            <div className="sticky top-0 z-10 p-4 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+   900→              <div className="flex items-center justify-between mb-3">
+   901→                <h2 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Explorer</h2>
+   902→                <div className="flex items-center gap-1">
+   903→                  <button className="p-1 rounded hover:bg-white/10 transition-colors" title="New File">
+   904→                    <FileCode className="w-4 h-4 text-slate-400" />
+   905→                  </button>
+   906→                  <button className="p-1 rounded hover:bg-white/10 transition-colors" title="Settings">
+   907→                    <Settings className="w-4 h-4 text-slate-400" />
+   908→                  </button>
+   909→                </div>
+   910→              </div>
+   911→              
+   912→              {/* Project Root */}
+   913→              <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-white/10">
+   914→                <FolderOpen className="w-4 h-4 text-amber-400" />
+   915→                <span className="text-xs font-medium text-slate-200 truncate">DemoClientPhase10</span>
+   916→                <GitBranch className="w-3.5 h-3.5 text-slate-500 ml-auto" />
+   917→              </div>
+   918→            </div>
+   919→
+   920→            {/* File Tree */}
+   921→            <div className="p-2">{renderFileTree(fileTree)}</div>
+   922→
+   923→            {/* Selected File Info */}
+   924→            {selectedFile && (
+   925→              <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-black/60 backdrop-blur-xl">
+   926→                <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Selected File</p>
+   927→                <p className="text-sm font-medium text-white truncate">{selectedFile.name}</p>
+   928→                <p className="text-xs text-slate-400 mt-1">{selectedFile.language}</p>
+   929→              </div>
+   930→            )}
+   931→          </div>
+   932→        </aside>
+   933→
+   934→        {/* Main Content Area */}
+   935→        <main className="flex-1 min-h-[calc(100vh-4rem)] overflow-y-auto">
+   936→          {/* Toggle Sidebar Button */}
+   937→          <button
+   938→            onClick={() => setSidebarOpen(!sidebarOpen)}
+   939→            className="fixed top-20 z-40 p-2 rounded-r-lg bg-slate-800 border border-slate-700 border-l-0 hover:bg-slate-700 transition-all"
+   940→            style={{ left: sidebarOpen ? '288px' : '0' }}
+   941→          >
+   942→            {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
+   943→          </button>
+   944→
+   945→          {/* ==================== SECTION 1: HERO WITH DYNAMIC FEATURES ==================== */}
+   946→          <section className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+   947→            {/* Gradient Orbs */}
+   948→            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl animate-pulse" />
+   949→            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+   950→
+   951→            <div className="relative max-w-6xl mx-auto text-center">
+   952→              {/* Badge */}
+   953→              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 mb-8 animate-bounce">
+   954→                <Sparkles className="w-4 h-4 text-violet-400" />
+   955→                <span className="text-sm text-violet-300">Phase 10 · Dynamic Connectors Enabled</span>
+   956→              </div>
+   957→
+   958→              {/* Main Title */}
+   959→              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+   960→                <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+   961→                  AETHELGARD
+   962→                </span>
+   963→              </h1>
+   964→
+   965→              {/* Tagline - GitHub for Science */}
+   966→              <div className="mb-8">
+   967→                <p className="text-2xl sm:text-3xl text-slate-200 font-light mb-4">
+   968→                  The <span className="font-semibold text-transparent bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text">GitHub for Molecular Research</span>
+   969→                </p>
+   970→                <p className="text-lg text-slate-400 max-w-3xl mx-auto">
+   971→                  Dynamic AI-Driven Fundamental Discovery with Free Data Connectors & Dropdown Interfaces
+   972→                </p>
+   973→              </div>
+   974→
+   975→              {/* Version Badge */}
+   976→              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-white/5 border border-white/10 mb-12">
+   977→                <span className="text-sm font-mono text-slate-300">v10.0.0</span>
+   978→                <span className="text-slate-600">·</span>
+   979→                <span className="text-sm text-emerald-400">Private Repo</span>
+   980→                <span className="text-slate-600">·</span>
+   981→                <span className="text-sm text-cyan-400">Dynamic Features</span>
+   982→              </div>
+   983→
+   984→              {/* ENHANCED Theme Switcher Dropdown */}
+   985→              <div className="mb-12">
+   986→                <p className="text-sm text-slate-500 mb-3 flex items-center justify-center gap-2">
+   987→                  <PaletteIcon className="w-4 h-4" /> Experience different visual themes:
+   988→                </p>
+   989→                <div className="inline-flex flex-wrap items-center justify-center gap-2 max-w-2xl">
+   990→                  {(Object.keys(themes) as ThemeMode[]).map((mode) => (
+   991→                    <button
+   992→                      key={mode}
+   993→                      onClick={() => setCurrentTheme(mode)}
+   994→                      className={`group relative px-4 py-2.5 rounded-xl text-sm font-medium transition-all border overflow-hidden ${
+   995→                        currentTheme === mode
+   996→                          ? `bg-gradient-to-r ${themes[mode].gradient} text-white border-transparent shadow-lg scale-105`
+   997→                          : 'bg-white/5 text-slate-400 border-white/10 hover:bg-white/10 hover:text-white hover:scale-102'
+   998→                      }`}
+   999→                    >
+  1000→                      <span className="relative z-10 flex items-center gap-2">
+  1001→                        <span className={`w-3 h-3 rounded-full bg-gradient-to-r ${themes[mode].gradient}`} />
+  1002→                        {themes[mode].name}
+  1003→                      </span>
+  1004→                      {currentTheme === mode && (
+  1005→                        <CheckCircle2 className="absolute -top-1 -right-1 w-5 h-5 text-white" />
+  1006→                      )}
+  1007→                    </button>
+  1008→                  ))}
+  1009→                </div>
+  1010→              </div>
+  1011→
+  1012→              {/* CTA Buttons */}
+  1013→              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+  1014→                <button className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-lg font-semibold transition-all shadow-2xl shadow-violet-500/25 overflow-hidden">
+  1015→                  <span className="relative z-10 flex items-center gap-2">
+  1016→                    <Play className="w-5 h-5" />
+  1017→                    Start Discovery
+  1018→                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+  1019→                  </span>
+  1020→                </button>
+  1021→                <button 
+  1022→                  onClick={() => setShowPipelineView(!showPipelineView)}
+  1023→                  className="group px-8 py-4 rounded-xl bg-white/5 border border-white/20 hover:bg-white/10 hover:border-white/30 text-lg font-semibold transition-all flex items-center gap-2"
+  1024→                >
+  1025→                  <PipelineIcon className="w-5 h-5" />
+  1026→                  View Connectors
+  1027→                </button>
+  1028→              </div>
+  1029→
+  1030→              {/* Live Statistics Row */}
+  1031→              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-16 max-w-5xl mx-auto">
+  1032→                {liveStats.map((stat) => (
+  1033→                  <div key={stat.id} className={`p-4 rounded-xl ${theme.cardBg} border ${theme.borderColor} backdrop-blur-sm hover:border-violet-500/50 transition-all group`}>
+  1034→                    <div className={`${theme.accent} mb-2 flex items-center justify-between`}>
+  1035→                      {stat.icon}
+  1036→                      {stat.trend === 'up' && <TrendingUp className="w-3 h-3 text-emerald-400" />}
+  1037→                      {stat.trend === 'down' && <TrendingUp className="w-3 h-3 text-red-400 rotate-180" />}
+  1038→                      {stat.trend === 'stable' && <MinusIcon className="w-3 h-3 text-slate-400" />}
+  1039→                    </div>
+  1040→                    <p className="text-xl font-bold text-white">{stat.value}<span className="text-sm text-slate-400 ml-1">{stat.unit}</span></p>
+  1041→                    <p className="text-[10px] text-slate-500">{stat.label}</p>
+  1042→                  </div>
+  1043→                ))}
+  1044→              </div>
+  1045→            </div>
+  1046→          </section>
+  1047→
+  1048→          {/* ==================== SECTION 2: DYNAMIC AI DISCOVERY MODULE ==================== */}
+  1049→          <section className="relative py-24 px-4" id="dynamic-discovery">
+  1050→            <div className="max-w-7xl mx-auto">
+  1051→              {/* Section Header */}
+  1052→              <div className="text-center mb-16">
+  1053→                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 mb-6">
+  1054→                  <BrainCircuit className="w-4 h-4 text-fuchsia-400" />
+  1055→                  <span className="text-sm text-fuchsia-300">Core Intelligence Module</span>
+  1056→                </div>
+  1057→                <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+  1058→                  <span className="bg-gradient-to-r from-fuchsia-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+  1059→                    AI-Driven Fundamental Discovery
+  1060→                  </span>
+  1061→                </h2>
+  1062→                <p className="text-lg text-slate-400 max-w-3xl mx-auto">
+  1063→                  Select discovery modes from the dynamic dropdown interface. Each mode connects to compatible data sources through free-flow connectors.
+  1064→                </p>
+  1065→              </div>
+  1066→
+  1067→              <div className="grid lg:grid-cols-3 gap-8">
+  1068→                {/* LEFT PANEL: Mode Selector (Dropdown Style) */}
+  1069→                <div className={`rounded-2xl ${theme.cardBg} border ${theme.borderColor} backdrop-blur-xl p-6`}>
+  1070→                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+  1071→                    <MousePointerClick className="w-5 h-5 text-violet-400" />
+  1072→                    Select Discovery Mode
+  1073→                    <ChevronDownIcon className="w-4 h-4 ml-auto text-slate-400 animate-bounce" />
+  1074→                  </h3>
+  1075→                  
+  1076→                  <div className="space-y-3">
+  1077→                    {aiDiscoveryModes.map((mode) => (
+  1078→                      <button
+  1079→                        key={mode.id}
+  1080→                        onClick={() => setSelectedAIMode(mode.id)}
+  1081→                        className={`w-full text-left p-4 rounded-xl border transition-all group ${
+  1082→                          selectedAIMode === mode.id
+  1083→                            ? 'bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border-violet-500/50 shadow-lg shadow-violet-500/10 scale-[1.02]'
+  1084→                            : `bg-white/5 ${theme.borderColor} hover:bg-white/10 hover:border-white/20`
+  1085→                        }`}
+  1086→                      >
+  1087→                        <div className="flex items-start gap-3">
+  1088→                          <div className={`p-2 rounded-lg ${selectedAIMode === mode.id ? 'bg-violet-500/30' : 'bg-white/10'} text-violet-400`}>
+  1089→                            {mode.icon}
+  1090→                          </div>
+  1091→                          <div className="flex-1 min-w-0">
+  1092→                            <div className="flex items-center gap-2 mb-1">
+  1093→                              <span className="font-semibold text-white text-sm">{mode.title}</span>
+  1094→                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${
+  1095→                                mode.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' :
+  1096→                                mode.status === 'beta' ? 'bg-amber-500/20 text-amber-300' :
+  1097→                                'bg-slate-500/20 text-slate-400'
+  1098→                              }`}>
+  1099→                                {mode.status}
+  1100→                              </span>
+  1101→                            </div>
+  1102→                            <p className="text-xs text-slate-400 line-clamp-2">{mode.description.slice(0, 80)}...</p>
+  1103→                            
+  1104→                            {/* Connector compatibility indicators */}
+  1105→                            <div className="flex items-center gap-1 mt-2">
+  1106→                              <Plug className="w-3 h-3 text-slate-500" />
+  1107→                              <span className="text-[10px] text-slate-500">{mode.connectors.length} sources</span>
+  1108→                            </div>
+  1109→                          </div>
+  1110→                          <ChevronRight className={`w-5 h-5 text-slate-500 transition-transform flex-shrink-0 ${selectedAIMode === mode.id ? 'rotate-90 text-violet-400' : ''}`} />
+  1111→                        </div>
+  1112→                      </button>
+  1113→                    ))}
+  1114→                  </div>
+  1115→                </div>
+  1116→
+  1117→                {/* CENTER PANEL: Mode Details with Dynamic Content */}
+  1118→                <div className="rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-800/60 border border-violet-500/30 backdrop-blur-xl p-6">
+  1119→                  {(() => {
+  1120→                    const mode = aiDiscoveryModes.find(m => m.id === selectedAIMode)!;
+  1121→                    return (
+  1122→                      <>
+  1123→                        <div className="flex items-center gap-3 mb-6">
+  1124→                          <div className="p-3 rounded-xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 text-violet-300">
+  1125→                            {mode.icon}
+  1126→                          </div>
+  1127→                          <div>
+  1128→                            <h3 className="text-xl font-bold text-white">{mode.title}</h3>
+  1129→                            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium uppercase mt-1 ${
+  1130→                              mode.status === 'active' ? 'bg-emerald-500/20 text-emerald-300' :
+  1131→                              mode.status === 'beta' ? 'bg-amber-500/20 text-amber-300' :
+  1132→                              'bg-slate-500/20 text-slate-400'
+  1133→                            }`}>
+  1134→                              {mode.status === 'active' ? '✓ Production Ready' : mode.status === 'beta' ? 'β Beta Testing' : '◦ Coming Soon'}
+  1135→                            </span>
+  1136→                          </div>
+  1137→                        </div>
+  1138→
+  1139→                        <p className="text-slate-300 mb-6 text-sm leading-relaxed">{mode.description}</p>
+  1140→
+  1141→                        {/* Quick Stats */}
+  1142→                        <div className="grid grid-cols-3 gap-3 mb-6">
+  1143→                          <div className="p-3 rounded-lg bg-white/5 text-center">
+  1144→                            <Clock className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
+  1145→                            <p className="text-xs text-slate-400">Processing</p>
+  1146→                            <p className="text-sm font-bold text-white">{mode.processingTime}</p>
+  1147→                          </div>
+  1148→                          <div className="p-3 rounded-lg bg-white/5 text-center">
+  1149→                            <Target className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+  1150→                            <p className="text-xs text-slate-400">Confidence</p>
+  1151→                            <p className="text-sm font-bold text-white">{mode.confidenceScore}</p>
+  1152→                          </div>
+  1153→                          <div className="p-3 rounded-lg bg-white/5 text-center">
+  1154→                            <FileText className="w-4 h-4 text-fuchsia-400 mx-auto mb-1" />
+  1155→                            <p className="text-xs text-slate-400">Output</p>
+  1156→                            <p className="text-[10px] font-bold text-white">{mode.outputFormat}</p>
+  1157→                          </div>
+  1158→                        </div>
+  1159→
+  1160→                        <div className="space-y-4">
+  1161→                          <div>
+  1162→                            <h4 className="text-sm font-semibold text-violet-300 mb-2 flex items-center gap-2">
+  1163→                              <Zap className="w-4 h-4" />
+  1164→                              Core Capabilities
+  1165→                            </h4>
+  1166→                            <ul className="space-y-2">
+  1167→                              {mode.capabilities.map((cap, i) => (
+  1168→                                <li key={i} className="flex items-center gap-2 text-sm text-slate-300">
+  1169→                                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+  1170→                                  {cap}
+  1171→                                </li>
+  1172→                              ))}
+  1173→                            </ul>
+  1174→                          </div>
+  1175→
+  1176→                          <div>
+  1177→                            <h4 className="text-sm font-semibold text-fuchsia-300 mb-2 flex items-center gap-2">
+  1178→                              <Target className="w-4 h-4" />
+  1179→                              Use Cases
+  1180→                            </h4>
+  1181→                            <div className="flex flex-wrap gap-2">
+  1182→                              {mode.useCases.map((useCase, i) => (
+  1183→                                <span key={i} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
+  1184→                                  {useCase}
+  1185→                                </span>
+  1186→                              ))}
+  1187→                            </div>
+  1188→                          </div>
+  1189→                        </div>
+  1190→
+  1191→                        <button 
+  1192→                          onClick={runPipeline}
+  1193→                          disabled={pipelineRunning}
+  1194→                          className={`w-full mt-6 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+  1195→                            pipelineRunning 
+  1196→                              ? 'bg-slate-700 text-slate-400 cursor-not-allowed' 
+  1197→                              : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white'
+  1198→                          }`}
+  1199→                        >
+  1200→                          {pipelineRunning ? (
+  1201→                            <>
+  1202→                              <RefreshCw className="w-4 h-4 animate-spin" />
+  1203→                              Processing... {Math.min(Math.round(pipelineProgress), 100)}%
+  1204→                            </>
+  1205→                          ) : (
+  1206→                            <>
+  1207→                              <Play className="w-4 h-4" />
+  1208→                              Run {mode.title}
+  1209→                            </>
+  1210→                          )}
+  1211→                        </button>
+  1212→
+  1213→                        {/* Progress bar when running */}
+  1214→                        {pipelineRunning && (
+  1215→                          <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
+  1216→                            <div 
+  1217→                              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 h-2 rounded-full transition-all duration-300"
+  1218→                              style={{ width: `${Math.min(pipelineProgress, 100)}%` }}
+  1219→                            />
+  1220→                          </div>
+  1221→                        )}
+  1222→                      </>
+  1223→                    );
+  1224→                  })()}
+  1225→                </div>
+  1226→
+  1227→                {/* RIGHT PANEL: Data Source Connectors (Dropdown) */}
+  1228→                <div className={`rounded-2xl ${theme.cardBg} border ${theme.borderColor} backdrop-blur-xl p-6`}>
+  1229→                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+  1230→                    <PlugZap className="w-5 h-5 text-cyan-400" />
+  1231→                    Data Source Connectors
+  1232→                    <BadgeCheck className="w-4 h-4 ml-auto text-emerald-400" />
+  1233→                  </h3>
+  1234→                  
+  1235→                  <p className="text-xs text-slate-400 mb-4">
+  1236→                    Select data sources to connect with your chosen AI mode. Active connections show real-time data flow.
+  1237→                  </p>
+  1238→
+  1239→                  {/* Data Source Grid */}
+  1240→                  <div className="space-y-2 mb-6 max-h-[400px] overflow-y-auto">
+  1241→                    {dataSources.map((source) => {
+  1242→                      const isConnected = activeConnections.includes(source.id);
+  1243→                      const isCompatible = aiDiscoveryModes.find(m => m.id === selectedAIMode)?.connectors.includes(source.id);
+  1244→                      
+  1245→                      return (
+  1246→                        <button
+  1247→                          key={source.id}
+  1248→                          onClick={() => isCompatible && toggleConnection(source.id)}
+  1249→                          disabled={!isCompatible}
+  1250→                          className={`w-full text-left p-3 rounded-lg border transition-all ${
+  1251→                            !isCompatible 
+  1252→                              ? 'opacity-40 cursor-not-allowed bg-slate-800/30 border-slate-700/30'
+  1253→                              : isConnected
+  1254→                                ? 'bg-emerald-500/10 border-emerald-500/30'
+  1255→                                : `bg-white/5 ${theme.borderColor} hover:bg-white/10`
+  1256→                          }`}
+  1257→                        >
+  1258→                          <div className="flex items-center gap-3">
+  1259→                            <div className={`p-2 rounded-md ${isConnected ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-slate-400'}`}>
+  1260→                              {source.icon}
+  1261→                            </div>
+  1262→                            <div className="flex-1 min-w-0">
+  1263→                              <div className="flex items-center gap-2">
+  1264→                                <span className="text-sm font-medium text-white truncate">{source.name}</span>
+  1265→                                {isConnected && <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />}
+  1266→                              </div>
+  1267→                              <div className="flex items-center gap-2 mt-1">
+  1268→                                <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+  1269→                                  source.accessLevel === 'free' ? 'bg-emerald-500/20 text-emerald-300' :
+  1270→                                  source.accessLevel === 'api-key' ? 'bg-amber-500/20 text-amber-300' :
+  1271→                                  'bg-purple-500/20 text-purple-300'
+  1272→                                }`}>
+  1273→                                  {source.accessLevel}
+  1274→                                </span>
+  1275→                                {!isCompatible && (
+  1276→                                  <span className="text-[10px] text-red-400">Incompatible</span>
+  1277→                                )}
+  1278→                              </div>
+  1279→                            </div>
+  1280→                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+  1281→                              source.status === 'connected' ? 'bg-emerald-400 animate-pulse' :
+  1282→                              source.status === 'configuring' ? 'bg-amber-400' :
+  1283→                              'bg-slate-500'
+  1284→                            }`} />
+  1285→                          </div>
+  1286→                        </button>
+  1287→                      );
+  1288→                    })}
+  1289→                  </div>
+  1290→
+  1291→                  {/* Connection Summary */}
+  1292→                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+  1293→                    <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+  1294→                      <span>Active Connections</span>
+  1295→                      <span className="text-emerald-400 font-medium">{activeConnections.length} sources</span>
+  1296→                    </div>
+  1297→                    <div className="flex items-center justify-between text-xs text-slate-400">
+  1298→                      <span>Data Flow Rate</span>
+  1299→                      <span className="text-cyan-400 font-medium">{activeConnections.length * 12.5} MB/s</span>
+  1300→                    </div>
+  1301→                  </div>
+  1302→                </div>
+  1303→              </div>
+  1304→            </div>
+  1305→          </section>
+  1306→
+  1307→          {/* ==================== SECTION 3: PIPELINE VISUALIZATION (When toggled) ==================== */}
+  1308→          {showPipelineView && (
+  1309→            <section className="relative py-16 px-4 bg-black/30" id="connectors">
+  1310→              <div className="max-w-6xl mx-auto">
+  1311→                <div className="text-center mb-12">
+  1312→                  <h2 className="text-3xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+  1313→                    <RouteIcon className="w-6 h-6 text-cyan-400" />
+  1314→                    Data Pipeline Visualization
+  1315→                  </h2>
+  1316→                  <p className="text-slate-400">Free data flows between connected sources and AI processing engines</p>
+  1317→                </div>
+  1318→
+  1319→                {/* Visual Pipeline */}
+  1320→                <div className="relative p-8 rounded-2xl bg-slate-900/60 border border-white/10">
+  1321→                  <div className="grid grid-cols-3 gap-8 items-center">
+  1322→                    {/* Sources Column */}
+  1323→                    <div className="space-y-4">
+  1324→                      <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider text-center">Data Sources</h4>
+  1325→                      {activeConnections.map(connId => {
+  1326→                        const source = dataSources.find(d => d.id === connId)!;
+  1327→                        return (
+  1328→                          <div key={connId} className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-center">
+  1329→                            <div className="text-emerald-400 mb-1">{source.icon}</div>
+  1330→                            <span className="text-xs text-white">{source.name}</span>
+  1331→                          </div>
+  1332→                        );
+  1333→                      })}
+  1334→                    </div>
+  1335→
+  1336→                    {/* Pipeline Animation */}
+  1337→                    <div className="flex flex-col items-center justify-center">
+  1338→                      <div className="relative w-full">
+  1339→                        {/* Animated connection lines */}
+  1340→                        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 200" preserveAspectRatio="none">
+  1341→                          <defs>
+  1342→                            <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+  1343→                              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.8">
+  1344→                                <animate attributeName="stop-opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
+  1345→                              </stop>
+  1346→                              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.8">
+  1347→                                <animate attributeName="stop-opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
+  1348→                              </stop>
+  1349→                            </linearGradient>
+  1350→                          </defs>
+  1351→                          <path d="M 0 100 Q 100 50 200 100" stroke="url(#flowGradient)" strokeWidth="3" fill="none" strokeDasharray="10,5">
+  1352→                            <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="1s" repeatCount="indefinite" />
+  1353→                          </path>
+  1354→                        </svg>
+  1355→                        
+  1356→                        <div className="relative z-10 flex items-center justify-center py-8">
+  1357→                          <div className="p-4 rounded-xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-violet-500/30">
+  1358→                            <PipelineIcon className="w-8 h-8 text-violet-400 animate-pulse" />
+  1359→                            <p className="text-xs text-center text-white mt-2">Connector Hub</p>
+  1360→                            <p className="text-[10px] text-center text-emerald-400">Free Flow Active</p>
+  1361→                          </div>
+  1362→                        </div>
+  1363→                      </div>
+  1364→                    </div>
+  1365→
+  1366→                    {/* Target Mode */}
+  1367→                    <div className="space-y-4">
+  1368→                      <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider text-center">AI Engine</h4>
+  1369→                      <div className="p-4 rounded-lg bg-violet-500/10 border border-violet-500/30 text-center">
+  1370→                        <div className="text-violet-400 mb-2 flex justify-center">
+  1371→                          {aiDiscoveryModes.find(m => m.id === selectedAIMode)?.icon}
+  1372→                        </div>
+  1373→                        <span className="text-sm text-white font-medium">
+  1374→                          {aiDiscoveryModes.find(m => m.id === selectedAIMode)?.title}
+  1375→                        </span>
+  1376→                        <div className="mt-2 text-[10px] text-slate-400">
+  1377→                          Processing: {activeConnections.length} streams
+  1378→                        </div>
+  1379→                      </div>
+  1380→                    </div>
+  1381→                  </div>
+  1382→                </div>
+  1383→              </div>
+  1384→            </section>
+  1385→          )}
+  1386→
+  1387→          {/* ==================== SECTION 4: INTERACTIVE ROADMAP TIMELINE ==================== */}
+  1388→          <section className="relative py-24 px-4" id="roadmap-timeline">
+  1389→            <div className="max-w-7xl mx-auto">
+  1390→              <div className="text-center mb-16">
+  1391→                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 mb-6">
+  1392→                  <LineChart className="w-4 h-4 text-amber-400" />
+  1393→                  <span className="text-sm text-amber-300">Evolution Pathway (2025-2041)</span>
+  1394→                </div>
+  1395→                <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+  1396→                  <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+  1397→                    Phase 5-10 Development Roadmap
+  1398→                  </span>
+  1399→                </h2>
+  1400→                <p className="text-lg text-slate-400 max-w-3xl mx-auto">
+  1401→                  Click on any phase to explore details. From AI backend integration to global platform dominance.
+  1402→                </p>
+  1403→              </div>
+  1404→
+  1405→              {/* Phase Selector Tabs */}
+  1406→              <div className="flex flex-wrap justify-center gap-2 mb-12">
+  1407→                {roadmapPhases.map((phase) => (
+  1408→                  <button
+  1409→                    key={phase.phase}
+  1410→                    onClick={() => {
+  1411→                      setSelectedPhase(phase.phase);
+  1412→                      setPhaseDetailOpen(true);
+  1413→                    }}
+  1414→                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
+  1415→                      selectedPhase === phase.phase
+  1416→                        ? phase.status === 'in-progress'
+  1417→                          ? 'bg-violet-500/20 border-violet-500/50 text-violet-300'
+  1418→                          : 'bg-white/10 border-white/20 text-white'
+  1419→                        : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+  1420→                    }`}
+  1421→                  >
+  1422→                    P{phase.phase}: {phase.title.split(' ')[0]}
+  1423→                  </button>
+  1424→                ))}
+  1425→              </div>
+  1426→
+  1427→              {/* Selected Phase Detail */}
+  1428→              {phaseDetailOpen && (() => {
+  1429→                const phase = roadmapPhases.find(p => p.phase === selectedPhase)!;
+  1430→                return (
+  1431→                  <div className={`p-8 rounded-2xl border backdrop-blur-sm transition-all ${
+  1432→                    phase.status === 'in-progress'
+  1433→                      ? 'bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border-violet-500/50 shadow-lg shadow-violet-500/10'
+  1434→                      : phase.status === 'completed'
+  1435→                      ? 'bg-emerald-500/10 border-emerald-500/30'
+  1436→                      : `${theme.cardBg} ${theme.borderColor}`
+  1437→                  }`}>
+  1438→                    <div className="flex items-start gap-6">
+  1439→                      <div className={`p-4 rounded-2xl ${
+  1440→                        phase.status === 'in-progress'
+  1441→                          ? 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white'
+  1442→                          : 'bg-white/10 text-slate-300'
+  1443→                      }`}>
+  1444→                        {phase.icon}
+  1445→                      </div>
+  1446→                      
+  1447→                      <div className="flex-1">
+  1448→                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+  1449→                          <span className="text-xs font-mono text-slate-500">PHASE {phase.phase}</span>
+  1450→                          <h3 className="text-2xl font-bold text-white">{phase.title}</h3>
+  1451→                          <span className={`px-3 py-1 rounded-full text-xs font-medium uppercase ${
+  1452→                            phase.status === 'completed' ? 'bg-emerald-500/20 text-emerald-300' :
+  1453→                            phase.status === 'in-progress' ? 'bg-violet-500/20 text-violet-300' :
+  1454→                            phase.status === 'planned' ? 'bg-amber-500/20 text-amber-300' :
+  1455→                            'bg-slate-500/20 text-slate-400'
+  1456→                          }`}>
+  1457→                            {phase.status.replace('-', ' ')}
+  1458→                          </span>
+  1459→                        </div>
+  1460→                        
+  1461→                        <p className="text-slate-400 mb-4">{phase.theme} · {phase.period}</p>
+  1462→                        
+  1463→                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+  1464→                          <div>
+  1465→                            <h4 className="text-xs font-semibold text-violet-300 uppercase tracking-wider mb-2">Objectives</h4>
+  1466→                            <ul className="space-y-1">
+  1467→                              {phase.objectives.map((obj, j) => (
+  1468→                                <li key={j} className="flex items-start gap-2 text-sm text-slate-300">
+  1469→                                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+  1470→                                  {obj}
+  1471→                                </li>
+  1472→                              ))}
+  1473→                            </ul>
+  1474→                          </div>
+  1475→                          
+  1476→                          <div>
+  1477→                            <h4 className="text-xs font-semibold text-cyan-300 uppercase tracking-wider mb-2">Milestones</h4>
+  1478→                            <div className="space-y-1">
+  1479→                              {phase.milestones.map((milestone, k) => (
+  1480→                                <span key={k} className="block px-2 py-1 rounded-md bg-white/5 border border-white/10 text-xs text-slate-300">
+  1481→                                  {milestone}
+  1482→                                </span>
+  1483→                              ))}
+  1484→                            </div>
+  1485→                          </div>
+  1486→                          
+  1487→                          <div>
+  1488→                            <h4 className="text-xs font-semibold text-emerald-300 uppercase tracking-wider mb-2">KPIs</h4>
+  1489→                            <ul className="space-y-1">
+  1490→                              {phase.kpis.map((kpi, j) => (
+  1491→                                <li key={j} className="flex items-center gap-2 text-sm text-slate-300">
+  1492→                                  <Target className="w-4 h-4 text-emerald-400" />
+  1493→                                  {kpi}
+  1494→                                </li>
+  1495→                              ))}
+  1496→                            </ul>
+  1497→                          </div>
+  1498→                          
+  1499→                          <div>
+  1500→                            <h4 className="text-xs font-semibold text-amber-300 uppercase tracking-wider mb-2">Resources</h4>
+  1501→                            <div className="space-y-2">
+  1502→                              <div className="flex items-center gap-2 text-sm text-slate-300">
+  1503→                                <DollarSignIcon className="w-4 h-4 text-green-400" />
+  1504→                                {phase.budget}
+  1505→                              </div>
+  1506→                              <div className="flex items-center gap-2 text-sm text-slate-300">
+  1507→                                <Users className="w-4 h-4 text-blue-400" />
+  1508→                                {phase.teamSize}
+  1509→                              </div>
+  1510→                            </div>
+  1511→                          </div>
+  1512→                        </div>
+  1513→                      </div>
+  1514→                    </div>
+  1515→                  </div>
+  1516→                );
+  1517→              })()}
+  1518→            </div>
+  1519→          </section>
+  1520→
+  1521→          {/* ==================== FOOTER ==================== */}
+  1522→          <footer className="relative py-16 px-4 border-t border-white/10 bg-black/30">
+  1523→            <div className="max-w-7xl mx-auto">
+  1524→              <div className="text-center mb-12">
+  1525→                <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+  1526→                  <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+  1527→                    Ready to Explore Phase 10?
+  1528→                  </span>
+  1529→                </h2>
+  1530→                <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
+  1531→                  Private repository with dynamic AI discovery, free data connectors, and future-proof architecture.
+  1532→                </p>
+  1533→                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+  1534→                  <button className="px-8 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 font-semibold transition-all shadow-lg shadow-violet-500/25 flex items-center gap-2">
+  1535→                    <Github className="w-5 h-5" />
+  1536→                    View Private Repo
+  1537→                  </button>
+  1538→                  <button className="px-8 py-4 rounded-xl bg-white/5 border border-white/20 hover:bg-white/10 font-semibold transition-all flex items-center gap-2">
+  1539→                    <BookOpen className="w-5 h-5" />
+  1540→                    Read Documentation
+  1541→                  </button>
+  1542→                </div>
+  1543→              </div>
+  1544→
+  1545→              {/* Footer Links */}
+  1546→              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-white/10">
+  1547→                <div>
+  1548→                  <h4 className="font-semibold text-white mb-4">Platform</h4>
+  1549→                  <ul className="space-y-2 text-sm text-slate-400">
+  1550→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Dynamic Discovery</a></li>
+  1551→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Connectors</a></li>
+  1552→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Roadmap</a></li>
+  1553→                  </ul>
+  1554→                </div>
+  1555→                <div>
+  1556→                  <h4 className="font-semibold text-white mb-4">Resources</h4>
+  1557→                  <ul className="space-y-2 text-sm text-slate-400">
+  1558→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Investor Story</a></li>
+  1559→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Market Value</a></li>
+  1560→                    <li><a href="#" className="hover:text-violet-400 transition-colors">API Reference</a></li>
+  1561→                  </ul>
+  1562→                </div>
+  1563→                <div>
+  1564→                  <h4 className="font-semibold text-white mb-4">Repository</h4>
+  1565→                  <ul className="space-y-2 text-sm text-slate-400">
+  1566→                    <li><span className="text-emerald-400">● Private</span></li>
+  1567→                    <li><span>Name: DemoClientPhase10</span></li>
+  1568→                    <li><span>Status: Push Ready</span></li>
+  1569→                  </ul>
+  1570→                </div>
+  1571→                <div>
+  1572→                  <h4 className="font-semibold text-white mb-4">Legal</h4>
+  1573→                  <ul className="space-y-2 text-sm text-slate-400">
+  1574→                    <li><a href="#" className="hover:text-violet-400 transition-colors">License (MIT)</a></li>
+  1575→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Privacy</a></li>
+  1576→                    <li><a href="#" className="hover:text-violet-400 transition-colors">Security</a></li>
+  1577→                  </ul>
+  1578→                </div>
+  1579→              </div>
+  1580→
+  1581→              {/* Copyright */}
+  1582→              <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+  1583→                <div className="flex items-center gap-2">
+  1584→                  <Atom className="w-5 h-5 text-violet-400" />
+  1585→                  <span className="text-sm text-slate-400">
+  1586→                    © 2026 AETHELGARD DemoClientPhase10. Private Repository.
+  1587→                  </span>
+  1588→                </div>
+  1589→                <div className="flex items-center gap-4 text-sm text-slate-500">
+  1590→                  <span className="flex items-center gap-1">
+  1591→                    <Heart className="w-4 h-4 text-red-400" />
+  1592→                    Built for the future of science
+  1593→                  </span>
+  1594→                </div>
+  1595→              </div>
+  1596→            </div>
+  1597→          </footer>
+  1598→        </main>
+  1599→      </div>
+  1600→
+  1601→      {/* Global Styles */}
+  1602→      <style jsx global>{`
+  1603→        @keyframes float {
+  1604→          0%, 100% { transform: translateY(0) translateX(0); }
+  1605→          25% { transform: translateY(-20px) translateX(10px); }
+  1606→          50% { transform: translateY(-10px) translateX(-10px); }
+  1607→          75% { transform: translateY(-30px) translateX(5px); }
+  1608→        }
+  1609→        
+  1610→        @keyframes spin-slow {
+  1611→          from { transform: rotate(0deg); }
+  1612→          to { transform: rotate(360deg); }
+  1613→        }
+  1614→        
+  1615→        .animate-spin-slow {
+  1616→          animation: spin-slow 8s linear infinite;
+  1617→        }
+  1618→        
+  1619→        .line-clamp-2 {
+  1620→          display: -webkit-box;
+  1621→          -webkit-line-clamp: 2;
+  1622→          -webkit-box-orient: vertical;
+  1623→          overflow: hidden;
+  1624→        }
+  1625→
+  1626→        /* Custom scrollbar */
+  1627→        ::-webkit-scrollbar {
+  1628→          width: 8px;
+  1629→          height: 8px;
+  1630→        }
+  1631→        ::-webkit-scrollbar-track {
+  1632→          background: rgba(255, 255, 255, 0.05);
+  1633→          border-radius: 4px;
+  1634→        }
+  1635→        ::-webkit-scrollbar-thumb {
+  1636→          background: rgba(139, 92, 246, 0.5);
+  1637→          border-radius: 4px;
+  1638→        }
+  1639→        ::-webkit-scrollbar-thumb:hover {
+  1640→          background: rgba(139, 92, 246, 0.7);
+  1641→        }
+  1642→      `}</style>
+  1643→    </div>
+  1644→  );
+  1645→}
+  1646→
+  1647→// Missing icons - adding inline components
+  1648→function DollarSignIcon(props: any) {
+  1649→  return (
+  1650→    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+  1651→      <line x1="12" y1="2" x2="12" y2="22"></line>
+  1652→      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+  1653→    </svg>
+  1654→  );
+  1655→}
+  1656→
+  1657→function PaletteIcon(props: any) {
+  1658→  return (
+  1659→    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+  1660→      <circle cx="13.5" cy="6.5" r=".5"></circle>
+  1661→      <circle cx="17.5" cy="10.5" r=".5"></circle>
+  1662→      <circle cx="8.5" cy="7.5" r=".5"></circle>
+  1663→      <circle cx="6.5" cy="12.5" r=".5"></circle>
+  1664→      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z"></path>
+  1665→    </svg>
+  1666→  );
+  1667→}
+  1668→
+  1669→function Monitor(props: any) {
+  1670→  return (
+  1671→    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+  1672→      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+  1673→      <line x1="8" y1="21" x2="16" y2="21"></line>
+  1674→      <line x1="12" y1="17" x2="12" y2="21"></line>
+  1675→    </svg>
+  1676→  );
+  1677→}
+  1678→
+  1679→function PipelineIcon(props: any) {
+  1680→  return (
+  1681→    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+  1682→      <line x1="4" y1="6" x2="20" y2="6"></line>
+  1683→      <line x1="4" y1="12" x2="20" y2="12"></line>
+  1684→      <line x1="4" y1="18" x2="20" y2="18"></line>
+  1685→      <circle cx="8" cy="6" r="2"></circle>
+  1686→      <circle cx="16" cy="12" r="2"></circle>
+  1687→      <circle cx="10" cy="18" r="2"></circle>
+  1688→    </svg>
+  1689→  );
+  1690→}
+  1691→
+  1692→function RouteIcon(props: any) {
+  1693→  return (
+  1694→    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+  1695→      <circle cx="6" cy="19" r="3"></circle>
+  1696→      <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7H6"></path>
+  1697→      <path d="M12 5v7"></path>
+  1698→      <path d="m9 11 3-3 3 3"></path>
+  1699→    </svg>
+  1700→  );
+  1701→}
+  1702→

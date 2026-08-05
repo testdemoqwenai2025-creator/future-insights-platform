@@ -1,0 +1,1202 @@
+     1→'use client';
+     2→
+     3→import { useState, useCallback } from 'react';
+     4→import { 
+     5→  FileCode, 
+     6→  Folder, 
+     7→  FolderOpen, 
+     8→  ChevronRight, 
+     9→  ChevronDown,
+    10→  Terminal,
+    11→  Eye,
+    12→  LayoutDashboard,
+    13→  Star,
+    14→  GitBranch,
+    15→  Settings,
+    16→  Maximize2,
+    17→  PanelLeftClose,
+    18→  PanelLeft,
+    19→  Copy,
+    20→  Check,
+    21→  ExternalLink,
+    22→  Atom,
+    23→  Activity,
+    24→  Cpu,
+    25→  Shield,
+    26→  Zap,
+    27→  Database,
+    28→  Rocket,
+    29→  BookOpen,
+    30→  Github,
+    31→  Mail,
+    32→  Heart,
+    33→  AlertTriangle,
+    34→  Sparkles,
+    35→  Code2,
+    36→  Brain,
+    37→  Bot,
+    38→  ArrowRight,
+    39→  CheckCircle2,
+    40→  Clock,
+    41→  ArrowUpDown,
+    42→  Globe,
+    43→  Server,
+    44→  HardDrive,
+    45→  RefreshCw
+    46→} from 'lucide-react';
+    47→
+    48→// ==================== FILE TREE DATA ====================
+    49→interface FileNode {
+    50→  name: string;
+    51→  type: 'file' | 'folder';
+    52→  path: string;
+    53→  children?: FileNode[];
+    54→  language?: string;
+    55→  content?: string;
+    56→}
+    57→
+    58→const fileTree: FileNode[] = [
+    59→  {
+    60→    name: 'application',
+    61→    type: 'folder',
+    62→    path: '/application',
+    63→    children: [
+    64→      {
+    65→        name: 'app',
+    66→        type: 'folder',
+    67→        path: '/application/app',
+    68→        children: [
+    69→          { name: 'page.tsx', type: 'file', path: '/application/app/page.tsx', language: 'TypeScript React', content: 'Main landing page entry point - orchestrates all sections' },
+    70→          { name: 'layout.tsx', type: 'file', path: '/application/app/layout.tsx', language: 'TypeScript React', content: 'Root layout with metadata and fonts' },
+    71→        ]
+    72→      },
+    73→      {
+    74→        name: 'components',
+    75→        type: 'folder',
+    76→        path: '/application/components',
+    77→        children: [
+    78→          {
+    79→            name: 'landing',
+    80→            type: 'folder',
+    81→            path: '/application/components/landing',
+    82→            children: [
+    83→              { name: 'HeroSection.tsx', type: 'file', path: '/application/components/landing/HeroSection.tsx', language: 'TypeScript React', content: 'Animated hero with particles & typewriter effect' },
+    84→              { name: 'ProblemSection.tsx', type: 'file', path: '/application/components/landing/ProblemSection.tsx', language: 'TypeScript React', content: 'Drug discovery tool dilemma showcase' },
+    85→              { name: 'SolutionSection.tsx', type: 'file', path: '/application/components/landing/SolutionSection.tsx', language: 'TypeScript React', content: '3-stage solution flow diagram' },
+    86→              { name: 'ArchitectureSection.tsx', type: 'file', path: '/application/components/landing/ArchitectureSection.tsx', language: 'TypeScript React', content: 'Polyglot architecture visualization' },
+    87→              { name: 'SystemStatusSection.tsx', type: 'file', path: '/application/components/landing/SystemStatusSection.tsx', language: 'TypeScript React', content: 'Real-time system health dashboard' },
+    88→              { name: 'CTASection.tsx', type: 'file', path: '/application/components/landing/CTASection.tsx', language: 'TypeScript React', content: 'Call-to-action with email signup' },
+    89→              { name: 'Footer.tsx', type: 'file', path: '/application/components/landing/Footer.tsx', language: 'TypeScript React', content: 'Multi-column footer with navigation' },
+    90→            ]
+    91→          },
+    92→          {
+    93→            name: 'dashboard',
+    94→            type: 'folder',
+    95→            path: '/application/components/dashboard',
+    96→            children: [
+    97→              { name: 'QuickActionsPanel.tsx', type: 'file', path: '/application/components/dashboard/QuickActionsPanel.tsx', language: 'TypeScript React', content: 'Quick action commands panel' },
+    98→              { name: 'DataFlowVisualization.tsx', type: 'file', path: '/application/components/dashboard/DataFlowVisualization.tsx', language: 'TypeScript React', content: 'Real-time data flow diagrams' },
+    99→              { name: 'ResourceCharts.tsx', type: 'file', path: '/application/components/dashboard/ResourceCharts.tsx', language: 'TypeScript React', content: 'System resource utilization charts' },
+   100→              { name: 'AlertsPanel.tsx', type: 'file', path: '/application/components/dashboard/AlertsPanel.tsx', language: 'TypeScript React', content: 'System alerts and notifications' },
+   101→              { name: 'SystemHealthBanner.tsx', type: 'file', path: '/application/components/dashboard/SystemHealthBanner.tsx', language: 'TypeScript React', content: 'Health status banner component' },
+   102→            ]
+   103→          },
+   104→          { name: 'ui/', type: 'folder', path: '/application/components/ui', children: [] }
+   105→        ]
+   106→      },
+   107→      {
+   108→        name: 'lib/',
+   109→        type: 'folder',
+   110→        path: '/application/lib',
+   111→        children: []
+   112→      },
+   113→      {
+   114→        name: 'hooks/',
+   115→        type: 'folder',
+   116→        path: '/application/hooks',
+   117→        children: []
+   118→      },
+   119→    ]
+   120→  },
+   121→  {
+   122→    name: 'docs',
+   123→    type: 'folder',
+   124→    path: '/docs',
+   125→    children: [
+   126→      { name: 'STRATEGIC_INSIGHTS.md', type: 'file', path: '/docs/STRATEGIC_INSIGHTS.md', language: 'Markdown', content: 'Strategic analysis document' },
+   127→      { name: 'ARCHITECTURE.md', type: 'file', path: '/docs/ARCHITECTURE.md', language: 'Markdown', content: 'Technical architecture documentation' },
+   128→    ]
+   129→  },
+   130→  { name: 'investments.txt', type: 'file', path: '/investments.txt', language: 'Text', content: 'Sound investment analysis report' },
+   131→  { name: 'assessment.txt', type: 'file', path: '/assessment.txt', language: 'Text', content: 'Market value analysis for scientific sector' },
+   132→  { name: 'progressive.txt', type: 'file', path: '/progressive.txt', language: 'Text', content: 'Future iteration roadmap for value creation' },
+   133→];
+   134→
+   135→// ==================== PREVIEW PANEL COMPONENTS ====================
+   136→
+   137→// Preview 1: Frontend Overview
+   138→function Preview1_FrontendOverview() {
+   139→  return (
+   140→    <div className="h-full bg-slate-950 text-white p-4 overflow-auto">
+   141→      <div className="max-w-4xl mx-auto space-y-6">
+   142→        {/* Header */}
+   143→        <div className="text-center py-8 border-b border-slate-800">
+   144→          <div className="flex items-center justify-center gap-3 mb-4">
+   145→            <Atom className="w-10 h-10 text-violet-400 animate-spin-slow" strokeWidth={1.5} />
+   146→            <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+   147→              AETHELGARD
+   148→            </h1>
+   149→          </div>
+   150→          <p className="text-slate-400 text-sm">AETH-1.0.0 · AI-Driven Drug Discovery Platform</p>
+   151→        </div>
+   152→
+   153→        {/* Tech Stack Cards */}
+   154→        <div className="grid grid-cols-2 gap-3">
+   155→          <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+   156→            <div className="flex items-center gap-2 mb-2">
+   157→              <Code2 className="w-4 h-4 text-violet-400" />
+   158→              <span className="font-semibold text-sm">Frontend Framework</span>
+   159→            </div>
+   160→            <p className="text-xs text-slate-400">Next.js 16 + React 19</p>
+   161→            <p className="text-xs text-slate-500 mt-1">App Router · TypeScript 5</p>
+   162→          </div>
+   163→          <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+   164→            <div className="flex items-center gap-2 mb-2">
+   165→              <Zap className="w-4 h-4 text-cyan-400" />
+   166→              <span className="font-semibold text-sm">Styling</span>
+   167→            </div>
+   168→            <p className="text-xs text-slate-400">Tailwind CSS 4</p>
+   169→            <p className="text-xs text-slate-500 mt-1">shadcn/ui (50+ components)</p>
+   170→          </div>
+   171→          <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+   172→            <div className="flex items-center gap-2 mb-2">
+   173→              <Database className="w-4 h-4 text-emerald-400" />
+   174→              <span className="font-semibold text-sm">Database</span>
+   175→            </div>
+   176→            <p className="text-xs text-slate-400">SQLite via Prisma ORM</p>
+   177→            <p className="text-xs text-slate-500 mt-1">Full-text search enabled</p>
+   178→          </div>
+   179→          <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+   180→            <div className="flex items-center gap-2 mb-2">
+   181→              <Brain className="w-4 h-4 text-fuchsia-400" />
+   182→              <span className="font-semibold text-sm">AI Integration</span>
+   183→            </div>
+   184→            <p className="text-xs text-slate-400">OpenAI / Anthropic APIs</p>
+   185→            <p className="text-xs text-slate-500 mt-1">SSE streaming support</p>
+   186→          </div>
+   187→        </div>
+   188→
+   189→        {/* Page Structure */}
+   190→        <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+   191→          <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+   192→            <LayoutDashboard className="w-4 h-4 text-cyan-400" />
+   193→            Page Structure
+   194→          </h3>
+   195→          <div className="space-y-2 font-mono text-xs">
+   196→            {[
+   197→              { icon: <Star className="w-3 h-3 text-yellow-400" />, label: 'HeroSection', desc: 'Animated entry point' },
+   198→              { icon: <AlertTriangle className="w-3 h-3 text-red-400" />, label: 'ProblemSection', desc: 'Pain points showcase' },
+   199→              { icon: <Sparkles className="w-3 h-3 text-emerald-400" />, label: 'SolutionSection', desc: '3-step pipeline' },
+   200→              { icon: <Cpu className="w-3 h-3 text-blue-400" />, label: 'ArchitectureSection', desc: 'Tech stack display' },
+   201→              { icon: <Activity className="w-3 h-3 text-green-400" />, label: 'SystemStatusSection', desc: 'Live health monitor' },
+   202→              { icon: <Rocket className="w-3 h-3 text-purple-400" />, label: 'CTASection', desc: 'Conversion section' },
+   203→              { icon: <BookOpen className="w-3 h-3 text-slate-400" />, label: 'Footer', desc: 'Navigation links' },
+   204→            ].map((item, i) => (
+   205→              <div key={i} className="flex items-center gap-2 p-2 bg-slate-950/50 rounded">
+   206→                {item.icon}
+   207→                <span className="text-violet-300">{item.label}</span>
+   208→                <span className="text-slate-500 ml-auto">{item.desc}</span>
+   209→              </div>
+   210→            ))}
+   211→          </div>
+   212→        </div>
+   213→
+   214→        {/* Stats */}
+   215→        <div className="grid grid-cols-3 gap-3">
+   216→          <div className="bg-gradient-to-br from-violet-950/50 to-slate-900 rounded-lg p-3 border border-violet-500/20 text-center">
+   217→            <p className="text-xl font-bold text-violet-400">7</p>
+   218→            <p className="text-xs text-slate-500">Components</p>
+   219→          </div>
+   220→          <div className="bg-gradient-to-br from-emerald-950/50 to-slate-900 rounded-lg p-3 border border-emerald-500/20 text-center">
+   221→            <p className="text-xl font-bold text-emerald-400">50+</p>
+   222→            <p className="text-xs text-slate-500">UI Components</p>
+   223→          </div>
+   224→          <div className="bg-gradient-to-br from-cyan-950/50 to-slate-900 rounded-lg p-3 border border-cyan-500/20 text-center">
+   225→            <p className="text-xl font-bold text-cyan-400">100%</p>
+   226→            <p className="text-xs text-slate-500">TypeScript</p>
+   227→          </div>
+   228→        </div>
+   229→      </div>
+   230→    </div>
+   231→  );
+   232→}
+   233→
+   234→// Preview 2: Dashboard View
+   235→function Preview2_Dashboard() {
+   236→  const [refreshing, setRefreshing] = useState(false);
+   237→  
+   238→  const handleRefresh = () => {
+   239→    setRefreshing(true);
+   240→    setTimeout(() => setRefreshing(false), 1500);
+   241→  };
+   242→
+   243→  return (
+   244→    <div className="h-full bg-slate-950 text-white p-4 overflow-auto">
+   245→      <div className="max-w-4xl mx-auto space-y-4">
+   246→        {/* Header */}
+   247→        <div className="flex items-center justify-between mb-6">
+   248→          <div>
+   249→            <h2 className="text-lg font-bold flex items-center gap-2">
+   250→              <LayoutDashboard className="w-5 h-5 text-cyan-400" />
+   251→              System Dashboard
+   252→            </h2>
+   253→            <p className="text-xs text-slate-500">Real-time monitoring overview</p>
+   254→          </div>
+   255→          <button 
+   256→            onClick={handleRefresh}
+   257→            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs flex items-center gap-2 transition-colors"
+   258→          >
+   259→            <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
+   260→            Refresh
+   261→          </button>
+   262→        </div>
+   263→
+   264→        {/* Status Cards */}
+   265→        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+   266→          {[
+   267→            { label: 'System Health', value: 'HEALTHY', color: 'text-emerald-400', dot: 'bg-emerald-500' },
+   268→            { label: 'Uptime', value: '99.97%', color: 'text-white', dot: '' },
+   269→            { label: 'API Latency', value: '45ms', color: 'text-white', dot: '' },
+   270→            { label: 'Active Users', value: '24', color: 'text-violet-400', dot: '' },
+   271→          ].map((stat, i) => (
+   272→            <div key={i} className="bg-slate-900 rounded-lg p-3 border border-slate-800">
+   273→              <div className="flex items-center justify-between mb-1">
+   274→                <span className="text-xs text-slate-500">{stat.label}</span>
+   275→                {stat.dot && <span className={`w-2 h-2 rounded-full ${stat.dot} animate-pulse`} />}
+   276→              </div>
+   277→              <p className={`text-lg font-bold ${stat.color}`}>{stat.value}</p>
+   278→            </div>
+   279→          ))}
+   280→        </div>
+   281→
+   282→        {/* Component Grid */}
+   283→        <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+   284→          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+   285→            <Wifi className="w-4 h-4 text-slate-400" />
+   286→            Component Communication Map
+   287→          </h3>
+   288→          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+   289→            {[
+   290→              { name: 'Frontend', icon: <Globe className="w-4 h-4" />, status: 'active' },
+   291→              { name: 'API Routes', icon: <Server className="w-4 h-4" />, status: 'active' },
+   292→              { name: 'Flink Service', icon: <Activity className="w-4 h-4" />, status: 'active' },
+   293→              { name: 'Spark Service', icon: <Cpu className="w-4 h-4" />, status: 'warning' },
+   294→              { name: 'Database', icon: <Database className="w-4 h-4" />, status: 'active' },
+   295→              { name: 'File Processing', icon: <HardDrive className="w-4 h-4" />, status: 'active' },
+   296→              { name: 'Middleware', icon: <Shield className="w-4 h-4" />, status: 'active' },
+   297→            ].map((comp, i) => (
+   298→              <div key={i} className={`p-2 rounded-lg border ${
+   299→                comp.status === 'active' ? 'border-emerald-500/30 bg-emerald-950/10' :
+   300→                comp.status === 'warning' ? 'border-amber-500/30 bg-amber-950/10' :
+   301→                'border-slate-700 bg-slate-800/30'
+   302→              }`}>
+   303→                <div className={`mb-1 ${comp.status === 'active' ? 'text-emerald-400' : comp.status === 'warning' ? 'text-amber-400' : 'text-slate-400'}`}>
+   304→                  {comp.icon}
+   305→                </div>
+   306→                <p className="text-xs font-medium text-white truncate">{comp.name}</p>
+   307→                <div className={`mt-1 w-2 h-2 rounded-full ${
+   308→                  comp.status === 'active' ? 'bg-emerald-500' :
+   309→                  comp.status === 'warning' ? 'bg-amber-500' :
+   310→                  'bg-slate-500'
+   311→                }`} />
+   312→              </div>
+   313→            ))}
+   314→          </div>
+   315→        </div>
+   316→
+   317→        {/* Data Flows */}
+   318→        <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+   319→          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+   320→            <ArrowUpDown className="w-4 h-4 text-slate-400" />
+   321→            Active Data Flows
+   322→          </h3>
+   323→          <div className="space-y-2">
+   324→            {[
+   325→              { from: 'Frontend', to: 'API Routes', latency: '12ms', throughput: '1.2K/s' },
+   326→              { from: 'API Routes', to: 'Flink', latency: '23ms', throughput: '850/s' },
+   327→              { from: 'Flink', to: 'Database', latency: '8ms', throughput: '2.1K/s' },
+   328→            ].map((flow, i) => (
+   329→              <div key={i} className="flex items-center justify-between p-2 bg-slate-950/50 rounded text-xs">
+   330→                <div className="flex items-center gap-2">
+   331→                  <span className="text-violet-400">{flow.from}</span>
+   332→                  <ArrowRight className="w-3 h-3 text-slate-600" />
+   333→                  <span className="text-cyan-400">{flow.to}</span>
+   334→                </div>
+   335→                <div className="flex items-center gap-3 text-slate-500">
+   336→                  <span>{flow.latency}</span>
+   337→                  <span>{flow.throughput}</span>
+   338→                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+   339→                </div>
+   340→              </div>
+   341→            ))}
+   342→          </div>
+   343→        </div>
+   344→
+   345→        {/* Quick Stats */}
+   346→        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+   347→          {[
+   348→            { value: '12', label: 'Active Pipelines', color: 'text-violet-400' },
+   349→            { value: '2.4 TB', label: 'Data Processed', color: 'text-cyan-400' },
+   350→            { value: '8', label: 'Running Experiments', color: 'text-emerald-400' },
+   351→            { value: '12.3K', label: 'Requests/Hour', color: 'text-amber-400' },
+   352→          ].map((stat, i) => (
+   353→            <div key={i} className="bg-slate-900 rounded-lg p-3 border border-slate-800 text-center">
+   354→              <p className={`text-lg font-bold ${stat.color}`}>{stat.value}</p>
+   355→              <p className="text-xs text-slate-500">{stat.label}</p>
+   356→            </div>
+   357→          ))}
+   358→        </div>
+   359→      </div>
+   360→    </div>
+   361→  );
+   362→}
+   363→
+   364→// Preview 3: Hero Section
+   365→function Preview3_HeroSection() {
+   366→  const [typedText, setTypedText] = useState('');
+   367→  const fullText = 'The Autonomous Research Collaborator';
+   368→
+   369→  useState(() => {
+   370→    let i = 0;
+   371→    const interval = setInterval(() => {
+   372→      if (i <= fullText.length) {
+   373→        setTypedText(fullText.slice(0, i));
+   374→        i++;
+   375→      } else {
+   376→        clearInterval(interval);
+   377→      }
+   378→    }, 80);
+   379→    return () => clearInterval(interval);
+   380→  });
+   381→
+   382→  return (
+   383→    <div className="h-full bg-slate-950 text-white overflow-hidden relative">
+   384→      {/* Background Effects */}
+   385→      <div className="absolute inset-0 bg-gradient-to-br from-violet-950 via-slate-950 to-emerald-950" />
+   386→      <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-violet-500/20 rounded-full blur-[80px] animate-pulse" />
+   387→      <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-emerald-500/20 rounded-full blur-[80px] animate-pulse" />
+   388→      
+   389→      {/* Content */}
+   390→      <div className="relative z-10 h-full flex flex-col items-center justify-center p-6 text-center">
+   391→        {/* Logo */}
+   392→        <div className="mb-6">
+   393→          <div className="inline-flex items-center gap-3">
+   394→            <Atom className="w-12 h-12 text-violet-400 animate-spin-slow" strokeWidth={1.5} />
+   395→            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+   396→              AETHELGARD
+   397→            </h1>
+   398→          </div>
+   399→          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-950/50 text-xs text-violet-300">
+   400→            <Code2 className="w-3 h-3" />
+   401→            AETH-1.0.0 · Open Source
+   402→          </div>
+   403→        </div>
+   404→
+   405→        {/* Tagline */}
+   406→        <div className="mb-6 min-h-[60px] flex items-center justify-center">
+   407→          <p className="text-lg sm:text-xl font-light text-slate-300">
+   408→            {typedText}
+   409→            <span className="inline-block w-0.5 h-5 ml-1 bg-cyan-400 animate-pulse" />
+   410→          </p>
+   411→        </div>
+   412→
+   413→        {/* Badges */}
+   414→        <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+   415→          {[
+   416→            { icon: <Shield className="w-3 h-3" />, label: 'Physics-Grounded', color: 'bg-emerald-950/50 border-emerald-500/30 text-emerald-300' },
+   417→            { icon: <Code2 className="w-3 h-3" />, label: 'Open-Source', color: 'bg-violet-950/50 border-violet-500/30 text-violet-300' },
+   418→            { icon: <BookOpen className="w-3 h-3" />, label: 'FDA Compliant', color: 'bg-cyan-950/50 border-cyan-500/30 text-cyan-300' },
+   419→          ].map((badge, i) => (
+   420→            <span key={i} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs ${badge.color}`}>
+   421→              {badge.icon}
+   422→              {badge.label}
+   423→            </span>
+   424→          ))}
+   425→        </div>
+   426→
+   427→        {/* CTA Buttons */}
+   428→        <div className="flex flex-col sm:flex-row items-center gap-3">
+   429→          <button className="px-6 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 rounded-lg text-sm font-medium shadow-lg shadow-violet-500/25 transition-all flex items-center gap-2">
+   430→            Get Started
+   431→            <ArrowRight className="w-4 h-4" />
+   432→          </button>
+   433→          <button className="px-6 py-3 border border-slate-700 bg-slate-900/50 hover:bg-slate-800 rounded-lg text-sm transition-all flex items-center gap-2">
+   434→            <LayoutDashboard className="w-4 h-4" />
+   435→            View Dashboard
+   436→          </button>
+   437→        </div>
+   438→
+   439→        {/* Scroll Indicator */}
+   440→        <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+   441→          <div className="w-5 h-8 rounded-full border-2 border-slate-600 flex items-start justify-center p-1.5">
+   442→            <div className="w-1 h-2 bg-slate-500 rounded-full animate-bounce" />
+   443→          </div>
+   444→        </div>
+   445→      </div>
+   446→    </div>
+   447→  );
+   448→}
+   449→
+   450→// Preview 4: Problem/Solution Section
+   451→function Preview4_ProblemSolution() {
+   452→  const [activeTab, setActiveTab] = useState<'problem' | 'solution'>('problem');
+   453→
+   454→  return (
+   455→    <div className="h-full bg-slate-900 text-white overflow-auto">
+   456→      <div className="p-4 max-w-4xl mx-auto">
+   457→        {/* Tab Switcher */}
+   458→        <div className="flex gap-2 mb-6">
+   459→          <button
+   460→            onClick={() => setActiveTab('problem')}
+   461→            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+   462→              activeTab === 'problem' 
+   463→                ? 'bg-red-950/50 border border-red-500/30 text-red-400' 
+   464→                : 'bg-slate-800 border border-slate-700 text-slate-400'
+   465→            }`}
+   466→          >
+   467→            <AlertTriangle className="w-4 h-4 inline mr-2" />
+   468→            The Problem
+   469→          </button>
+   470→          <button
+   471→            onClick={() => setActiveTab('solution')}
+   472→            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+   473→              activeTab === 'solution' 
+   474→                ? 'bg-emerald-950/50 border border-emerald-500/30 text-emerald-400' 
+   475→                : 'bg-slate-800 border border-slate-700 text-slate-400'
+   476→            }`}
+   477→          >
+   478→            <Sparkles className="w-4 h-4 inline mr-2" />
+   479→            The Solution
+   480→          </button>
+   481→        </div>
+   482→
+   483→        {activeTab === 'problem' ? (
+   484→          <>
+   485→            <h2 className="text-2xl font-bold mb-2">The Drug Discovery Tool Dilemma</h2>
+   486→            <p className="text-slate-400 text-sm mb-6">Current tools have fatal flaws that slow innovation.</p>
+   487→            
+   488→            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+   489→              {[
+   490→                {
+   491→                  title: 'LLM Chemistry Tools',
+   492→                  icon: <BrainCircuit className="w-6 h-6" />,
+   493→                  color: 'text-red-400',
+   494→                  bgColor: 'bg-red-950/20',
+   495→                  borderColor: 'border-red-500/30',
+   496→                  problems: ['Hallucinate structures', 'No physics validation', 'Black box predictions', 'Cannot explain reasoning'],
+   497→                },
+   498→                {
+   499→                  title: 'Enterprise Platforms',
+   500→                  icon: <DollarSign className="w-6 h-6" />,
+   501→                  color: 'text-amber-400',
+   502→                  bgColor: 'bg-amber-950/20',
+   503→                  borderColor: 'border-amber-500/30',
+   504→                  problems: ['$500K+/year licensing', 'Closed source code', 'Long implementation', 'Vendor lock-in'],
+   505→                },
+   506→                {
+   507→                  title: 'Traditional CADD',
+   508→                  icon: <Clock className="w-6 h-6" />,
+   509→                  color: 'text-slate-400',
+   510→                  bgColor: 'bg-slate-800/30',
+   511→                  borderColor: 'border-slate-600/30',
+   512→                  problems: ['Manual workflows', 'No AI integration', 'Slow iterations', 'Limited scalability'],
+   513→                },
+   514→              ].map((card, i) => (
+   515→                <div key={i} className={`${card.bgColor} ${card.borderColor} border rounded-lg p-4 backdrop-blur-sm`}>
+   516→                  <div className={`${card.color} mb-3`}>{card.icon}</div>
+   517→                  <h3 className="font-semibold text-white mb-3 text-sm">{card.title}</h3>
+   518→                  <ul className="space-y-2">
+   519→                    {card.problems.map((prob, j) => (
+   520→                      <li key={j} className="text-xs text-slate-300 flex items-start gap-2">
+   521→                        <span className="text-red-400">×</span>
+   522→                        {prob}
+   523→                      </li>
+   524→                    ))}
+   525→                  </ul>
+   526→                  <div className="mt-3 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+   527→                </div>
+   528→              ))}
+   529→            </div>
+   530→          </>
+   531→        ) : (
+   532→          <>
+   533→            <h2 className="text-2xl font-bold mb-2">How Aethelgard Solves It</h2>
+   534→            <p className="text-slate-400 text-sm mb-6">Three-stage pipeline combining AI creativity with physics validation.</p>
+   535→            
+   536→            <div className="relative mb-6">
+   537→              {/* Connection Line */}
+   538→              <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-violet-500 via-emerald-500 to-cyan-500 -translate-y-1/2 opacity-30" />
+   539→              
+   540→              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
+   541→                {[
+   542→                  {
+   543→                    step: 1,
+   544→                    title: 'AI Reasoning',
+   545→                    subtitle: 'Generate Ideas',
+   546→                    icon: <Brain className="w-8 h-8" />,
+   547→                    color: 'text-violet-400',
+   548→                    bgColor: 'bg-violet-950/30',
+   549→                    borderColor: 'border-violet-500/40',
+   550→                    description: 'LLM-powered hypothesis generation and molecular design.',
+   551→                  },
+   552→                  {
+   553→                    step: 2,
+   554→                    title: 'Physics Grounding',
+   555→                    subtitle: 'Validate with Physics',
+   556→                    icon: <Atom className="w-8 h-8" />,
+   557→                    color: 'text-emerald-400',
+   558→                    bgColor: 'bg-emerald-950/30',
+   559→                    borderColor: 'border-emerald-500/40',
+   560→                    description: 'SDE Engine validates all outputs against physical laws.',
+   561→                  },
+   562→                  {
+   563→                    step: 3,
+   564→                    title: 'Agent Orchestration',
+   565→                    subtitle: 'Execute Autonomously',
+   566→                    icon: <Bot className="w-8 h-8" />,
+   567→                    color: 'text-cyan-400',
+   568→                    bgColor: 'bg-cyan-950/30',
+   569→                    borderColor: 'border-cyan-500/40',
+   570→                    description: 'Autonomous agents run experiments without intervention.',
+   571→                  },
+   572→                ].map((node, i) => (
+   573→                  <div key={i} className={`${node.bgColor} ${node.borderColor} border rounded-lg p-4 backdrop-blur-sm`}>
+   574→                    <div className="flex items-center justify-between mb-2">
+   575→                      <span className={`text-xs font-mono ${node.color}`}>STEP {node.step}</span>
+   576→                      <Zap className={`w-4 h-4 ${node.color}`} />
+   577→                    </div>
+   578→                    <div className={`${node.color} mb-2`}>{node.icon}</div>
+   579→                    <h3 className="font-bold text-white text-sm">{node.title}</h3>
+   580→                    <p className={`text-xs ${node.color} mb-2`}>{node.subtitle}</p>
+   581→                    <p className="text-xs text-slate-400">{node.description}</p>
+   582→                  </div>
+   583→                ))}
+   584→              </div>
+   585→            </div>
+   586→
+   587→            {/* Benefits Grid */}
+   588→            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+   589→              {['No Hallucinations', 'Open Source', 'Autonomous Operation', 'FDA Compliant', 'Explainable AI', 'Secure by Design'].map((benefit, i) => (
+   590→                <div key={i} className="flex items-center gap-2 p-2 rounded bg-slate-800/50 border border-slate-700/50">
+   591→                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+   592→                  <span className="text-xs text-slate-300">{benefit}</span>
+   593→                </div>
+   594→              ))}
+   595→            </div>
+   596→          </>
+   597→        )}
+   598→      </div>
+   599→    </div>
+   600→  );
+   601→}
+   602→
+   603→// Preview 5: Architecture Section
+   604→function Preview5_Architecture() {
+   605→  const codeExample = `# Aethelgard Pipeline Example
+   606→from aethelgard import Pipeline, Agent
+   607→
+   608→# Initialize physics-grounded validation
+   609→physics = PhysicsEngine(
+   610→    mode='quantum-classical')
+   611→
+   612→# Create autonomous research agent
+   613→agent = Agent(
+   614→    reasoning_model='aethelgard-xl',
+   615→    validator=physics,
+   616→    mode='autonomous')`;
+   617→
+   618→  return (
+   619→    <div className="h-full bg-gradient-to-b from-slate-950 to-slate-900 text-white overflow-auto">
+   620→      <div className="p-4 max-w-4xl mx-auto space-y-6">
+   621→        {/* Header */}
+   622→        <div className="text-center">
+   623→          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-950/30 text-xs text-cyan-400 mb-3">
+   624→            <Code2 className="w-3 h-3" />
+   625→            Technical Architecture
+   626→          </div>
+   627→          <h2 className="text-2xl font-bold">Polyglot Architecture</h2>
+   628→          <p className="text-slate-400 text-sm mt-1">Each language chosen for its strengths</p>
+   629→        </div>
+   630→
+   631→        {/* Language Grid */}
+   632→        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+   633→          {[
+   634→            { name: 'Python', purpose: 'ETL / ML / Data', color: 'text-yellow-400', bgColor: 'bg-yellow-950/30 border-yellow-500/30', icon: <Code2 className="w-5 h-5" /> },
+   635→            { name: 'Go', purpose: 'Concurrent Processing', color: 'text-cyan-400', bgColor: 'bg-cyan-950/30 border-cyan-500/30', icon: <Zap className="w-5 h-5" /> },
+   636→            { name: 'Elixir', purpose: 'Security / Crypto', color: 'text-purple-400', bgColor: 'bg-purple-950/30 border-purple-500/30', icon: <Shield className="w-5 h-5" /> },
+   637→            { name: 'C/C++', purpose: 'Physics Engine (SDE)', color: 'text-blue-400', bgColor: 'bg-blue-950/30 border-blue-500/30', icon: <Cpu className="w-5 h-5" /> },
+   638→          ].map((lang, i) => (
+   639→            <div key={i} className={`${lang.bgColor} border rounded-lg p-4 text-center`}>
+   640→              <div className={`${lang.color} flex justify-center mb-2`}>{lang.icon}</div>
+   641→              <h3 className="font-bold text-white text-sm">{lang.name}</h3>
+   642→              <p className={`text-xs ${lang.color} opacity-80`}>{lang.purpose}</p>
+   643→            </div>
+   644→          ))}
+   645→        </div>
+   646→
+   647→        {/* Streaming Infrastructure */}
+   648→        <div>
+   649→          <h3 className="text-base font-semibold text-center mb-4">Streaming Infrastructure</h3>
+   650→          <div className="flex flex-col md:flex-row items-center justify-center gap-3">
+   651→            {[
+   652→              { name: 'Kafka', desc: 'Event Streaming', color: 'border-orange-500/40 bg-orange-950/20' },
+   653→              { name: 'Apache Flink', desc: 'Stream Processing', color: 'border-emerald-500/40 bg-emerald-950/20' },
+   654→              { name: 'Spark', desc: 'Batch Analytics', color: 'border-violet-500/40 bg-violet-950/20' },
+   655→            ].map((component, i) => (
+   656→              <div key={i} className="flex items-center w-full md:w-auto">
+   657→                <div className={`${component.color} border rounded-lg p-3 text-center flex-1 md:flex-initial min-w-[120px]`}>
+   658→                  <Database className="w-6 h-6 mx-auto mb-1 text-slate-300" />
+   659→                  <h4 className="font-bold text-white text-sm">{component.name}</h4>
+   660→                  <p className="text-xs text-slate-400">{component.desc}</p>
+   661→                </div>
+   662→                {i < 2 && (
+   663→                  <div className="hidden md:flex items-center px-2">
+   664→                    <ArrowRight className="w-4 h-4 text-slate-600" />
+   665→                  </div>
+   666→                )}
+   667→              </div>
+   668→            ))}
+   669→          </div>
+   670→          <div className="flex items-center justify-center mt-3 gap-2">
+   671→            <span className="relative flex h-2 w-2">
+   672→              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+   673→              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+   674→            </span>
+   675→            <span className="text-xs text-slate-400">Real-time data processing enabled</span>
+   676→          </div>
+   677→        </div>
+   678→
+   679→        {/* Data Formats */}
+   680→        <div>
+   681→          <h3 className="text-sm font-semibold text-center mb-3">Supported Data Formats</h3>
+   682→          <div className="flex flex-wrap items-center justify-center gap-2">
+   683→            {['Parquet', 'Avro', 'ORC', 'JSON', 'CSV', 'SDF', 'MOL'].map((format, i) => (
+   684→              <span key={i} className="px-3 py-1 rounded-full border border-slate-700 text-xs text-slate-300 bg-slate-800/50">
+   685→                {format}
+   686→              </span>
+   687→            ))}
+   688→          </div>
+   689→        </div>
+   690→
+   691→        {/* Code Example */}
+   692→        <div className="bg-slate-900/80 border border-slate-800 rounded-lg overflow-hidden">
+   693→          <div className="flex items-center justify-between px-3 py-2 bg-slate-800/50 border-b border-slate-700">
+   694→            <div className="flex items-center gap-2">
+   695→              <div className="flex gap-1">
+   696→                <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+   697→                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+   698→                <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+   699→              </div>
+   700→              <span className="text-xs text-slate-400 font-mono ml-2">pipeline_example.py</span>
+   701→            </div>
+   702→            <span className="text-xs border border-yellow-500/30 text-yellow-400 px-2 py-0.5 rounded">Python</span>
+   703→          </div>
+   704→          <pre className="p-4 overflow-x-auto text-xs leading-relaxed">
+   705→            <code className="text-slate-300 font-mono">
+   706→              {codeExample.split('\n').map((line, i) => (
+   707→                <div key={i} className="hover:bg-slate-800/30 -mx-4 px-4">
+   708→                  <span className="text-slate-600 select-none mr-3 inline-block w-4 text-right">{i + 1}</span>
+   709→                  {line.includes('#') ? (
+   710→                    <span className="text-slate-500">{line}</span>
+   711→                  ) : line.includes('from') || line.includes('import') ? (
+   712→                    <span className="text-purple-400">{line}</span>
+   713→                  ) : line.includes('=') ? (
+   714→                    <>
+   715→                      <span className="text-cyan-400">{line.split('=')[0]}</span>
+   716→                      <span className="text-slate-400">=</span>
+   717→                      <span className="text-emerald-400">{line.split('=').slice(1).join('=')}</span>
+   718→                    </>
+   719→                  ) : (
+   720→                    <span>{line}</span>
+   721→                  )}
+   722→                </div>
+   723→              ))}
+   724→            </code>
+   725→          </pre>
+   726→        </div>
+   727→      </div>
+   728→    </div>
+   729→  );
+   730→}
+   731→
+   732→// Preview 6: CTA/Footer/Status
+   733→function Preview6_CTAFooterStatus() {
+   734→  const [email, setEmail] = useState('');
+   735→  const [isSubmitted, setIsSubmitted] = useState(false);
+   736→
+   737→  const handleSubmit = (e: React.FormEvent) => {
+   738→    e.preventDefault();
+   739→    if (email) setIsSubmitted(true);
+   740→  };
+   741→
+   742→  return (
+   743→    <div className="h-full bg-slate-950 text-white overflow-auto">
+   744→      <div className="p-4 max-w-3xl mx-auto space-y-6">
+   745→        {/* CTA Section */}
+   746→        <div className="text-center py-8 border-b border-slate-800">
+   747→          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-950/30 text-xs text-violet-400 mb-4">
+   748→            <Rocket className="w-3 h-3" />
+   749→            Get Started Today
+   750→          </div>
+   751→          <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+   752→            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
+   753→              Ready to Transform
+   754→            </span>
+   755→            <br />
+   756→            <span className="text-white">Your Research?</span>
+   757→          </h2>
+   758→          <p className="text-slate-400 text-sm mb-6 max-w-md mx-auto">
+   759→            Join the open-source revolution in drug discovery.
+   760→          </p>
+   761→          
+   762→          <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+   763→            <button className="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-lg text-sm font-medium shadow-lg shadow-violet-500/25 flex items-center gap-2">
+   764→              <Rocket className="w-4 h-4" />
+   765→              Launch Dashboard
+   766→              <ArrowRight className="w-4 h-4" />
+   767→            </button>
+   768→            <button className="px-5 py-2.5 border border-slate-700 bg-slate-900/80 rounded-lg text-sm flex items-center gap-2">
+   769→              <BookOpen className="w-4 h-4" />
+   770→              Documentation
+   771→            </button>
+   772→            <button className="px-5 py-2.5 text-slate-400 hover:text-white rounded-lg text-sm flex items-center gap-2">
+   773→              <Github className="w-4 h-4" />
+   774→              GitHub
+   775→            </button>
+   776→          </div>
+   777→
+   778→          {/* Email Form */}
+   779→          {!isSubmitted ? (
+   780→            <form onSubmit={handleSubmit} className="max-w-sm mx-auto">
+   781→              <div className="flex gap-2">
+   782→                <input
+   783→                  type="email"
+   784→                  placeholder="Enter your work email"
+   785→                  value={email}
+   786→                  onChange={(e) => setEmail(e.target.value)}
+   787→                  className="flex-1 h-10 bg-slate-900 border border-slate-700 rounded-lg px-3 text-sm text-white placeholder:text-slate-500 focus:border-violet-500 focus:outline-none"
+   788→                  required
+   789→                />
+   790→                <button
+   791→                  type="submit"
+   792→                  disabled={!email}
+   793→                  className="h-10 px-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-lg text-sm flex items-center gap-2"
+   794→                >
+   795→                  <Mail className="w-3.5 h-3.5" />
+   796→                  Contact
+   797→                </button>
+   798→              </div>
+   799→            </form>
+   800→          ) : (
+   801→            <div className="max-w-sm mx-auto p-4 rounded-lg bg-emerald-950/20 border border-emerald-500/30">
+   802→              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+   803→              <p className="text-sm text-white font-medium">Thank you!</p>
+   804→              <p className="text-xs text-slate-400">We'll respond within 24 hours.</p>
+   805→            </div>
+   806→          )}
+   807→
+   808→          {/* Trust Badges */}
+   809→          <div className="flex flex-wrap items-center justify-center gap-2 mt-6 opacity-60">
+   810→            {['MIT Licensed', 'FDA/MIDD Ready', 'SOC 2 Compliant', 'HIPAA Ready'].map((badge, i) => (
+   811→              <span key={i} className="px-2 py-1 rounded-full border border-slate-700 text-xs text-slate-400">
+   812→                {badge}
+   813→              </span>
+   814→            ))}
+   815→          </div>
+   816→        </div>
+   817→
+   818→        {/* Footer */}
+   819→        <footer className="py-6 border-t border-slate-800">
+   820→          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+   821→            {[
+   822→              { title: 'Product', links: ['Dashboard', 'Documentation', 'API Reference', 'Changelog'] },
+   823→              { title: 'Resources', links: ['Getting Started', 'Tutorials', 'Blog', 'Community'] },
+   824→              { title: 'Platform', links: ['System Status', 'Architecture', 'Security', 'Compliance'] },
+   825→              { title: 'Company', links: ['About', 'Contact', 'Enterprise', 'Careers'] },
+   826→            ].map((section, i) => (
+   827→              <div key={i}>
+   828→                <h4 className="font-semibold text-white text-xs mb-2">{section.title}</h4>
+   829→                <ul className="space-y-1.5">
+   830→                  {section.links.map((link, j) => (
+   831→                    <li key={j}>
+   832→                      <a href="#" className="text-xs text-slate-500 hover:text-violet-400 transition-colors">
+   833→                        {link}
+   834→                      </a>
+   835→                    </li>
+   836→                  ))}
+   837→                </ul>
+   838→              </div>
+   839→            ))}
+   840→          </div>
+   841→
+   842→          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+   843→            <div className="flex items-center gap-2 text-xs text-slate-500">
+   844→              <span>© 2026 Project Aethelgard</span>
+   845→              <span>·</span>
+   846→              <span>MIT License</span>
+   847→            </div>
+   848→            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+   849→              <span>Built with</span>
+   850→              <Heart className="w-3 h-3 text-red-500 fill-red-500 animate-pulse" />
+   851→              <span>for science</span>
+   852→            </div>
+   853→          </div>
+   854→        </footer>
+   855→      </div>
+   856→    </div>
+   857→  );
+   858→}
+   859→
+   860→// ==================== MAIN IDE STUDIO COMPONENT ====================
+   861→
+   862→type PreviewPanel = 1 | 2 | 3 | 4 | 5 | 6;
+   863→
+   864→const previewPanels = [
+   865→  { id: 1 as PreviewPanel, title: 'Frontend Overview', icon: <LayoutDashboard className="w-4 h-4" />, component: Preview1_FrontendOverview },
+   866→  { id: 2 as PreviewPanel, title: 'Dashboard View', icon: <Activity className="w-4 h-4" />, component: Preview2_Dashboard },
+   867→  { id: 3 as PreviewPanel, title: 'Hero Section', icon: <Star className="w-4 h-4" />, component: Preview3_HeroSection },
+   868→  { id: 4 as PreviewPanel, title: 'Problem/Solution', icon: <GitBranch className="w-4 h-4" />, component: Preview4_ProblemSolution },
+   869→  { id: 5 as PreviewPanel, title: 'Architecture', icon: <Cpu className="w-4 h-4" />, component: Preview5_Architecture },
+   870→  { id: 6 as PreviewPanel, title: 'CTA/Footer/Status', icon: <BookOpen className="w-4 h-4" />, component: Preview6_CTAFooterStatus },
+   871→];
+   872→
+   873→export default function IDEStudioPage() {
+   874→  const [sidebarOpen, setSidebarOpen] = useState(true);
+   875→  const [activePreview, setActivePreview] = useState<PreviewPanel>(1);
+   876→  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/application', '/application/app', '/application/components', '/application/components/landing', '/application/components/dashboard']));
+   877→  const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
+   878→  const [copiedPath, setCopiedPath] = useState<string | null>(null);
+   879→
+   880→  // Toggle folder expansion
+   881→  const toggleFolder = useCallback((path: string) => {
+   882→    setExpandedFolders(prev => {
+   883→      const next = new Set(prev);
+   884→      if (next.has(path)) {
+   885→        next.delete(path);
+   886→      } else {
+   887→        next.add(path);
+   888→      }
+   889→      return next;
+   890→    });
+   891→  }, []);
+   892→
+   893→  // Handle file selection
+   894→  const handleFileSelect = useCallback((file: FileNode) => {
+   895→    setSelectedFile(file);
+   896→  }, []);
+   897→
+   898→  // Copy file path
+   899→  const copyPath = useCallback(async (path: string) => {
+   900→    try {
+   901→      await navigator.clipboard.writeText(path);
+   902→      setCopiedPath(path);
+   903→      setTimeout(() => setCopiedPath(null), 2000);
+   904→    } catch {
+   905→      // Fallback for non-secure contexts
+   906→      console.log('Copy:', path);
+   907→    }
+   908→  }, []);
+   909→
+   910→  // Render file tree recursively
+   911→  const renderFileTree = (nodes: FileNode[], depth = 0): React.ReactNode[] => {
+   912→    return nodes.flatMap((node) => {
+   913→      const isExpanded = expandedFolders.has(node.path);
+   914→      
+   915→      if (node.type === 'folder') {
+   916→        return (
+   917→          <div key={node.path}>
+   918→            <button
+   919→              onClick={() => toggleFolder(node.path)}
+   920→              className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-slate-800 rounded-sm transition-colors text-left"
+   921→              style={{ paddingLeft: `${depth * 16 + 8}px` }}
+   922→            >
+   923→              {isExpanded ? (
+   924→                <ChevronDown className="w-4 h-4 text-slate-500 flex-shrink-0" />
+   925→              ) : (
+   926→                <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
+   927→              )}
+   928→              {isExpanded ? (
+   929→                <FolderOpen className="w-4 h-4 text-amber-400 flex-shrink-0" />
+   930→              ) : (
+   931→                <Folder className="w-4 h-4 text-amber-400 flex-shrink-0" />
+   932→              )}
+   933→              <span className="text-sm text-slate-300 truncate">{node.name}</span>
+   934→            </button>
+   935→            {isExpanded && node.children && (
+   936→              <div>{renderFileTree(node.children, depth + 1)}</div>
+   937→            )}
+   938→          </div>
+   939→        );
+   940→      } else {
+   941→        return (
+   942→          <button
+   943→            key={node.path}
+   944→            onClick={() => handleFileSelect(node)}
+   945→            className={`w-full flex items-center gap-2 px-2 py-1.5 hover:bg-slate-800 rounded-sm transition-colors group ${
+   946→              selectedFile?.path === node.path ? 'bg-slate-800' : ''
+   947→            }`}
+   948→            style={{ paddingLeft: `${depth * 16 + 28}px` }}
+   949→          >
+   950→            <FileCode className="w-4 h-4 text-violet-400 flex-shrink-0" />
+   951→            <span className="text-sm text-slate-300 truncate flex-1 text-left">{node.name}</span>
+   952→            <button
+   953→              onClick={(e) => {
+   954→                e.stopPropagation();
+   955→                copyPath(node.path);
+   956→              }}
+   957→              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-700 rounded transition-all"
+   958→            >
+   959→              {copiedPath === node.path ? (
+   960→                <Check className="w-3 h-3 text-emerald-400" />
+   961→              ) : (
+   962→                <Copy className="w-3 h-3 text-slate-500" />
+   963→              )}
+   964→            </button>
+   965→          </button>
+   966→        );
+   967→      }
+   968→    });
+   969→  };
+   970→
+   971→  // Get active preview component
+   972→  const ActivePreviewComponent = previewPanels.find(p => p.id === activePreview)?.component || Preview1_FrontendOverview;
+   973→
+   974→  return (
+   975→    <div className="h-screen bg-slate-950 text-white flex flex-col overflow-hidden">
+   976→      {/* Top Bar */}
+   977→      <header className="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 flex-shrink-0">
+   978→        <div className="flex items-center gap-4">
+   979→          <button
+   980→            onClick={() => setSidebarOpen(!sidebarOpen)}
+   981→            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+   982→            title={sidebarOpen ? 'Close Sidebar' : 'Open Sidebar'}
+   983→          >
+   984→            {sidebarOpen ? <PanelLeftClose className="w-5 h-5 text-slate-400" /> : <PanelLeft className="w-5 h-5 text-slate-400" />}
+   985→          </button>
+   986→          
+   987→          <div className="flex items-center gap-3">
+   988→            <div className="flex items-center gap-2">
+   989→              <Atom className="w-6 h-6 text-violet-400" strokeWidth={1.5} />
+   990→              <span className="font-bold text-lg bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+   991→                AETHELGARD IDE Studio
+   992→              </span>
+   993→            </div>
+   994→            <span className="text-xs text-slate-500 hidden sm:inline">v6.0 · Interactive Explorer</span>
+   995→          </div>
+   996→        </div>
+   997→
+   998→        <div className="flex items-center gap-3">
+   999→          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-lg">
+  1000→            <span className="relative flex h-2 w-2">
+  1001→              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+  1002→              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+  1003→            </span>
+  1004→            <span className="text-xs text-slate-400">Live Preview</span>
+  1005→          </div>
+  1006→          
+  1007→          <a
+  1008→            href="#"
+  1009→            target="_blank"
+  1010→            rel="noopener noreferrer"
+  1011→            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 rounded-lg text-sm font-medium transition-colors"
+  1012→          >
+  1013→            <ExternalLink className="w-4 h-4" />
+  1014→            <span className="hidden lg:inline">Open in New Tab</span>
+  1015→          </a>
+  1016→        </div>
+  1017→      </header>
+  1018→
+  1019→      {/* Main Content Area */}
+  1020→      <div className="flex-1 flex overflow-hidden">
+  1021→        {/* Sidebar - File Explorer */}
+  1022→        {sidebarOpen && (
+  1023→          <aside className="w-72 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0">
+  1024→            {/* Sidebar Header */}
+  1025→            <div className="p-3 border-b border-slate-800">
+  1026→              <div className="flex items-center justify-between mb-2">
+  1027→                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Explorer</span>
+  1028→                <div className="flex items-center gap-1">
+  1029→                  <button className="p-1 hover:bg-slate-800 rounded transition-colors" title="New File">
+  1030→                    <FileCode className="w-4 h-4 text-slate-500" />
+  1031→                  </button>
+  1032→                  <button className="p-1 hover:bg-slate-800 rounded transition-colors" title="Settings">
+  1033→                    <Settings className="w-4 h-4 text-slate-500" />
+  1034→                  </button>
+  1035→                </div>
+  1036→              </div>
+  1037→              
+  1038→              {/* Project Name */}
+  1039→              <div className="flex items-center gap-2 p-2 bg-slate-950 rounded-lg">
+  1040→                <FolderOpen className="w-4 h-4 text-amber-400" />
+  1041→                <span className="text-sm font-medium text-white truncate">Aethelgard-Strategic-Insights</span>
+  1042→                <GitBranch className="w-3.5 h-3.5 text-slate-500 ml-auto" />
+  1043→              </div>
+  1044→            </div>
+  1045→
+  1046→            {/* File Tree */}
+  1047→            <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+  1048→              {renderFileTree(fileTree)}
+  1049→            </div>
+  1050→
+  1051→            {/* Selected File Info */}
+  1052→            {selectedFile && (
+  1053→              <div className="p-3 border-t border-slate-800 bg-slate-950/50">
+  1054→                <div className="text-xs text-slate-500 mb-1">Selected File</div>
+  1055→                <div className="text-sm text-white font-medium truncate">{selectedFile.name}</div>
+  1056→                {selectedFile.language && (
+  1057→                  <div className="text-xs text-violet-400 mt-1">{selectedFile.language}</div>
+  1058→                )}
+  1059→                {selectedFile.content && (
+  1060→                  <div className="text-xs text-slate-500 mt-2 line-clamp-2">{selectedFile.content}</div>
+  1061→                )}
+  1062→              </div>
+  1063→            )}
+  1064→          </aside>
+  1065→        )}
+  1066→
+  1067→        {/* Main Preview Area */}
+  1068→        <main className="flex-1 flex flex-col overflow-hidden">
+  1069→          {/* Preview Tabs */}
+  1070→          <div className="h-12 bg-slate-900 border-b border-slate-800 flex items-center px-2 gap-1 flex-shrink-0 overflow-x-auto">
+  1071→            <span className="text-xs text-slate-500 mr-2 hidden lg:inline">Previews:</span>
+  1072→            {previewPanels.map((panel) => (
+  1073→              <button
+  1074→                key={panel.id}
+  1075→                onClick={() => setActivePreview(panel.id)}
+  1076→                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+  1077→                  activePreview === panel.id
+  1078→                    ? 'bg-violet-600/20 text-violet-300 border border-violet-500/30'
+  1079→                    : 'text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'
+  1080→                }`}
+  1081→              >
+  1082→                {panel.icon}
+  1083→                <span className="hidden xl:inline">{panel.title}</span>
+  1084→                <span className="xl:hidden">P{panel.id}</span>
+  1085→              </button>
+  1086→            ))}
+  1087→            
+  1088→            <div className="ml-auto pl-2 flex items-center gap-2">
+  1089→              <button className="p-1.5 hover:bg-slate-800 rounded transition-colors" title="Maximize">
+  1090→                <Maximize2 className="w-4 h-4 text-slate-500" />
+  1091→              </button>
+  1092→            </div>
+  1093→          </div>
+  1094→
+  1095→          {/* Preview Content */}
+  1096→          <div className="flex-1 overflow-hidden bg-slate-950">
+  1097→            <ActivePreviewComponent />
+  1098→          </div>
+  1099→
+  1100→          {/* Bottom Status Bar */}
+  1101→          <div className="h-7 bg-slate-900 border-t border-slate-800 flex items-center justify-between px-4 text-xs text-slate-500 flex-shrink-0">
+  1102→            <div className="flex items-center gap-4">
+  1103→              <span className="flex items-center gap-1.5">
+  1104→                <Terminal className="w-3 h-3" />
+  1105→                Ready
+  1106→              </span>
+  1107→              <span>TypeScript React</span>
+  1108→              <span>UTF-8</span>
+  1109→            </div>
+  1110→            <div className="flex items-center gap-4">
+  1111→              <span>Preview {activePreview}/6</span>
+  1112→              <span className="flex items-center gap-1.5">
+  1113→                <Eye className="w-3 h-3" />
+  1114→                Live Mode
+  1115→              </span>
+  1116→            </div>
+  1117→          </div>
+  1118→        </main>
+  1119→      </div>
+  1120→
+  1121→      {/* Custom Styles */}
+  1122→      <style jsx global>{`
+  1123→        .custom-scrollbar::-webkit-scrollbar {
+  1124→          width: 6px;
+  1125→        }
+  1126→        .custom-scrollbar::-webkit-scrollbar-track {
+  1127→          background: transparent;
+  1128→        }
+  1129→        .custom-scrollbar::-webkit-scrollbar-thumb {
+  1130→          background: #334155;
+  1131→          border-radius: 3px;
+  1132→        }
+  1133→        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  1134→          background: #475569;
+  1135→        }
+  1136→        
+  1137→        @keyframes spin-slow {
+  1138→          from { transform: rotate(0deg); }
+  1139→          to { transform: rotate(360deg); }
+  1140→        }
+  1141→        .animate-spin-slow {
+  1142→          animation: spin-slow 20s linear infinite;
+  1143→        }
+  1144→
+  1145→        @keyframes bounce {
+  1146→          0%, 100% { transform: translateY(0); }
+  1147→          50% { transform: translateY(-25%); }
+  1148→        }
+  1149→        .animate-bounce {
+  1150→          animation: bounce 1s infinite;
+  1151→        }
+  1152→        
+  1153→        .line-clamp-2 {
+  1154→          display: -webkit-box;
+  1155→          -webkit-line-clamp: 2;
+  1156→          -webkit-box-orient: vertical;
+  1157→          overflow: hidden;
+  1158→        }
+  1159→      `}</style>
+  1160→    </div>
+  1161→  );
+  1162→}
+  1163→
+  1164→// Additional icons used
+  1165→function Wifi({ className }: { className?: string }) {
+  1166→  return (
+  1167→    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+  1168→      <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+  1169→      <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+  1170→      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+  1171→      <line x1="12" y1="20" x2="12.01" y2="20"/>
+  1172→    </svg>
+  1173→  );
+  1174→}
+  1175→
+  1176→function BrainCircuit({ className }: { className?: string }) {
+  1177→  return (
+  1178→    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+  1179→      <path d="M12 4.5a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5Z"/>
+  1180→      <path d="M12 15.5a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5Z"/>
+  1181→      <path d="M4.5 9.5a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5Z"/>
+  1182→      <path d="M19.5 9.5a2.5 2.5 0 0 0 0 5 2.5 2.5 0 0 0 0-5Z"/>
+  1183→      <path d="M12 9.5v3"/>
+  1184→      <path d="M7 12h3"/>
+  1185→      <path d="M14 12h3"/>
+  1186→      <path d="M9.5 7v2.5"/>
+  1187→      <path d="M14.5 7v2.5"/>
+  1188→      <path d="M9.5 14.5V17"/>
+  1189→      <path d="M14.5 14.5V17"/>
+  1190→    </svg>
+  1191→  );
+  1192→}
+  1193→
+  1194→function DollarSign({ className }: { className?: string }) {
+  1195→  return (
+  1196→    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+  1197→      <line x1="12" y1="2" x2="12" y2="22"/>
+  1198→      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+  1199→    </svg>
+  1200→  );
+  1201→}
+  1202→

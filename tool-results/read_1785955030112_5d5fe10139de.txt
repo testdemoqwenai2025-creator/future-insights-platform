@@ -1,0 +1,878 @@
+     1→/**
+     2→ * Integration Tests - White Papers API
+     3→ * 
+     4→ * Tests for GET /api/papers (filters by status, domain, author)
+     5→ * Tests for POST /api/papers (create paper)
+     6→ * Tests for status transitions
+     7→ */
+     8→
+     9→import { NextRequest } from 'next/server';
+    10→import { GET as getPapersHandler, POST as createPaperHandler } from '@/app/api/papers/route';
+    11→import { generateToken, UserRole, AuthUser } from '@/middleware/auth';
+    12→import { PaperStatus } from '@/app/api/papers/route';
+    13→
+    14→// Helper to create mock requests
+    15→function createMockRequest(overrides: Record<string, any> = {}): NextRequest {
+    16→  const headers = new Headers();
+    17→  
+    18→  if (overrides.authorization) {
+    19→    headers.set('authorization', overrides.authorization);
+    20→  }
+    21→  if (overrides.contentType !== undefined) {
+    22→    if (overrides.contentType) {
+    23→      headers.set('content-type', overrides.contentType);
+    24→    }
+    25→  } else {
+    26→    headers.set('content-type', 'application/json');
+    27→  }
+    28→
+    29→  let url = overrides.url || 'http://localhost:3000/api/papers';
+    30→  if (overrides.searchParams) {
+    31→    const params = new URLSearchParams(overrides.searchParams).toString();
+    32→    url = `${url}?${params}`;
+    33→  }
+    34→  
+    35→  return {
+    36→    headers,
+    37→    method: overrides.method || 'GET',
+    38→    url,
+    39→    json: () => Promise.resolve(overrides.body || {}),
+    40→    ip: '127.0.0.1'
+    41→  } as unknown as NextRequest;
+    42→}
+    43→
+    44→// Helper to parse response
+    45→async function getResponseBody(response: Response): Promise<any> {
+    46→  const text = await response.text();
+    47→  try {
+    48→    return JSON.parse(text);
+    49→  } catch {
+    50→    return text;
+    51→  }
+    52→}
+    53→
+    54→// Generate tokens for different user roles
+    55→function getResearcherToken(): string {
+    56→  const user: AuthUser = {
+    57→    id: 'usr_2',
+    58→    email: 'researcher@example.com',
+    59→    name: 'Dr. Jane Smith',
+    60→    role: UserRole.RESEARCHER,
+    61→    institution: 'MIT'
+    62→  };
+    63→  return generateToken(user);
+    64→}
+    65→
+    66→function getAdminToken(): string {
+    67→  const user: AuthUser = {
+    68→    id: 'usr_1',
+    69→    email: 'admin@aeth-1.science',
+    70→    name: 'AETH-1 Admin',
+    71→    role: UserRole.ADMIN,
+    72→    institution: 'AETH-1 Foundation'
+    73→  };
+    74→  return generateToken(user);
+    75→}
+    76→
+    77→function getReviewerToken(): string {
+    78→  const user: AuthUser = {
+    79→    id: 'usr_3',
+    80→    email: 'chen@physics.edu',
+    81→    name: 'Prof. Wei Chen',
+    82→    role: UserRole.REVIEWER,
+    83→    institution: 'Caltech'
+    84→  };
+    85→  return generateToken(user);
+    86→}
+    87→
+    88→describe('White Papers API Integration Tests', () => {
+    89→  
+    90→  // ==========================================
+    91→  // GET /api/papers - List Papers
+    92→  // ==========================================
+    93→  describe('GET /api/papers - List Papers Endpoint', () => {
+    94→    
+    95→    describe('Basic Listing', () => {
+    96→      it('should return list of papers with default pagination', async () => {
+    97→        const request = createMockRequest();
+    98→
+    99→        const response = await getPapersHandler(request);
+   100→        const body = await getResponseBody(response);
+   101→
+   102→        expect(response.status).toBe(200);
+   103→        expect(body.success).toBe(true);
+   104→        expect(body.data.items).toBeDefined();
+   105→        expect(Array.isArray(body.data.items)).toBe(true);
+   106→      });
+   107→
+   108→      it('should include pagination metadata', async () => {
+   109→        const request = createMockRequest({
+   110→          searchParams: { page: '1', limit: '10' }
+   111→        });
+   112→
+   113→        const response = await getPapersHandler(request);
+   114→        const body = await getResponseBody(response);
+   115→
+   116→        expect(body.data.pagination.page).toBeDefined();
+   117→        expect(body.data.pagination.limit).toBeDefined();
+   118→        expect(body.data.pagination.total).toBeDefined();
+   119→        expect(body.data.pagination.totalPages).toBeDefined();
+   120→        expect(typeof body.data.pagination.hasNext).toBe('boolean');
+   121→        expect(typeof body.data.pagination.hasPrev).toBe('boolean');
+   122→      });
+   123→
+   124→      it('should return all available papers (2 in mock data)', async () => {
+   125→        const request = createMockRequest({
+   126→          searchParams: { page: '1', limit: '100' }
+   127→        });
+   128→
+   129→        const response = await getPapersHandler(request);
+   130→        const body = await getResponseBody(response);
+   131→
+   132→        expect(body.data.total).toBe(2);
+   133→        expect(body.data.items.length).toBe(2);
+   134→      });
+   135→    });
+   136→
+   137→    describe('Status Filtering', () => {
+   138→      it('should filter papers by PUBLISHED status', async () => {
+   139→        const request = createMockRequest({
+   140→          searchParams: { status: 'published' }
+   141→        });
+   142→
+   143→        const response = await getPapersHandler(request);
+   144→        const body = await getResponseBody(response);
+   145→
+   146→        expect(response.status).toBe(200);
+   147→        body.data.items.forEach((paper: any) => {
+   148→          expect(paper.status).toBe(PaperStatus.PUBLISHED);
+   149→        });
+   150→      });
+   151→
+   152→      it('should filter papers by DRAFT status', async () => {
+   153→        const request = createMockRequest({
+   154→          searchParams: { status: 'draft' }
+   155→        });
+   156→
+   157→        const response = await getPapersHandler(request);
+   158→        const body = await getResponseBody(response);
+   159→
+   160→        body.data.items.forEach((paper: any) => {
+   161→          expect(paper.status).toBe(PaperStatus.DRAFT);
+   162→        });
+   163→      });
+   164→
+   165→      it('should filter papers by UNDER_REVIEW status', async () => {
+   166→        const request = createMockRequest({
+   167→          searchParams: { status: 'under_review' }
+   168→        });
+   169→
+   170→        const response = await getPapersHandler(request);
+   171→        const body = await getResponseBody(response);
+   172→
+   173→        expect(response.status).toBe(200);
+   174→        body.data.items.forEach((paper: any) => {
+   175→          expect(paper.status).toBe(PaperStatus.UNDER_REVIEW);
+   176→        });
+   177→      });
+   178→
+   179→      it('should return empty results for non-existent status', async () => {
+   180→        const request = createMockRequest({
+   181→          searchParams: { status: 'archived' }
+   182→        });
+   183→
+   184→        const response = await getPapersHandler(request);
+   185→        const body = await getResponseBody(response);
+   186→
+   187→        expect(body.data.total).toBe(0);
+   188→        expect(body.data.items).toHaveLength(0);
+   189→      });
+   190→
+   191→      it('should handle all valid paper statuses', async () => {
+   192→        const statuses = Object.values(PaperStatus);
+   193→        
+   194→        for (const status of statuses) {
+   195→          const request = createMockRequest({
+   196→            searchParams: { status }
+   197→          });
+   198→
+   199→          const response = await getPapersHandler(request);
+   200→          
+   201→          // Should not error regardless of whether results exist
+   202→          expect(response.status).toBe(200);
+   203→        }
+   204→      });
+   205→    });
+   206→
+   207→    describe('Author Filtering', () => {
+   208→      it('should find papers by author name', async () => {
+   209→        const request = createMockRequest({
+   210→          searchParams: { author: 'Jane Smith' }
+   211→        });
+   212→
+   213→        const response = await getPapersHandler(request);
+   214→        const body = await getResponseBody(response);
+   215→
+   216→        expect(response.status).toBe(200);
+   217→        expect(body.data.total).toBeGreaterThan(0);
+   218→        body.data.items.forEach((paper: any) => {
+   219→          const hasAuthor = paper.authors.some(
+   220→            (a: any) => a.name.toLowerCase().includes('jane smith')
+   221→          );
+   222→          expect(hasAuthor).toBe(true);
+   223→        });
+   224→      });
+   225→
+   226→      it('should be case-insensitive for author search', async () => {
+   227→        const lowerCaseReq = createMockRequest({ searchParams: { author: 'jane smith' } });
+   228→        const upperCaseReq = createMockRequest({ searchParams: { author: 'JANE SMITH' } });
+   229→
+   230→        const lowerResponse = await getPapersHandler(lowerCaseReq);
+   231→        const upperResponse = await getPapersHandler(upperCaseReq);
+   232→        
+   233→        const lowerBody = await getResponseBody(lowerResponse);
+   234→        const upperBody = await getResponseBody(upperResponse);
+   235→
+   236→        expect(lowerBody.data.total).toBe(upperBody.data.total);
+   237→      });
+   238→
+   239→      it('should return no results for non-existent author', async () => {
+   240→        const request = createMockRequest({
+   241→          searchParams: { author: 'Nonexistent Author XYZ' }
+   242→        });
+   243→
+   244→        const response = await getPapersHandler(request);
+   245→        const body = await getResponseBody(response);
+   246→
+   247→        expect(body.data.total).toBe(0);
+   248→      });
+   249→    });
+   250→
+   251→    describe('Domain Filtering', () => {
+   252→      it('should find papers by domain', async () => {
+   253→        const request = createMockRequest({
+   254→          searchParams: { domain: 'Physics' }
+   255→        });
+   256→
+   257→        const response = await getPapersHandler(request);
+   258→        const body = await getResponseBody(response);
+   259→
+   260→        expect(response.status).toBe(200);
+   261→        expect(body.data.total).toBeGreaterThan(0);
+   262→        body.data.items.forEach((paper: any) => {
+   263→          const hasDomain = paper.metadata.domains.some(
+   264→            (d: string) => d.toLowerCase().includes('physics')
+   265→          );
+   266→          expect(hasDomain).toBe(true);
+   267→        });
+   268→      });
+   269→
+   270→      it('should find papers by data science domain', async () => {
+   271→        const request = createMockRequest({
+   272→          searchParams: { domain: 'Data Science' }
+   273→        });
+   274→
+   275→        const response = await getPapersHandler(request);
+   276→        const body = await getResponseBody(response);
+   277→
+   278→        expect(body.data.total).toBeGreaterThan(0);
+   279→      });
+   280→
+   281→      it('should be case-insensitive for domain filtering', async () => {
+   282→        const request = createMockRequest({
+   283→          searchParams: { domain: 'space physics' }
+   284→        });
+   285→
+   286→        const response = await getPapersHandler(request);
+   287→        const body = await getResponseBody(response);
+   288→
+   289→        expect(body.data.total).toBeGreaterThan(0);
+   290→      });
+   291→    });
+   292→
+   293→    describe('Search Functionality', () => {
+   294→      it('should search papers by title', async () => {
+   295→        const request = createMockRequest({
+   296→          searchParams: { search: 'Solar Activity' }
+   297→        });
+   298→
+   299→        const response = await getPapersHandler(request);
+   300→        const body = await getResponseBody(response);
+   301→
+   302→        expect(body.data.total).toBeGreaterThan(0);
+   303→        body.data.items.forEach((paper: any) => {
+   304→          expect(paper.title.toLowerCase()).toContain('solar activity');
+   305→        });
+   306→      });
+   307→
+   308→      it('should search papers by abstract content', async () => {
+   309→        const request = createMockRequest({
+   310→          searchParams: { search: 'LHC' }
+   311→        });
+   312→
+   313→        const response = await getPapersHandler(request);
+   314→        const body = await getResponseBody(response);
+   315→
+   316→        expect(body.data.total).toBeGreaterThan(0);
+   317→      });
+   318→
+   319→      it('should search papers by keywords', async () => {
+   320→        const request = createMockRequest({
+   321→          searchParams: { search: 'correlation' }
+   322→        });
+   323→
+   324→        const response = await getPapersHandler(request);
+   325→        const body = await getResponseBody(response);
+   326→
+   327→        expect(body.data.total).toBeGreaterThan(0);
+   328→      });
+   329→
+   330→      it('should return empty results for non-matching search', async () => {
+   331→        const request = createMockRequest({
+   332→          searchParams: { search: 'xyznonexistent123' }
+   333→        });
+   334→
+   335→        const response = await getPapersHandler(request);
+   336→        const body = await getResponseBody(response);
+   337→
+   338→        expect(body.data.total).toBe(0);
+   339→      });
+   340→    });
+   341→
+   342→    describe('Combined Filters', () => {
+   343→      it('should apply status and domain filters together', async () => {
+   344→        const request = createMockRequest({
+   345→          searchParams: { 
+   346→            status: 'published',
+   347→            domain: 'Physics'
+   348→          }
+   349→        });
+   350→
+   351→        const response = await getPapersHandler(request);
+   352→        const body = await getResponseBody(response);
+   353→
+   354→        body.data.items.forEach((paper: any) => {
+   355→          expect(paper.status).toBe(PaperStatus.PUBLISHED);
+   356→          expect(paper.metadata.domains.some(
+   357→            (d: string) => d.toLowerCase().includes('physics')
+   358→          )).toBe(true);
+   359→        });
+   360→      });
+   361→
+   362→      it('should apply status and search filters together', async () => {
+   363→        const request = createMockRequest({
+   364→          searchParams: {
+   365→            status: 'published',
+   366→            search: 'Cross-Domain'
+   367→          }
+   368→        });
+   369→
+   370→        const response = await getPapersHandler(request);
+   371→        const body = await getResponseBody(response);
+   372→
+   373→        expect(body.data.total).toBeGreaterThan(0);
+   374→        body.data.items.forEach((paper: any) => {
+   375→          expect(paper.status).toBe(PaperStatus.PUBLISHED);
+   376→          expect(paper.title).toContain('Cross-Domain');
+   377→        });
+   378→      });
+   379→    });
+   380→
+   381→    describe('Paper Data Structure', () => {
+   382→      it('should include complete paper object structure', async () => {
+   383→        const request = createMockRequest();
+   384→
+   385→        const response = await getPapersHandler(request);
+   386→        const body = await getResponseBody(response);
+   387→        const paper = body.data.items[0];
+   388→
+   389→        expect(paper.id).toBeDefined();
+   390→        expect(paper.title).toBeDefined();
+   391→        expect(paper.abstract).toBeDefined();
+   392→        expect(paper.authors).toBeDefined();
+   393→        expect(Array.isArray(paper.authors)).toBe(true);
+   394→        expect(paper.status).toBeDefined();
+   395→        expect(paper.templateId).toBeDefined();
+   396→        expect(paper.dataRepositories).toBeDefined();
+   397→        expect(paper.content).toBeDefined();
+   398→        expect(paper.metadata).toBeDefined();
+   399→        expect(paper.reviews).toBeDefined();
+   400→        expect(paper.metrics).toBeDefined();
+   401→        expect(paper.versions).toBeDefined();
+   402→        expect(paper.createdAt).toBeDefined();
+   403→        expect(paper.updatedAt).toBeDefined();
+   404→      });
+   405→
+   406→      it('should include metadata with correct fields', async () => {
+   407→        const request = createMockRequest();
+   408→
+   409→        const response = await getPapersHandler(request);
+   410→        const body = await getResponseBody(response);
+   411→        const metadata = body.data.items[0].metadata;
+   412→
+   413→        expect(metadata.keywords).toBeDefined();
+   414→        expect(metadata.domains).toBeDefined();
+   415→        expect(metadata.language).toBeDefined();
+   416→        expect(metadata.wordCount).toBeDefined();
+   417→        expect(metadata.figureCount).toBeDefined();
+   418→      });
+   419→
+   420→      it('should include metrics with correct fields', async () => {
+   421→        const request = createMockRequest();
+   422→
+   423→        const response = await getPapersHandler(request);
+   424→        const body = await getResponseBody(response);
+   425→        const metrics = body.data.items[0].metrics;
+   426→
+   427→        expect(metrics.views).toBeDefined();
+   428→        expect(metrics.downloads).toBeDefined();
+   429→        expect(metrics.citations).toBeDefined();
+   430→      });
+   431→
+   432→      it('should include author details', async () => {
+   433→        const request = createMockRequest();
+   434→
+   435→        const response = await getPapersHandler(request);
+   436→        const body = await getResponseBody(response);
+   437→        const author = body.data.items[0].authors[0];
+   438→
+   439→        expect(author.id).toBeDefined();
+   440→        expect(author.name).toBeDefined();
+   441→      });
+   442→    });
+   443→  });
+   444→
+   445→  // ==========================================
+   446→  // POST /api/papers - Create Paper
+   447→  // ==========================================
+   448→  describe('POST /api/papers - Create Paper Endpoint', () => {
+   449→    
+   450→    describe('Successful Paper Creation', () => {
+   451→      it('should create paper with valid data as researcher', async () => {
+   452→        const timestamp = Date.now();
+   453→        const request = createMockRequest({
+   454→          method: 'POST',
+   455→          authorization: `Bearer ${getResearcherToken()}`,
+   456→          body: {
+   457→            title: `Test Paper ${timestamp}`,
+   458→            abstract: 'This is a test abstract for integration testing.',
+   459→            templateId: 'WP-CROSS-001',
+   460→            dataRepositories: ['test_repo_1']
+   461→          }
+   462→        });
+   463→
+   464→        const response = await createPaperHandler(request);
+   465→        const body = await getResponseBody(response);
+   466→
+   467→        expect(response.status).toBe(200);
+   468→        expect(body.success).toBe(true);
+   469→        expect(body.data.title).toBe(`Test Paper ${timestamp}`);
+   470→        expect(body.data.abstract).toBe('This is a test abstract for integration testing.');
+   471→        expect(body.data.templateId).toBe('WP-CROSS-001');
+   472→        expect(body.data.dataRepositories).toEqual(['test_repo_1']);
+   473→      });
+   474→
+   475→      it('should set initial status to DRAFT', async () => {
+   476→        const timestamp = Date.now();
+   477→        const request = createMockRequest({
+   478→          method: 'POST',
+   479→          authorization: `Bearer ${getResearcherToken()}`,
+   480→          body: {
+   481→            title: `Draft Test ${timestamp}`,
+   482→            abstract: 'Testing draft status.',
+   483→            templateId: 'WP-SAT-001'
+   484→          }
+   485→        });
+   486→
+   487→        const response = await createPaperHandler(request);
+   488→        const body = await getResponseBody(response);
+   489→
+   490→        expect(body.data.status).toBe(PaperStatus.DRAFT);
+   491→      });
+   492→
+   493→      it('should add authenticated user as first author', async () => {
+   494→        const timestamp = Date.now();
+   495→        const request = createMockRequest({
+   496→          method: 'POST',
+   497→          authorization: `Bearer ${getResearcherToken()}`,
+   498→          body: {
+   499→            title: `Author Test ${timestamp}`,
+   500→            abstract: 'Testing author assignment.',
+   501→            templateId: 'WP-CROSS-001'
+   502→          }
+   503→        });
+   504→
+   505→        const response = await createPaperHandler(request);
+   506→        const body = await getResponseBody(response);
+   507→
+   508→        expect(body.data.authors).toHaveLength(1);
+   509→        expect(body.data.authors[0].id).toBe('usr_2');
+   510→        expect(body.data.authors[0].name).toBe('Dr. Jane Smith');
+   511→        expect(body.data.authors[0].institution).toBe('MIT');
+   512→      });
+   513→
+   514→      it('should initialize versions array with initial version', async () => {
+   515→        const timestamp = Date.now();
+   516→        const request = createMockRequest({
+   517→          method: 'POST',
+   518→          authorization: `Bearer ${getResearcherToken()}`,
+   519→          body: {
+   520→            title: `Version Test ${timestamp}`,
+   521→            abstract: 'Testing version initialization.',
+   522→            templateId: 'WP-CROSS-001'
+   523→          }
+   524→        });
+   525→
+   526→        const response = await createPaperHandler(request);
+   527→        const body = await getResponseBody(response);
+   528→
+   529→        expect(body.data.versions).toHaveLength(1);
+   530→        expect(body.data.versions[0].version).toBe(1);
+   531→        expect(body.data.versions[0].changes).toContain('Initial creation');
+   532→      });
+   533→
+   534→      it('should initialize empty reviews and zeroed metrics', async () => {
+   535→        const timestamp = Date.now();
+   536→        const request = createMockRequest({
+   537→          method: 'POST',
+   538→          authorization: `Bearer ${getResearcherToken()}`,
+   539→          body: {
+   540→            title: `Metrics Test ${timestamp}`,
+   541→            abstract: 'Testing metrics initialization.',
+   542→            templateId: 'WP-CROSS-001'
+   543→          }
+   544→        });
+   545→
+   546→        const response = await createPaperHandler(request);
+   547→        const body = await getResponseBody(response);
+   548→
+   549→        expect(body.data.reviews).toEqual([]);
+   550→        expect(body.data.metrics.views).toBe(0);
+   551→        expect(body.data.metrics.downloads).toBe(0);
+   552→        expect(body.data.metrics.citations).toBe(0);
+   553→      });
+   554→
+   555→      it('should allow admin users to create papers', async () => {
+   556→        const timestamp = Date.now();
+   557→        const request = createMockRequest({
+   558→          method: 'POST',
+   559→          authorization: `Bearer ${getAdminToken()}`,
+   560→          body: {
+   561→            title: `Admin Paper ${timestamp}`,
+   562→            abstract: 'Created by admin.',
+   563→            templateId: 'WP-CROSS-001'
+   564→          }
+   565→        });
+   566→
+   567→        const response = await createPaperHandler(request);
+   568→        const body = await getResponseBody(response);
+   569→
+   570→        expect(response.status).toBe(200);
+   571→        expect(body.data.authors[0].name).toBe('AETH-1 Admin');
+   572→      });
+   573→
+   574→      it('should allow reviewer users to create papers', async () => {
+   575→        const timestamp = Date.now();
+   576→        const request = createMockRequest({
+   577→          method: 'POST',
+   578→          authorization: `Bearer ${getReviewerToken()}`,
+   579→          body: {
+   580→            title: `Reviewer Paper ${timestamp}`,
+   581→            abstract: 'Created by reviewer.',
+   582→            templateId: 'WP-CROSS-001'
+   583→          }
+   584→        });
+   585→
+   586→        const response = await createPaperHandler(request);
+   587→        const body = await getResponseBody(response);
+   588→
+   589→        expect(response.status).toBe(200);
+   590→        expect(body.data.authors[0].name).toBe('Prof. Wei Chen');
+   591→      });
+   592→
+   593→      it('should return success message in meta', async () => {
+   594→        const timestamp = Date.now();
+   595→        const request = createMockRequest({
+   596→          method: 'POST',
+   597→          authorization: `Bearer ${getResearcherToken()}`,
+   598→          body: {
+   599→            title: `Meta Test ${timestamp}`,
+   600→            abstract: 'Testing meta message.',
+   601→            templateId: 'WP-CROSS-001'
+   602→          }
+   603→        });
+   604→
+   605→        const response = await createPaperHandler(request);
+   606→        const body = await getResponseBody(response);
+   607→
+   608→        expect(body.meta.message).toContain('created successfully');
+   609→      });
+   610→    });
+   611→
+   612→    describe('Failed Paper Creation', () => {
+   613→      it('should reject unauthenticated requests', async () => {
+   614→        const request = createMockRequest({
+   615→          method: 'POST',
+   616→          body: {
+   617→            title: 'Unauthorized Paper',
+   618→            abstract: 'No auth provided.',
+   619→            templateId: 'WP-CROSS-001'
+   620→          }
+   621→        });
+   622→
+   623→        const response = await createPaperHandler(request);
+   624→
+   625→        expect(response.status).toBe(401);
+   626→      });
+   627→
+   628→      it('should require title field', async () => {
+   629→        const request = createMockRequest({
+   630→          method: 'POST',
+   631→          authorization: `Bearer ${getResearcherToken()}`,
+   632→          body: {
+   633→            abstract: 'Missing title.',
+   634→            templateId: 'WP-CROSS-001'
+   635→          }
+   636→        });
+   637→
+   638→        const response = await createPaperHandler(request);
+   639→        const body = await getResponseBody(response);
+   640→
+   641→        expect(response.status).toBe(422);
+   642→        expect(body.error).toBeDefined();
+   643→      });
+   644→
+   645→      it('should require abstract field', async () => {
+   646→        const request = createMockRequest({
+   647→          method: 'POST',
+   648→          authorization: `Bearer ${getResearcherToken()}`,
+   649→          body: {
+   650→            title: 'No Abstract Paper',
+   651→            templateId: 'WP-CROSS-001'
+   652→          }
+   653→        });
+   654→
+   655→        const response = await createPaperHandler(request);
+   656→        const body = await getResponseBody(response);
+   657→
+   658→        expect(response.status).toBe(422);
+   659→        expect(body.error).toBeDefined();
+   660→      });
+   661→
+   662→      it('should require templateId field', async () => {
+   663→        const request = createMockRequest({
+   664→          method: 'POST',
+   665→          authorization: `Bearer ${getResearcherToken()}`,
+   666→          body: {
+   667→            title: 'No Template Paper',
+   668→            abstract: 'Missing template.'
+   669→          }
+   670→        });
+   671→
+   672→        const response = await createPaperHandler(request);
+   673→        const body = await getResponseBody(response);
+   674→
+   675→        expect(response.status).toBe(422);
+   676→        expect(body.error).toBeDefined();
+   677→      });
+   678→
+   679→      it('should reject when all required fields are missing', async () => {
+   680→        const request = createMockRequest({
+   681→          method: 'POST',
+   682→          authorization: `Bearer ${getResearcherToken()}`,
+   683→          body: {}
+   684→        });
+   685→
+   686→        const response = await createPaperHandler(request);
+   687→        const body = await getResponseBody(response);
+   688→
+   689→        expect(response.status).toBe(422);
+   690→      });
+   691→
+   692→      it('should allow optional dataRepositories to be omitted', async () => {
+   693→        const timestamp = Date.now();
+   694→        const request = createMockRequest({
+   695→          method: 'POST',
+   696→          authorization: `Bearer ${getResearcherToken()}`,
+   697→          body: {
+   698→            title: `No Repos ${timestamp}`,
+   699→            abstract: 'Testing without repositories.',
+   700→            templateId: 'WP-CROSS-001'
+   701→          }
+   702→        });
+   703→
+   704→        const response = await createPaperHandler(request);
+   705→        const body = await getResponseBody(response);
+   706→
+   707→        expect(response.status).toBe(200);
+   708→        expect(body.data.dataRepositories).toEqual([]);
+   709→      });
+   710→    });
+   711→  });
+   712→
+   713→  // ==========================================
+   714→  // Status Transitions & Workflow
+   715→  // ==========================================
+   716→  describe('Paper Status and Metadata', () => {
+   717→    
+   718→    it('published paper should have publishedAt date', async () => {
+   719→      const request = createMockRequest({
+   720→        searchParams: { status: 'published' }
+   721→      });
+   722→
+   723→      const response = await getPapersHandler(request);
+   724→      const body = await getResponseBody(response);
+   725→
+   726→      body.data.items.forEach((paper: any) => {
+   727→        expect(paper.publishedAt).toBeDefined();
+   728→      });
+   729→    });
+   730→
+   731→    it('draft/under_review papers should not have publishedAt', async () => {
+   732→      const request = createMockRequest({
+   733→        searchParams: { status: 'under_review' }
+   734→      });
+   735→
+   736→      const response = await getPapersHandler(request);
+   737→      const body = await getResponseBody(response);
+   738→
+   739→      body.data.items.forEach((paper: any) => {
+   740→        expect(paper.publishedAt).toBeUndefined();
+   741→      });
+   742→    });
+   743→
+   744→    it('papers should have DOI when published', async () => {
+   745→      const request = createMockRequest({
+   746→        searchParams: { status: 'published' }
+   747→      });
+   748→
+   749→      const response = await getPapersHandler(request);
+   750→      const body = await getResponseBody(response);
+   751→
+   752→      body.data.items.forEach((paper: any) => {
+   753→        expect(paper.doi).toBeDefined();
+   754→        expect(paper.doi).toMatch(/^10\.\d{4}\/.+$/); // Valid DOI format
+   755→      });
+   756→    });
+   757→
+   758→    it('version history should track changes', async () => {
+   759→      const request = createMockRequest();
+   760→
+   761→      const response = await getPapersHandler(request);
+   762→      const body = await getResponseBody(response);
+   763→      
+   764→      // Find the published paper which should have multiple versions
+   765→      const publishedPaper = body.data.items.find(
+   766→        (p: any) => p.status === PaperStatus.PUBLISHED
+   767→      );
+   768→
+   769→      if (publishedPaper) {
+   770→        expect(publishedPaper.versions.length).toBeGreaterThan(1);
+   771→        publishedPaper.versions.forEach((version: any) => {
+   772→          expect(version.version).toBeDefined();
+   773→          expect(version.createdAt).toBeDefined();
+   774→          expect(version.changes).toBeDefined();
+   775→        });
+   776→      }
+   777→    });
+   778→
+   779→    it('reviews should contain reviewer information when present', async () => {
+   780→      const request = createMockRequest({
+   781→        searchParams: { status: 'published' }
+   782→      });
+   783→
+   784→      const response = await getPapersHandler(request);
+   785→      const body = await getResponseBody(response);
+   786→      const publishedPaper = body.data.items.find(
+   787→        (p: any) => p.reviews && p.reviews.length > 0
+   788→      );
+   789→
+   790→      if (publishedPaper) {
+   791→        const review = publishedPaper.reviews[0];
+   792→        expect(review.reviewerId).toBeDefined();
+   793→        expect(review.status).toBeDefined();
+   794→        expect(['pending', 'completed', 'rejected']).toContain(review.status);
+   795→      }
+   796→    });
+   797→  });
+   798→
+   799→  // ==========================================
+   800→  // Edge Cases & Error Handling
+   801→  // ==========================================
+   802→  describe('Edge Cases', () => {
+   803→    it('should handle very long titles', async () => {
+   804→      const longTitle = 'A'.repeat(1000);
+   805→      const request = createMockRequest({
+   806→        method: 'POST',
+   807→        authorization: `Bearer ${getResearcherToken()}`,
+   808→        body: {
+   809→          title: longTitle,
+   810→          abstract: 'Long title test.',
+   811→          templateId: 'WP-CROSS-001'
+   812→        }
+   813→      });
+   814→
+   815→      const response = await createPaperHandler(request);
+   816→
+   817→      // Should not crash - may succeed or fail validation
+   818→      expect(response.status).toBeDefined();
+   819→    });
+   820→
+   821→    it('should handle special characters in title', async () => {
+   822→      const timestamp = Date.now();
+   823→      const request = createMockRequest({
+   824→        method: 'POST',
+   825→        authorization: `Bearer ${getResearcherToken()}`,
+   826→        body: {
+   827→          title: `Special Chars: <>&" '${timestamp}`,
+   828→          abstract: 'Testing special characters.',
+   829→          templateId: 'WP-CROSS-001'
+   830→        }
+   831→      });
+   832→
+   833→      const response = await createPaperHandler(request);
+   834→      const body = await getResponseBody(response);
+   835→
+   836→      expect(response.status).toBe(200);
+   837→    });
+   838→
+   839→    it('should handle malformed JSON gracefully', async () => {
+   840→      const request = {
+   841→        ...createMockRequest({ 
+   842→          method: 'POST', 
+   843→          authorization: `Bearer ${getResearcherToken()}` 
+   844→        }),
+   845→        json: () => Promise.reject(new Error('Invalid JSON'))
+   846→      } as NextRequest;
+   847→
+   848→      const response = await createPaperHandler(request);
+   849→
+   850→      expect([400, 422, 500]).toContain(response.status);
+   851→    });
+   852→
+   853→    it('should handle invalid pagination parameters', async () => {
+   854→      const request = createMockRequest({
+   855→        searchParams: { page: 'abc', limit: 'xyz' }
+   856→      });
+   857→
+   858→      const response = await getPapersHandler(request);
+   859→      const body = await getResponseBody(response);
+   860→
+   861→      expect(response.status).toBe(200);
+   862→      expect(body.data.pagination).toBeDefined();
+   863→    });
+   864→
+   865→    it('should handle empty search parameter', async () => {
+   866→      const request = createMockRequest({
+   867→        searchParams: { search: '' }
+   868→      });
+   869→
+   870→      const response = await getPapersHandler(request);
+   871→      const body = await getResponseBody(response);
+   872→
+   873→      // Empty search should return all results
+   874→      expect(body.data.total).toBeGreaterThan(0);
+   875→    });
+   876→  });
+   877→});
+   878→

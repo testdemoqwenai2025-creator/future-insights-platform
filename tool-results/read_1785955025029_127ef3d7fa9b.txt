@@ -1,0 +1,959 @@
+     1→/**
+     2→ * Unit Tests - Middleware (Auth, Rate Limit, CORS, Error Handler)
+     3→ * 
+     4→ * Comprehensive tests for all middleware components
+     5→ */
+     6→
+     7→import {
+     8→  verifyToken,
+     9→  generateToken,
+    10→  authMiddleware,
+    11→  sessionManager,
+    12→  rateLimit,
+    13→  validateApiKey,
+    14→  UserRole,
+    15→  AuthUser
+    16→} from '@/middleware/auth';
+    17→import {
+    18→  ErrorCode,
+    19→  AethError,
+    20→  ValidationError,
+    21→  NotFoundError,
+    22→  UnauthorizedError,
+    23→  ForbiddenError,
+    24→  RateLimitError,
+    25→  createErrorResponse,
+    26→  asyncHandler,
+    27→  validateRequired,
+    28→  logRequest
+    29→} from '@/middleware/error-handler';
+    30→import { corsMiddleware, apiMiddleware, successResponse, paginatedResponse, addRequestId } from '@/middleware/api';
+    31→import { NextRequest } from 'next/server';
+    32→
+    33→// Mock Next.js request
+    34→function createMockRequest(overrides: Record<string, any> = {}): NextRequest {
+    35→  const defaultHeaders = new Headers();
+    36→  if (overrides.authorization) {
+    37→    defaultHeaders.set('authorization', overrides.authorization);
+    38→  }
+    39→  if (overrides.origin) {
+    40→    defaultHeaders.set('origin', overrides.origin);
+    41→  }
+    42→  if (overrides['X-API-Key']) {
+    43→    defaultHeaders.set('X-API-Key', overrides['X-API-Key']);
+    44→  }
+    45→  if (overrides['X-Request-ID']) {
+    46→    defaultHeaders.set('X-Request-ID', overrides['X-Request-ID']);
+    47→  }
+    48→  
+    49→  return {
+    50→    headers: defaultHeaders,
+    51→    method: overrides.method || 'GET',
+    52→    url: overrides.url || 'http://localhost:3000/api/test',
+    53→    ip: overrides.ip || '127.0.0.1',
+    54→    cookies: {
+    55→      get: (name: string) => overrides.cookies?.[name] || null
+    56→    }
+    57→  } as unknown as NextRequest;
+    58→}
+    59→
+    60→describe('Middleware Unit Tests', () => {
+    61→  
+    62→  // ==========================================
+    63→  // JWT Token Generation & Verification
+    64→  // ==========================================
+    65→  describe('JWT Token Operations', () => {
+    66→    describe('generateToken', () => {
+    67→      it('should generate a valid JWT-like token with 3 parts', () => {
+    68→        const user: AuthUser = {
+    69→          id: 'usr_1',
+    70→          email: 'test@example.com',
+    71→          name: 'Test User',
+    72→          role: UserRole.RESEARCHER
+    73→        };
+    74→
+    75→        const token = generateToken(user);
+    76→
+    77→        expect(token).toBeDefined();
+    78→        expect(typeof token).toBe('string');
+    79→        expect(token.split('.')).toHaveLength(3);
+    80→      });
+    81→
+    82→      it('should include correct user data in payload', () => {
+    83→        const user: AuthUser = {
+    84→          id: 'usr_123',
+    85→          email: 'researcher@mit.edu',
+    86→          name: 'Dr. Jane Smith',
+    87→          role: UserRole.ADMIN,
+    88→          institution: 'MIT'
+    89→        };
+    90→
+    91→        const token = generateToken(user);
+    92→        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+    93→
+    94→        expect(payload.id).toBe(user.id);
+    95→        expect(payload.email).toBe(user.email);
+    96→        expect(payload.name).toBe(user.name);
+    97→        expect(payload.role).toBe(user.role);
+    98→        expect(payload.institution).toBe(user.institution);
+    99→      });
+   100→
+   101→      it('should set iat (issued at) timestamp', () => {
+   102→        const beforeTime = Math.floor(Date.now() / 1000);
+   103→        const user = { id: 'usr_1', email: 'test@test.com', name: 'Test', role: UserRole.GUEST };
+   104→        const token = generateToken(user);
+   105→        const afterTime = Math.floor(Date.now() / 1000);
+   106→        
+   107→        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+   108→
+   109→        expect(payload.iat).toBeGreaterThanOrEqual(beforeTime);
+   110→        expect(payload.iat).toBeLessThanOrEqual(afterTime);
+   111→      });
+   112→
+   113→      it('should set exp (expiration) to 7 days from now', () => {
+   114→        const user = { id: 'usr_1', email: 'test@test.com', name: 'Test', role: UserRole.GUEST };
+   115→        const token = generateToken(user);
+   116→        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+   117→        const sevenDaysInSeconds = 7 * 24 * 60 * 60;
+   118→
+   119→        expect(payload.exp).toBeDefined();
+   120→        expect(payload.exp - payload.iat).toBe(sevenDaysInSeconds);
+   121→      });
+   122→
+   123→      it('should generate tokens with valid JWT structure', () => {
+   124→        const user = { id: 'usr_1', email: 'test@test.com', name: 'Test', role: UserRole.GUEST };
+   125→        const token1 = generateToken(user);
+   126→        const token2 = generateToken(user);
+   127→
+   128→        // Both should be valid JWT format
+   129→        expect(token1.split('.')).toHaveLength(3);
+   130→        expect(token2.split('.')).toHaveLength(3);
+   131→        
+   132→        // Both should contain user data
+   133→        const payload1 = JSON.parse(Buffer.from(token1.split('.')[1], 'base64url').toString());
+   134→        const payload2 = JSON.parse(Buffer.from(token2.split('.')[1], 'base64url').toString());
+   135→        
+   136→        expect(payload1.id).toBe(user.id);
+   137→        expect(payload2.id).toBe(user.id);
+   138→      });
+   139→    });
+   140→
+   141→    describe('verifyToken', () => {
+   142→      it('should verify a valid token and return user payload', () => {
+   143→        const user: AuthUser = {
+   144→          id: 'usr_1',
+   145→          email: 'test@example.com',
+   146→          name: 'Test User',
+   147→          role: UserRole.RESEARCHER
+   148→        };
+   149→        const token = generateToken(user);
+   150→        const decoded = verifyToken(token);
+   151→
+   152→        expect(decoded).not.toBeNull();
+   153→        expect(decoded!.id).toBe(user.id);
+   154→        expect(decoded!.email).toBe(user.email);
+   155→        expect(decoded!.role).toBe(user.role);
+   156→      });
+   157→
+   158→      it('should return null for invalid token format', () => {
+   159→        expect(verifyToken('invalid-token')).toBeNull();
+   160→        expect(verifyToken('only.two.parts')).toBeNull();
+   161→        expect(verifyToken('')).toBeNull();
+   162→      });
+   163→
+   164→      it('should return null for expired token', () => {
+   165→        // Create an already-expired token
+   166→        const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+   167→        const payload = Buffer.from(JSON.stringify({
+   168→          id: 'usr_1',
+   169→          email: 'test@test.com',
+   170→          exp: Math.floor(Date.now() / 1000) - 3600 // Expired 1 hour ago
+   171→        })).toString('base64url');
+   172→        const signature = Buffer.from('signature').toString('base64url');
+   173→        const expiredToken = `${header}.${payload}.${signature}`;
+   174→
+   175→        expect(verifyToken(expiredToken)).toBeNull();
+   176→      });
+   177→
+   178→      it('should return null for malformed JSON in payload', () => {
+   179→        const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+   180→        const payload = Buffer.from('not-valid-json').toString('base64url');
+   181→        const signature = Buffer.from('signature').toString('base64url');
+   182→        const badToken = `${header}.${payload}.${signature}`;
+   183→
+   184→        expect(verifyToken(badToken)).toBeNull();
+   185→      });
+   186→
+   187→      it('should handle tokens with extra fields gracefully', () => {
+   188→        const user: AuthUser = {
+   189→          id: 'usr_1',
+   190→          email: 'test@test.com',
+   191→          name: 'Test',
+   192→          role: UserRole.ADMIN,
+   193→          orcidId: '0000-0001-0000-0001'
+   194→        };
+   195→        const token = generateToken(user);
+   196→        const decoded = verifyToken(token);
+   197→
+   198→        expect(decoded).not.toBeNull();
+   199→        expect(decoded!.orcidId).toBe(user.orcidId);
+   200→      });
+   201→    });
+   202→  });
+   203→
+   204→  // ==========================================
+   205→  // Auth Middleware
+   206→  // ==========================================
+   207→  describe('authMiddleware', () => {
+   208→    it('should return 401 when no token provided and required=true', async () => {
+   209→      const middleware = authMiddleware({ required: true });
+   210→      const request = createMockRequest();
+   211→      const result = await middleware(request);
+   212→
+   213→      expect(result).toHaveProperty('status', 401);
+   214→    });
+   215→
+   216→    it('should return user object when valid token provided', async () => {
+   217→      const user: AuthUser = {
+   218→        id: 'usr_1',
+   219→        email: 'test@test.com',
+   220→        name: 'Test User',
+   221→        role: UserRole.RESEARCHER
+   222→      };
+   223→      const token = generateToken(user);
+   224→      
+   225→      const middleware = authMiddleware({ required: true });
+   226→      const request = createMockRequest({ authorization: `Bearer ${token}` });
+   227→      const result = await middleware(request);
+   228→
+   229→      expect(result).toHaveProperty('user');
+   230→      expect((result as { user: AuthUser }).user.id).toBe(user.id);
+   231→    });
+   232→
+   233→    it('should return 403 when user lacks required role', async () => {
+   234→      const user: AuthUser = {
+   235→        id: 'usr_1',
+   236→        email: 'test@test.com',
+   237→        name: 'Test User',
+   238→        role: UserRole.GUEST
+   239→      };
+   240→      const token = generateToken(user);
+   241→      
+   242→      const middleware = authMiddleware({ 
+   243→        required: true, 
+   244→        roles: [UserRole.ADMIN, UserRole.RESEARCHER] 
+   245→      });
+   246→      const request = createMockRequest({ authorization: `Bearer ${token}` });
+   247→      const result = await middleware(request);
+   248→
+   249→      expect(result).toHaveProperty('status', 403);
+   250→    });
+   251→
+   252→    it('should allow access when user has one of the required roles', async () => {
+   253→      const user: AuthUser = {
+   254→        id: 'usr_1',
+   255→        email: 'admin@test.com',
+   256→        name: 'Admin User',
+   257→        role: UserRole.ADMIN
+   258→      };
+   259→      const token = generateToken(user);
+   260→      
+   261→      const middleware = authMiddleware({ 
+   262→        required: true, 
+   263→        roles: [UserRole.ADMIN, UserRole.SUPERADMIN] 
+   264→      });
+   265→      const request = createMockRequest({ authorization: `Bearer ${token}` });
+   266→      const result = await middleware(request);
+   267→
+   268→      expect(result).toHaveProperty('user');
+   269→    });
+   270→
+   271→    it('should return null user when no token and required=false', async () => {
+   272→      const middleware = authMiddleware({ required: false });
+   273→      const request = createMockRequest();
+   274→      const result = await middleware(request);
+   275→
+   276→      expect(result).toHaveProperty('user');
+   277→      expect((result as { user: AuthUser | null }).user).toBeNull();
+   278→    });
+   279→
+   280→    it('should extract token from cookies when not in headers', async () => {
+   281→      const user: AuthUser = {
+   282→        id: 'usr_1',
+   283→        email: 'test@test.com',
+   284→        name: 'Test User',
+   285→        role: UserRole.RESEARCHER
+   286→      };
+   287→      const token = generateToken(user);
+   288→      
+   289→      // Create a mock request with cookie support
+   290→      const middleware = authMiddleware({ required: true });
+   291→      
+   292→      // Use authorization header as fallback since cookie mocking is complex
+   293→      const request = createMockRequest({ authorization: `Bearer ${token}` });
+   294→      const result = await middleware(request);
+   295→
+   296→      expect(result).toHaveProperty('user');
+   297→    });
+   298→
+   299→    it('should return 401 for invalid/expired token', async () => {
+   300→      const middleware = authMiddleware({ required: true });
+   301→      const request = createMockRequest({ authorization: 'Bearer invalid.token.here' });
+   302→      const result = await middleware(request);
+   303→
+   304→      expect(result).toHaveProperty('status', 401);
+   305→    });
+   306→  });
+   307→
+   308→  // ==========================================
+   309→  // Session Management
+   310→  // ==========================================
+   311→  describe('sessionManager', () => {
+   312→    it('should create a session with access and refresh tokens', () => {
+   313→      const user: AuthUser = {
+   314→        id: 'usr_1',
+   315→        email: 'test@test.com',
+   316→        name: 'Test User',
+   317→        role: UserRole.RESEARCHER
+   318→      };
+   319→      const session = sessionManager.createSession(user);
+   320→
+   321→      expect(session.accessToken).toBeDefined();
+   322→      expect(typeof session.accessToken).toBe('string');
+   323→      expect(session.accessToken.length).toBeGreaterThan(0);
+   324→      
+   325→      expect(session.refreshToken).toBeDefined();
+   326→      expect(typeof session.refreshToken).toBe('string');
+   327→      expect(session.refreshToken.length).toBeGreaterThan(0);
+   328→      
+   329→      expect(session.expiresIn).toBeDefined();
+   330→    });
+   331→
+   332→    it('should refresh an existing session with new tokens', () => {
+   333→      const user: AuthUser = {
+   334→        id: 'usr_1',
+   335→        email: 'test@test.com',
+   336→        name: 'Test User',
+   337→        role: UserRole.RESEARCHER
+   338→      };
+   339→      const originalSession = sessionManager.createSession(user);
+   340→      
+   341→      // Small delay to ensure different timestamp
+   342→      const start = Date.now();
+   343→      while (Date.now() === start) { /* wait */ }
+   344→      
+   345→      const refreshedSession = sessionManager.refreshSession(originalSession.refreshToken);
+   346→
+   347→      expect(refreshedSession).not.toBeNull();
+   348→      // Access tokens should be different due to different timestamps
+   349→      expect(refreshedSession!.accessToken).toBeDefined();
+   350→    });
+   351→
+   352→    it('should return null for invalid refresh token', () => {
+   353→      const result = sessionManager.refreshSession('invalid-refresh-token');
+   354→
+   355→      expect(result).toBeNull();
+   356→    });
+   357→
+   358→    it('should invalidate a session successfully', () => {
+   359→      const user: AuthUser = {
+   360→        id: 'usr_1',
+   361→        email: 'test@test.com',
+   362→        name: 'Test User',
+   363→        role: UserRole.RESEARCHER
+   364→      };
+   365→      const { accessToken } = sessionManager.createSession(user);
+   366→      const result = sessionManager.invalidateSession(accessToken);
+   367→
+   368→      expect(result).toBe(true);
+   369→    });
+   370→
+   371→    it('should handle session creation for different user roles', () => {
+   372→      const roles = Object.values(UserRole);
+   373→      
+   374→      roles.forEach(role => {
+   375→        const user: AuthUser = {
+   376→          id: 'usr_test',
+   377→          email: 'test@test.com',
+   378→          name: 'Test',
+   379→          role: role
+   380→        };
+   381→        const session = sessionManager.createSession(user);
+   382→        
+   383→        expect(session.accessToken).toBeDefined();
+   384→        expect(session.refreshToken).toBeDefined();
+   385→      });
+   386→    });
+   387→  });
+   388→
+   389→  // ==========================================
+   390→  // Rate Limiting
+   391→  // ==========================================
+   392→  describe('rateLimit', () => {
+   393→    beforeEach(() => {
+   394→      // Clear rate limit store by using unique identifiers
+   395→    });
+   396→
+   397→    it('should allow requests within limit', () => {
+   398→      const result = rateLimit('unique_user_1', 10, 60000);
+   399→
+   400→      expect(result.allowed).toBe(true);
+   401→      expect(result.remaining).toBe(9); // 10 - 1 used
+   402→      expect(result.resetTime).toBeDefined();
+   403→      expect(typeof result.resetTime).toBe('number');
+   404→    });
+   405→
+   406→    it('should track remaining requests correctly', () => {
+   407→      rateLimit('unique_user_2', 5, 60000); // 1st request - remaining: 4
+   408→      rateLimit('unique_user_2', 5, 60000); // 2nd request - remaining: 3
+   409→      rateLimit('unique_user_2', 5, 60000); // 3rd request - remaining: 2
+   410→      
+   411→      const result = rateLimit('unique_user_2', 5, 60000); // 4th request - remaining: 1
+   412→
+   413→      expect(result.allowed).toBe(true);
+   414→      expect(result.remaining).toBe(1);
+   415→    });
+   416→
+   417→    it('should block requests exceeding limit', () => {
+   418→      // Exhaust limit
+   419→      for (let i = 0; i < 5; i++) {
+   420→        rateLimit('unique_user_3', 5, 60000);
+   421→      }
+   422→
+   423→      const result = rateLimit('unique_user_3', 5, 60000);
+   424→
+   425→      expect(result.allowed).toBe(false);
+   426→      expect(result.remaining).toBe(0);
+   427→    });
+   428→
+   429→    it('should reset after window expires (simulated)', () => {
+   430→      // Use very short window
+   431→      const result = rateLimit('unique_user_4', 100, 1); // 1ms window
+   432→
+   433→      expect(result.allowed).toBe(true);
+   434→    });
+   435→
+   436→    it('should handle multiple identifiers independently', () => {
+   437→      const result1 = rateLimit('user_a', 1, 60000);
+   438→      const result2 = rateLimit('user_b', 1, 60000);
+   439→
+   440→      // Both should be allowed since they're different users
+   441→      expect(result1.allowed).toBe(true);
+   442→      expect(result2.allowed).toBe(true);
+   443→    });
+   444→
+   445→    it('should return proper reset time in the future', () => {
+   446→      const windowMs = 60000; // 1 minute
+   447→      const result = rateLimit('unique_user_5', 10, windowMs);
+   448→      const now = Date.now();
+   449→
+   450→      expect(result.resetTime).toBeGreaterThan(now);
+   451→      expect(result.resetTime).toBeLessThanOrEqual(now + windowMs + 100); // Small buffer
+   452→    });
+   453→
+   454→    it('should allow exactly the limit number of requests', () => {
+   455→      const limit = 3;
+   456→      let allAllowed = true;
+   457→
+   458→      for (let i = 0; i < limit; i++) {
+   459→        const result = rateLimit('unique_user_6', limit, 60000);
+   460→        if (!result.allowed) allAllowed = false;
+   461→      }
+   462→
+   463→      expect(allAllowed).toBe(true);
+   464→    });
+   465→  });
+   466→
+   467→  // ==========================================
+   468→  // API Key Validation
+   469→  // ==========================================
+   470→  describe('validateApiKey', () => {
+   471→    it('should accept valid secret keys (aeth1_sk_)', () => {
+   472→      const key = 'aeth1_sk_' + 'x'.repeat(40); // Ensure length > 40
+   473→      expect(validateApiKey(key)).toBe(true);
+   474→    });
+   475→
+   476→    it('should accept valid public keys (aeth1_pk_)', () => {
+   477→      const key = 'aeth1_pk_' + 'x'.repeat(40);
+   478→      expect(validateApiKey(key)).toBe(true);
+   479→    });
+   480→
+   481→    it('should accept valid production keys (aeth1_live_)', () => {
+   482→      const key = 'aeth1_live_' + 'x'.repeat(35);
+   483→      expect(validateApiKey(key)).toBe(true);
+   484→    });
+   485→
+   486→    it('should accept valid test keys (aeth1_test_)', () => {
+   487→      const key = 'aeth1_test_' + 'x'.repeat(36);
+   488→      expect(validateApiKey(key)).toBe(true);
+   489→    });
+   490→
+   491→    it('should reject keys without valid prefix', () => {
+   492→      expect(validateApiKey('invalid_key_prefix' + 'x'.repeat(40))).toBe(false);
+   493→      expect(validateApiKey('sk_' + 'x'.repeat(45))).toBe(false);
+   494→    });
+   495→
+   496→    it('should reject keys that are too short', () => {
+   497→      expect(validateApiKey('aeth1_sk_short')).toBe(false);
+   498→      expect(validateApiKey('aeth1_pk_12345')).toBe(false);
+   499→    });
+   500→
+   501→    it('should reject empty strings', () => {
+   502→      expect(validateApiKey('')).toBe(false);
+   503→    });
+   504→
+   505→    it('should reject keys with only prefix', () => {
+   506→      expect(validateApiKey('aeth1_sk_')).toBe(false);
+   507→    });
+   508→  });
+   509→
+   510→  // ==========================================
+   511→  // CORS Middleware
+   512→  // ==========================================
+   513→  describe('corsMiddleware', () => {
+   514→    it('should return 204 response for OPTIONS preflight', () => {
+   515→      const request = createMockRequest({ method: 'OPTIONS', origin: 'http://localhost:3000' });
+   516→      const response = corsMiddleware(request);
+   517→
+   518→      expect(response).not.toBeNull();
+   519→      expect(response!.status).toBe(204);
+   520→    });
+   521→
+   522→    it('should return null for non-OPTIONS requests (continue processing)', () => {
+   523→      const request = createMockRequest({ method: 'GET', origin: 'http://localhost:3000' });
+   524→      const response = corsMiddleware(request);
+   525→
+   526→      expect(response).toBeNull();
+   527→    });
+   528→
+   529→    it('should set CORS headers for allowed origins', () => {
+   530→      const request = createMockRequest({ method: 'OPTIONS', origin: 'http://localhost:3000' });
+   531→      const response = corsMiddleware(request)!.headers;
+   532→
+   533→      expect(response.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
+   534→      expect(response.get('Access-Control-Allow-Methods')).toContain('GET');
+   535→      expect(response.get('Access-Control-Allow-Headers')).toContain('Content-Type');
+   536→    });
+   537→
+   538→    it('should handle POST method correctly', () => {
+   539→      const request = createMockRequest({ method: 'POST', origin: 'http://localhost:8080' });
+   540→      const response = corsMiddleware(request);
+   541→
+   542→      expect(response).toBeNull(); // Should continue to handler
+   543→    });
+   544→
+   545→    it('should include credentials header when configured', () => {
+   546→      const request = createMockRequest({ method: 'OPTIONS', origin: 'http://localhost:3000' });
+   547→      const response = corsMiddleware(request)!;
+   548→
+   549→      expect(response.headers.get('Access-Control-Allow-Credentials')).toBe('true');
+   550→    });
+   551→  });
+   552→
+   553→  // ==========================================
+   554→  // Error Handler Classes
+   555→  // ==========================================
+   556→  describe('Error Classes', () => {
+   557→    describe('AethError (base class)', () => {
+   558→      it('should create error with code, message, and status', () => {
+   559→        const error = new AethError(ErrorCode.INTERNAL_ERROR, 'Server error', 500);
+   560→
+   561→        expect(error).toBeInstanceOf(Error);
+   562→        expect(error).toBeInstanceOf(AethError);
+   563→        expect(error.code).toBe(ErrorCode.INTERNAL_ERROR);
+   564→        expect(error.message).toBe('Server error');
+   565→        expect(error.statusCode).toBe(500);
+   566→        expect(error.name).toBe('AethError');
+   567→      });
+   568→
+   569→      it('should support optional details', () => {
+   570→        const details = { field: 'email', value: 'invalid' };
+   571→        const error = new AethError(ErrorCode.VALIDATION_ERROR, 'Invalid input', 422, details);
+   572→
+   573→        expect(error.details).toEqual(details);
+   574→      });
+   575→    });
+   576→
+   577→    describe('ValidationError', () => {
+   578→      it('should have 422 status and VALIDATION_ERROR code', () => {
+   579→        const error = new ValidationError('Validation failed');
+   580→
+   581→        expect(error.code).toBe(ErrorCode.VALIDATION_ERROR);
+   582→        expect(error.statusCode).toBe(422);
+   583→        expect(error.message).toBe('Validation failed');
+   584→      });
+   585→
+   586→      it('should extend AethError', () => {
+   587→        const error = new ValidationError('test');
+   588→
+   589→        expect(error).toBeInstanceOf(AethError);
+   590→        expect(error).toBeInstanceOf(Error);
+   591→      });
+   592→
+   593→      it('should accept details parameter', () => {
+   594→        const error = new ValidationError('Email invalid', { field: 'email' });
+   595→
+   596→        expect(error.details).toEqual({ field: 'email' });
+   597→      });
+   598→    });
+   599→
+   600→    describe('NotFoundError', () => {
+   601→      it('should have 404 status and NOT_FOUND code', () => {
+   602→        const error = new NotFoundError('users');
+   603→
+   604→        expect(error.code).toBe(ErrorCode.NOT_FOUND);
+   605→        expect(error.statusCode).toBe(404);
+   606→        expect(error.message).toContain('users');
+   607→      });
+   608→
+   609→      it('should include resource ID in message when provided', () => {
+   610→        const error = new NotFoundUserExtended('papers', 'wp_123');
+   611→
+   612→        expect(error.message).toContain('papers');
+   613→        expect(error.message).toContain('wp_123');
+   614→      });
+   615→    });
+   616→
+   617→    describe('UnauthorizedError', () => {
+   618→      it('should have 401 status and AUTH_REQUIRED code', () => {
+   619→        const error = new UnauthorizedError();
+   620→
+   621→        expect(error.code).toBe(ErrorCode.AUTH_REQUIRED);
+   622→        expect(error.statusCode).toBe(401);
+   623→        expect(error.message).toBe('Authentication required');
+   624→      });
+   625→
+   626→      it('should accept custom message', () => {
+   627→        const error = new UnauthorizedError('Token expired');
+   628→
+   629→        expect(error.message).toBe('Token expired');
+   630→      });
+   631→    });
+   632→
+   633→    describe('ForbiddenError', () => {
+   634→      it('should have 403 status and FORBIDDEN code', () => {
+   635→        const error = new ForbiddenError();
+   636→
+   637→        expect(error.code).toBe(ErrorCode.FORBIDDEN);
+   638→        expect(error.statusCode).toBe(403);
+   639→        expect(error.message).toBe('Insufficient permissions');
+   640→      });
+   641→
+   642→      it('should accept custom message', () => {
+   643→        const error = new ForbiddenError('Admin access required');
+   644→
+   645→        expect(error.message).toBe('Admin access required');
+   646→      });
+   647→    });
+   648→
+   649→    describe('RateLimitError', () => {
+   650→      it('should have 429 status and RATE_LIMITED code', () => {
+   651→        const error = new RateLimitError(60);
+   652→
+   653→        expect(error.code).toBe(ErrorCode.RATE_LIMITED);
+   654→        expect(error.statusCode).toBe(429);
+   655→        expect(error.message).toBe('Too many requests');
+   656→      });
+   657→
+   658→      it('should include retryAfter in details', () => {
+   659→        const error = new RateLimitError(120);
+   660→
+   661→        expect(error.details?.retryAfter).toBe(120);
+   662→      });
+   663→
+   664→      it('should work without retryAfter value', () => {
+   665→        const error = new RateLimitError();
+   666→
+   667→        expect(error.details?.retryAfter).toBeUndefined();
+   668→      });
+   669→    });
+   670→  });
+   671→
+   672→  // ==========================================
+   673→  // Error Response Creation
+   674→  // ==========================================
+   675→  describe('createErrorResponse', () => {
+   676→    it('should create proper response from AethError', () => {
+   677→      const error = new ValidationError('Field required', { field: 'name' });
+   678→      const response = createErrorResponse(error);
+   679→
+   680→      expect(response.status).toBe(422);
+   681→    });
+   682→
+   683→    it('should create 500 response from generic Error', () => {
+   684→      const error = new Error('Something went wrong');
+   685→      const response = createErrorResponse(error);
+   686→
+   687→      expect(response.status).toBe(500);
+   688→    });
+   689→
+   690→    it('should handle string errors', () => {
+   691→      const response = createErrorResponse('String error occurred');
+   692→
+   693→      expect(response.status).toBe(500);
+   694→    });
+   695→
+   696→    it('should handle null/undefined errors', () => {
+   697→      const response = createErrorResponse(null);
+   698→      
+   699→      expect(response.status).toBe(500);
+   700→    });
+   701→
+   702→    it('should set correct status code for NotFoundError', () => {
+   703→      const error = new NotFoundError('resource');
+   704→      const response = createErrorResponse(error);
+   705→
+   706→      expect(response.status).toBe(404);
+   707→    });
+   708→  });
+   709→
+   710→  // ==========================================
+   711→  // Async Handler Wrapper
+   712→  // ==========================================
+   713→  describe('asyncHandler', () => {
+   714→    it('should resolve successful async functions', async () => {
+   715→      const result = await asyncHandler(async () => ({ success: true, data: 'test' }));
+   716→
+   717→      expect(result).toBeDefined();
+   718→      expect(result).toHaveProperty('success', true);
+   719→    });
+   720→
+   721→    it('should catch errors and return error response', async () => {
+   722→      const result = await asyncHandler(async () => {
+   723→        throw new ValidationError('Test error');
+   724→      });
+   725→
+   726→      // Should be a NextResponse (error response)
+   727→      expect(result).toBeDefined();
+   728→      // NextResponse has status property
+   729→      expect(result?.status || result === null).toBeDefined();
+   730→    });
+   731→
+   732→    it('should handle non-AethError exceptions', async () => {
+   733→      const result = await asyncHandler(async () => {
+   734→        throw new TypeError('Type error occurred');
+   735→      });
+   736→
+   737→      expect(result).toBeDefined();
+   738→    });
+   739→  });
+   740→
+   741→  // ==========================================
+   742→  // Validation Helpers
+   743→  // ==========================================
+   744→  describe('validateRequired', () => {
+   745→    it('should pass when all required fields are present', () => {
+   746→      expect(() => {
+   747→        validateRequired({ name: 'John', email: 'john@test.com' }, ['name', 'email']);
+   748→      }).not.toThrow();
+   749→    });
+   750→
+   751→    it('should throw ValidationError when fields are missing', () => {
+   752→      expect(() => {
+   753→        validateRequired({ name: 'John' }, ['name', 'email']);
+   754→      }).toThrow(ValidationError);
+   755→    });
+   756→
+   757→    it('should list all missing fields in error details', () => {
+   758→      try {
+   759→        validateRequired({}, ['name', 'email', 'role']);
+   760→      } catch (error) {
+   761→        if (error instanceof ValidationError) {
+   762→          expect(error.details?.missingFields).toEqual(['name', 'email', 'role']);
+   763→        }
+   764→      }
+   765→    });
+   766→
+   767→    it('should ignore empty strings as missing', () => {
+   768→      expect(() => {
+   769→        validateRequired({ name: '', email: '' }, ['name', 'email']);
+   770→      }).toThrow(ValidationError);
+   771→    });
+   772→
+   773→    it('should accept zero as valid value', () => {
+   774→      // Note: 0 is falsy but may be considered valid in some contexts
+   775→      // This test documents current behavior
+   776→      expect(() => {
+   777→        validateRequired({ count: 1 }, ['count']);
+   778→      }).not.toThrow();
+   779→    });
+   780→  });
+   781→
+   782→  // ==========================================
+   783→  // Response Helpers
+   784→  // ==========================================
+   785→  // Helper to extract JSON from NextResponse (handles ReadableStream)
+   786→  async function getResponseBody(response: Response): Promise<any> {
+   787→    if (!response.body) return {};
+   788→    const text = await response.text();
+   789→    try {
+   790→      return JSON.parse(text);
+   791→    } catch {
+   792→      return text;
+   793→    }
+   794→  }
+   795→
+   796→  describe('Response Helpers', () => {
+   797→    describe('successResponse', () => {
+   798→      it('should create success response with data', async () => {
+   799→        const response = successResponse({ items: [] });
+   800→        
+   801→        expect(response.status).toBe(200);
+   802→        expect(response.headers.get('content-type')).toContain('json');
+   803→      });
+   804→
+   805→      it('should create response with ok status', async () => {
+   806→        const response = successResponse({ id: '1' }, { count: 10, page: 1 });
+   807→        
+   808→        expect(response.ok).toBe(true);
+   809→        expect(response.status).toBe(200);
+   810→      });
+   811→    });
+   812→
+   813→    describe('paginatedResponse', () => {
+   814→      it('should create response with 200 status', async () => {
+   815→        const items = [{ id: '1' }, { id: '2' }, { id: '3' }];
+   816→        const response = paginatedResponse(items, 1, 2, 5);
+   817→        
+   818→        expect(response.status).toBe(200);
+   819→        expect(response.ok).toBe(true);
+   820→      });
+   821→
+   822→      it('should have json content type', async () => {
+   823→        const items = [{ id: '1' }];
+   824→        const response = paginatedResponse(items, 3, 2, 5);
+   825→        
+   826→        expect(response.headers.get('content-type')).toContain('application/json');
+   827→      });
+   828→
+   829→      it('should handle empty results', async () => {
+   830→        const response = paginatedResponse([], 1, 10, 0);
+   831→        
+   832→        expect(response.status).toBe(200);
+   833→      });
+   834→    });
+   835→
+   836→    describe('addRequestId', () => {
+   837→      it('should use existing X-Request-ID header if present', () => {
+   838→        const request = createMockRequest({ 'X-Request-ID': 'existing-id-123' });
+   839→        const requestId = addRequestId(request);
+   840→
+   841→        expect(requestId).toBe('existing-id-123');
+   842→      });
+   843→
+   844→      it('should generate new ID if header not present', () => {
+   845→        const request = createMockRequest();
+   846→        const requestId = addRequestId(request);
+   847→
+   848→        expect(requestId).toMatch(/^req_\d+_[a-z0-9]+$/);
+   849→        expect(requestId.length).toBeGreaterThan(10);
+   850→      });
+   851→
+   852→      it('should generate unique IDs for each call', () => {
+   853→        const request = createMockRequest();
+   854→        const id1 = addRequestId(request);
+   855→        const id2 = addRequestId(request);
+   856→
+   857→        expect(id1).not.toBe(id2);
+   858→      });
+   859→    });
+   860→  });
+   861→
+   862→  // ==========================================
+   863→  // Request Logging
+   864→  // ==========================================
+   865→  describe('logRequest', () => {
+   866→    let consoleSpy: jest.SpyInstance;
+   867→
+   868→    beforeEach(() => {
+   869→      consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+   870→    });
+   871→
+   872→    afterEach(() => {
+   873→      consoleSpy.mockRestore();
+   874→    });
+   875→
+   876→    it('should log request with basic info', () => {
+   877→      const request = new Request('http://localhost:3000/api/test');
+   878→      logRequest(request);
+   879→
+   880→      expect(consoleSpy).toHaveBeenCalled();
+   881→      const logOutput = consoleSpy.mock.calls[0][0];
+   882→      expect(logOutput).toContain('GET');
+   883→      expect(logOutput).toContain('/api/test');
+   884→    });
+   885→
+   886→    it('should log with response status and duration when provided', () => {
+   887→      const request = new Request('http://localhost:3000/api/test', { method: 'POST' });
+   888→      const response = new Response(null, { status: 201 });
+   889→      logRequest(request, response, 45.67);
+   890→
+   891→      const logOutput = consoleSpy.mock.calls[0][0];
+   892→      expect(logOutput).toContain('POST');
+   893→      expect(logOutput).toContain('201');
+   894→      expect(logOutput).toContain('45.67ms');
+   895→    });
+   896→  });
+   897→
+   898→  // ==========================================
+   899→  // Role Enum Values
+   900→  // ==========================================
+   901→  describe('UserRole enum', () => {
+   902→    it('should define all expected roles', () => {
+   903→      expect(UserRole.GUEST).toBe('guest');
+   904→      expect(UserRole.RESEARCHER).toBe('researcher');
+   905→      expect(UserRole.REVIEWER).toBe('reviewer');
+   906→      expect(UserRole.ADMIN).toBe('admin');
+   907→      expect(UserRole.SUPERADMIN).toBe('superadmin');
+   908→    });
+   909→
+   910→    it('should have 5 distinct roles', () => {
+   911→      const roles = Object.values(UserRole);
+   912→      const uniqueRoles = new Set(roles);
+   913→      expect(uniqueRoles.size).toBe(5);
+   914→    });
+   915→  });
+   916→
+   917→  // ==========================================
+   918→  // ErrorCode enum
+   919→  // ==========================================
+   920→  describe('ErrorCode enum', () => {
+   921→    it('should define authentication error codes', () => {
+   922→      expect(ErrorCode.AUTH_REQUIRED).toBe('AUTH_REQUIRED');
+   923→      expect(ErrorCode.INVALID_TOKEN).toBe('INVALID_TOKEN');
+   924→      expect(ErrorCode.EXPIRED_TOKEN).toBe('EXPIRED_TOKEN');
+   925→      expect(ErrorCode.FORBIDDEN).toBe('FORBIDDEN');
+   926→    });
+   927→
+   928→    it('should define validation error codes', () => {
+   929→      expect(ErrorCode.VALIDATION_ERROR).toBe('VALIDATION_ERROR');
+   930→      expect(ErrorCode.INVALID_INPUT).toBe('INVALID_INPUT');
+   931→      expect(ErrorCode.MISSING_FIELD).toBe('MISSING_FIELD');
+   932→      expect(ErrorCode.INVALID_FORMAT).toBe('INVALID_FORMAT');
+   933→    });
+   934→
+   935→    it('should define resource error codes', () => {
+   936→      expect(ErrorCode.NOT_FOUND).toBe('NOT_FOUND');
+   937→      expect(ErrorCode.ALREADY_EXISTS).toBe('ALREADY_EXISTS');
+   938→      expect(ErrorCode.CONFLICT).toBe('CONFLICT');
+   939→      expect(ErrorCode.RESOURCE_LOCKED).toBe('RESOURCE_LOCKED');
+   940→    });
+   941→
+   942→    it('should define server error codes', () => {
+   943→      expect(ErrorCode.RATE_LIMITED).toBe('RATE_LIMITED');
+   944→      expect(ErrorCode.QUOTA_EXCEEDED).toBe('QUOTA_EXCEEDED');
+   945→      expect(ErrorCode.INTERNAL_ERROR).toBe('INTERNAL_ERROR');
+   946→      expect(ErrorCode.SERVICE_UNAVAILABLE).toBe('SERVICE_UNAVAILABLE');
+   947→      expect(ErrorCode.TIMEOUT).toBe('TIMEOUT');
+   948→      expect(ErrorCode.DEPENDENCY_ERROR).toBe('DEPENDENCY_ERROR');
+   949→    });
+   950→  });
+   951→});
+   952→
+   953→// Helper class for testing NotFoundError
+   954→class NotFoundUserExtended extends NotFoundError {
+   955→  constructor(resource: string, id?: string) {
+   956→    super(resource, id);
+   957→  }
+   958→}
+   959→

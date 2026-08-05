@@ -1,0 +1,777 @@
+     1→/**
+     2→ * Unit Tests - Utility Functions
+     3→ * 
+     4→ * Tests for cn(), formatBytes, validation functions, response helpers, 
+     5→ * and other utilities used across the application
+     6→ */
+     7→
+     8→import { cn } from '@/lib/utils';
+     9→
+    10→// ==========================================
+    11→// Format Bytes Utility (from storage/route.ts)
+    12→// ==========================================
+    13→function formatBytes(bytes: number): string {
+    14→  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
+    15→  let unitIndex = 0;
+    16→  let value = bytes;
+    17→  
+    18→  while (value >= 1024 && unitIndex < units.length - 1) {
+    19→    value /= 1024;
+    20→    unitIndex++;
+    21→  }
+    22→  
+    23→  return `${value.toFixed(1)} ${units[unitIndex]}`;
+    24→}
+    25→
+    26→// ==========================================
+    27→// Validation Utilities
+    28→// ==========================================
+    29→const validators = {
+    30→  isValidEmail(email: string): boolean {
+    31→    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    32→    return emailRegex.test(email);
+    33→  },
+    34→  
+    35→  isValidUrl(url: string): boolean {
+    36→    try {
+    37→      new URL(url);
+    38→      return true;
+    39→    } catch {
+    40→      return false;
+    41→    }
+    42→  },
+    43→  
+    44→  isValidOrcidId(orcid: string): boolean {
+    45→    // ORCID ID format: 0000-0002-1825-0097 (4 groups of 4 digits)
+    46→    const orcidRegex = /^\d{4}-\d{4}-\d{4}-\d{4}$/;
+    47→    return orcidRegex.test(orcid);
+    48→  },
+    49→  
+    50→  isStrongPassword(password: string): { valid: boolean; errors: string[] } {
+    51→    const errors: string[] = [];
+    52→    
+    53→    if (password.length < 8) errors.push('Minimum 8 characters');
+    54→    if (!/[A-Z]/.test(password)) errors.push('One uppercase letter');
+    55→    if (!/[a-z]/.test(password)) errors.push('One lowercase letter');
+    56→    if (!/\d/.test(password)) errors.push('One number');
+    57→    if (!/[^A-Za-z0-9]/.test(password)) errors.push('One special character');
+    58→    
+    59→    return { valid: errors.length === 0, errors };
+    60→  },
+    61→  
+    62→  sanitizeString(str: string): string {
+    63→    return str
+    64→      .trim()
+    65→      .replace(/[<>\"\'&]/g, '') // Remove potentially dangerous characters
+    66→      .replace(/\s+/g, ' ') // Collapse whitespace
+    67→      .substring(0, 1000); // Limit length
+    68→  }
+    69→};
+    70→
+    71→// ==========================================
+    72→// Date/Time Utilities
+    73→// ==========================================
+    74→const dateUtils = {
+    75→  formatDate(date: Date | string, format: 'iso' | 'short' | 'long' = 'iso'): string {
+    76→    const d = typeof date === 'string' ? new Date(date) : date;
+    77→    
+    78→    switch (format) {
+    79→      case 'short':
+    80→        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    81→      case 'long':
+    82→        return d.toLocaleDateString('en-US', { 
+    83→          weekday: 'long', 
+    84→          year: 'numeric', 
+    85→          month: 'long', 
+    86→          day: 'numeric' 
+    87→        });
+    88→      default:
+    89→        return d.toISOString();
+    90→    }
+    91→  },
+    92→  
+    93→  getRelativeTime(date: Date | string): string {
+    94→    const d = typeof date === 'string' ? new Date(date) : date;
+    95→    const now = new Date();
+    96→    const diffMs = now.getTime() - d.getTime();
+    97→    const diffSecs = Math.floor(diffMs / 1000);
+    98→    const diffMins = Math.floor(diffSecs / 60);
+    99→    const diffHours = Math.floor(diffMins / 60);
+   100→    const diffDays = Math.floor(diffHours / 24);
+   101→    
+   102→    if (diffSecs < 60) return `${diffSecs}s ago`;
+   103→    if (diffMins < 60) return `${diffMins}m ago`;
+   104→    if (diffHours < 24) return `${diffHours}h ago`;
+   105→    if (diffDays < 30) return `${diffDays}d ago`;
+   106→    
+   107→    return dateUtils.formatDate(d, 'short');
+   108→  },
+   109→  
+   110→  isValidDate(date: any): boolean {
+   111→    if (!(date instanceof Date) && typeof date !== 'string') return false;
+   112→    const d = new Date(date);
+   113→    return !isNaN(d.getTime());
+   114→  }
+   115→};
+   116→
+   117→// ==========================================
+   118→// String Utilities
+   119→// ==========================================
+   120→const stringUtils = {
+   121→  truncate(str: string, maxLength: number, suffix: string = '...'): string {
+   122→    if (str.length <= maxLength) return str;
+   123→    return str.substring(0, maxLength - suffix.length) + suffix;
+   124→  },
+   125→  
+   126→  capitalize(str: string): string {
+   127→    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+   128→  },
+   129→  
+   130→  camelToTitle(str: string): string {
+   131→    return str
+   132→      .replace(/([A-Z])/g, ' $1')
+   133→      .replace(/^./, (char) => char.toUpperCase())
+   134→      .trim();
+   135→  },
+   136→  
+   137→  slugify(str: string): string {
+   138→    return str
+   139→      .toLowerCase()
+   140→      .trim()
+   141→      .replace(/[^\w\s-]/g, '')
+   142→      .replace(/[\s_]+/g, '-')
+   143→      .replace(/^-+|-+$/g, '');
+   144→  },
+   145→  
+   146→  generateId(prefix: string = ''): string {
+   147→    const timestamp = Date.now().toString(36);
+   148→    const random = Math.random().toString(36).substring(2, 8);
+   149→    return prefix ? `${prefix}_${timestamp}${random}` : `${timestamp}${random}`;
+   150→  },
+   151→  
+   152→  escapeHtml(str: string): string {
+   153→    const htmlEntities: Record<string, string> = {
+   154→      '&': '&amp;',
+   155→      '<': '&lt;',
+   156→      '>': '&gt;',
+   157→      '"': '&quot;',
+   158→      "'": '&#39;'
+   159→    };
+   160→    return str.replace(/[&<>"']/g, (char) => htmlEntities[char]);
+   161→  }
+   162→};
+   163→
+   164→// ==========================================
+   165→// Array/Object Utilities
+   166→// ==========================================
+   167→const collectionUtils = {
+   168→  chunk<T>(array: T[], size: number): T[][] {
+   169→    const chunks: T[][] = [];
+   170→    for (let i = 0; i < array.length; i += size) {
+   171→      chunks.push(array.slice(i, i + size));
+   172→    }
+   173→    return chunks;
+   174→  },
+   175→  
+   176→  groupBy<T>(array: T[], keyFn: (item: T) => string): Record<string, T[]> {
+   177→    return array.reduce((groups, item) => {
+   178→      const key = keyFn(item);
+   179→      if (!groups[key]) groups[key] = [];
+   180→      groups[key].push(item);
+   181→      return groups;
+   182→    }, {} as Record<string, T[]>);
+   183→  },
+   184→  
+   185→  unique<T>(array: T[]): T[] {
+   186→    return [...new Set(array)];
+   187→  },
+   188→  
+   189→  pick<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+   190→    const result = {} as Pick<T, K>;
+   191→    keys.forEach(key => {
+   192→      if (key in obj) {
+   193→        result[key] = obj[key];
+   194→      }
+   195→    });
+   196→    return result;
+   197→  },
+   198→  
+   199→  omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
+   200→    const result = { ...obj };
+   201→    keys.forEach(key => {
+   202→      delete result[key];
+   203→    });
+   204→    return result;
+   205→  }
+   206→};
+   207→
+   208→describe('Utility Functions Unit Tests', () => {
+   209→  
+   210→  // ==========================================
+   211→  // CN (Class Name) Utility
+   212→  // ==========================================
+   213→  describe('cn()', () => {
+   214→    it('should merge class names correctly', () => {
+   215→      expect(cn('foo', 'bar')).toBe('foo bar');
+   216→    });
+   217→
+   218→    it('should handle conditional classes', () => {
+   219→      expect(cn('base', true && 'active', false && 'hidden')).toBe('base active');
+   220→    });
+   221→
+   222→    it('should merge Tailwind classes properly', () => {
+   223→      expect(cn('px-2 py-1', 'px-4')).toContain('px-4'); // Later class wins
+   224→    });
+   225→
+   226→    it('should handle empty inputs', () => {
+   227→      expect(cn('', '', '')).toBe('');
+   228→    });
+   229→
+   230→    it('should handle undefined/null values', () => {
+   231→      expect(cn('base', undefined, null)).toBe('base');
+   232→    });
+   233→  });
+   234→
+   235→  // ==========================================
+   236→  // Format Bytes
+   237→  // ==========================================
+   238→  describe('formatBytes()', () => {
+   239→    it('should format bytes correctly', () => {
+   240→      expect(formatBytes(0)).toBe('0.0 B');
+   241→      expect(formatBytes(500)).toBe('500.0 B');
+   242→      expect(formatBytes(1023)).toBe('1023.0 B');
+   243→    });
+   244→
+   245→    it('should convert to kilobytes', () => {
+   246→      expect(formatBytes(1024)).toBe('1.0 KB');
+   247→      expect(formatBytes(1536)).toBe('1.5 KB');
+   248→      expect(formatBytes(5120)).toBe('5.0 KB');
+   249→    });
+   250→
+   251→    it('should convert to megabytes', () => {
+   252→      expect(formatBytes(1048576)).toBe('1.0 MB');
+   253→      expect(formatBytes(5242880)).toBe('5.0 MB');
+   254→    });
+   255→
+   256→    it('should convert to gigabytes', () => {
+   257→      expect(formatBytes(1073741824)).toBe('1.0 GB');
+   258→      expect(formatBytes(5368709120)).toBe('5.0 GB');
+   259→    });
+   260→
+   261→    it('should convert to terabytes', () => {
+   262→      expect(formatBytes(1099511627776)).toBe('1.0 TB');
+   263→    });
+   264→
+   265→    it('should convert to petabytes', () => {
+   266→      expect(formatBytes(1125899906842624)).toBe('1.0 PB');
+   267→    });
+   268→
+   269→    it('should handle large storage values accurately', () => {
+   270→      const pbValue = 38.8 * Math.pow(1024, 5); // 38.8 PB in bytes
+   271→      const result = formatBytes(pbValue);
+   272→      
+   273→      expect(result).toContain('PB');
+   274→      expect(parseFloat(result)).toBeCloseTo(38.8, 1);
+   275→    });
+   276→
+   277→    it('should handle decimal values correctly', () => {
+   278→      expect(formatBytes(1500)).toBe('1.5 KB'); // 1500/1024 = 1.464... rounds to 1.5
+   279→    });
+   280→  });
+   281→
+   282→  // ==========================================
+   283→  // Email Validation
+   284→  // ==========================================
+   285→  describe('validators.isValidEmail()', () => {
+   286→    it('should accept valid email addresses', () => {
+   287→      expect(validators.isValidEmail('test@example.com')).toBe(true);
+   288→      expect(validators.isValidEmail('user.name@domain.org')).toBe(true);
+   289→      expect(validators.isValidEmail('user123@gmail.com')).toBe(true);
+   290→      expect(validators.isValidEmail('user-name@sub.domain.co.uk')).toBe(true);
+   291→    });
+   292→
+   293→    it('should reject invalid email addresses', () => {
+   294→      expect(validators.isValidEmail('plaintext')).toBe(false);
+   295→      expect(validators.isValidEmail('@domain.com')).toBe(false);
+   296→      expect(validators.isValidEmail('user@')).toBe(false);
+   297→      expect(validators.isValidEmail('user@domain')).toBe(false);
+   298→      expect(validators.isValidEmail('')).toBe(false);
+   299→      expect(validators.isValidEmail('user @domain.com')).toBe(false);
+   300→    });
+   301→  });
+   302→
+   303→  // ==========================================
+   304→  // URL Validation
+   305→  // ==========================================
+   306→  describe('validators.isValidUrl()', () => {
+   307→    it('should accept valid URLs', () => {
+   308→      expect(validators.isValidUrl('https://example.com')).toBe(true);
+   309→      expect(validators.isValidUrl('http://localhost:3000')).toBe(true);
+   310→      expect(validators.isValidUrl('https://sub.domain.com/path?query=1')).toBe(true);
+   311→      expect(validators.isValidUrl('ftp://files.example.com')).toBe(true);
+   312→    });
+   313→
+   314→    it('should reject invalid URLs', () => {
+   315→      expect(validators.isValidUrl('not-a-url')).toBe(false);
+   316→      expect(validators.isValidUrl('')).toBe(false);
+   317→      expect(validators.isValidUrl('www.example.com')).toBe(false); // Missing protocol
+   318→    });
+   319→  });
+   320→
+   321→  // ==========================================
+   322→  // ORCID ID Validation
+   323→  // ==========================================
+   324→  describe('validators.isValidOrcidId()', () => {
+   325→    it('should accept valid ORCID IDs', () => {
+   326→      expect(validators.isValidOrcidId('0000-0002-1825-0097')).toBe(true);
+   327→      expect(validators.isValidOrcidId('0000-0001-9876-5432')).toBe(true);
+   328→      expect(validators.isValidOrcidId('0000-0002-1234-5678')).toBe(true);
+   329→    });
+   330→
+   331→    it('should reject invalid ORCID IDs', () => {
+   332→      expect(validators.isValidOrcidId('')).toBe(false);
+   333→      expect(validators.isValidOrcidId('0000000018250097')).toBe(false); // No dashes
+   334→      expect(validators.isValidOrcidId('0000-0002-1825-009')).toBe(false); // Too short
+   335→      expect(validators.isValidOrcidId('ABCD-EFGH-IJKL-MNOP')).toBe(false); // Not digits
+   336→    });
+   337→  });
+   338→
+   339→  // ==========================================
+   340→  // Password Strength Validation
+   341→  // ==========================================
+   342→  describe('validators.isStrongPassword()', () => {
+   343→    it('should validate strong passwords', () => {
+   344→      const result = validators.isStrongPassword('StrongPass123!');
+   345→      expect(result.valid).toBe(true);
+   346→      expect(result.errors).toHaveLength(0);
+   347→    });
+   348→
+   349→    it('should reject short passwords', () => {
+   350→      const result = validators.isStrongPassword('Short1!');
+   351→      expect(result.valid).toBe(false);
+   352→      expect(result.errors).toContain('Minimum 8 characters');
+   353→    });
+   354→
+   355→    it('should reject passwords without uppercase', () => {
+   356→      const result = validators.isStrongPassword('lowercase123!');
+   357→      expect(result.valid).toBe(false);
+   358→      expect(result.errors).toContain('One uppercase letter');
+   359→    });
+   360→
+   361→    it('should reject passwords without lowercase', () => {
+   362→      const result = validators.isStrongPassword('UPPERCASE123!');
+   363→      expect(result.valid).toBe(false);
+   364→      expect(result.errors).toContain('One lowercase letter');
+   365→    });
+   366→
+   367→    it('should reject passwords without numbers', () => {
+   368→      const result = validators.isStrongPassword('NoNumbers!');
+   369→      expect(result.valid).toBe(false);
+   370→      expect(result.errors).toContain('One number');
+   371→    });
+   372→
+   373→    it('should reject passwords without special characters', () => {
+   374→      const result = validators.isStrongPassword('NoSpecialChars123');
+   375→      expect(result.valid).toBe(false);
+   376→      expect(result.errors).toContain('One special character');
+   377→    });
+   378→
+   379→    it('should report all errors at once', () => {
+   380→      const result = validators.isStrongPassword('weak');
+   381→      expect(result.valid).toBe(false);
+   382→      expect(result.errors.length).toBeGreaterThan(2);
+   383→    });
+   384→  });
+   385→
+   386→  // ==========================================
+   387→  // String Sanitization
+   388→  // ==========================================
+   389→  describe('validators.sanitizeString()', () => {
+   390→    it('should trim whitespace', () => {
+   391→      expect(validators.sanitizeString('  hello  ')).toBe('hello');
+   392→    });
+   393→
+   394→    it('remove dangerous HTML characters', () => {
+   395→      const result = validators.sanitizeString('<script>alert("xss")</script>');
+   396→      // Removes < > " ' & characters
+   397→      expect(result).not.toContain('<');
+   398→      expect(result).not.toContain('>');
+   399→      expect(result).not.toContain('"');
+   400→      expect(result).toContain('script');
+   401→      expect(result).toContain('xss');
+   402→    });
+   403→
+   404→    it('should collapse multiple spaces', () => {
+   405→      expect(validators.sanitizeString('hello   world')).toBe('hello world');
+   406→    });
+   407→
+   408→    it('should limit string length', () => {
+   409→      const longStr = 'a'.repeat(2000);
+   410→      expect(validators.sanitizeString(longStr).length).toBe(1000);
+   411→    });
+   412→  });
+   413→
+   414→  // ==========================================
+   415→  // Date Formatting
+   416→  // ==========================================
+   417→  describe('dateUtils.formatDate()', () => {
+   418→    it('should format dates in ISO format by default', () => {
+   419→      const date = new Date('2024-01-15T10:30:00Z');
+   420→      const result = dateUtils.formatDate(date);
+   421→      
+   422→      expect(result).toContain('2024-01-15');
+   423→    });
+   424→
+   425→    it('should format dates in short format', () => {
+   426→      const date = new Date('2024-01-15T10:30:00Z');
+   427→      const result = dateUtils.formatDate(date, 'short');
+   428→      
+   429→      expect(result).toContain('2024');
+   430→      expect(result).toContain('Jan');
+   431→    });
+   432→
+   433→    it('should format dates in long format', () => {
+   434→      const date = new Date('2024-01-15T10:30:00Z');
+   435→      const result = dateUtils.formatDate(date, 'long');
+   436→      
+   437→      expect(result.toLowerCase()).toContain('january');
+   438→    });
+   439→
+   440→    it('should handle string date input', () => {
+   441→      const result = dateUtils.formatDate('2024-06-20', 'iso');
+   442→      expect(result).toContain('2024');
+   443→    });
+   444→  });
+   445→
+   446→  // ==========================================
+   447→  // Relative Time
+   448→  // ==========================================
+   449→  describe('dateUtils.getRelativeTime()', () => {
+   450→    beforeEach(() => {
+   451→      jest.useFakeTimers();
+   452→    });
+   453→
+   454→    afterEach(() => {
+   455→      jest.useRealTimers();
+   456→    });
+   457→
+   458→    it('should show seconds for very recent times', () => {
+   459→      const now = new Date().getTime();
+   460→      const date = new Date(now - 30000); // 30 seconds ago
+   461→      
+   462→      expect(dateUtils.getRelativeTime(date)).toMatch(/\d+s ago/);
+   463→    });
+   464→
+   465→    it('should show minutes for recent times', () => {
+   466→      const now = new Date().getTime();
+   467→      const date = new Date(now - 5 * 60 * 1000); // 5 minutes ago
+   468→      
+   469→      expect(dateUtils.getRelativeTime(date)).toMatch(/5m ago/);
+   470→    });
+   471→
+   472→    it('should show hours for same-day times', () => {
+   473→      const now = new Date().getTime();
+   474→      const date = new Date(now - 3 * 60 * 60 * 1000); // 3 hours ago
+   475→      
+   476→      expect(dateUtils.getRelativeTime(date)).toMatch(/3h ago/);
+   477→    });
+   478→
+   479→    it('should show days for older times', () => {
+   480→      const now = new Date().getTime();
+   481→      const date = new Date(now - 5 * 24 * 60 * 60 * 1000); // 5 days ago
+   482→      
+   483→      expect(dateUtils.getRelativeTime(date)).toMatch(/5d ago/);
+   484→    });
+   485→  });
+   486→
+   487→  // ==========================================
+   488→  // Date Validation
+   489→  // ==========================================
+   490→  describe('dateUtils.isValidDate()', () => {
+   491→    it('should accept valid Date objects', () => {
+   492→      expect(dateUtils.isValidDate(new Date())).toBe(true);
+   493→      expect(dateUtils.isValidDate(new Date('2024-01-15'))).toBe(true);
+   494→    });
+   495→
+   496→    it('should accept valid date strings', () => {
+   497→      expect(dateUtils.isValidDate('2024-01-15')).toBe(true);
+   498→      expect(dateUtils.isValidDate('2024-01-15T10:30:00Z')).toBe(true);
+   499→    });
+   500→
+   501→    it('should reject invalid dates', () => {
+   502→      expect(dateUtils.isValidDate('invalid-date')).toBe(false);
+   503→      expect(dateUtils.isValidDate('')).toBe(false);
+   504→      expect(dateUtils.isValidDate(null)).toBe(false);
+   505→      expect(dateUtils.isValidDate(undefined)).toBe(false);
+   506→      expect(dateUtils.isValidDate(12345)).toBe(false);
+   507→    });
+   508→  });
+   509→
+   510→  // ==========================================
+   511→  // String Truncation
+   512→  // ==========================================
+   513→  describe('stringUtils.truncate()', () => {
+   514→    it('should not truncate short strings', () => {
+   515→      expect(stringUtils.truncate('Hello', 10)).toBe('Hello');
+   516→    });
+   517→
+   518→    it('should truncate long strings with default suffix', () => {
+   519→      const result = stringUtils.truncate('Hello World!', 8);
+   520→      expect(result).toBe('Hello...');
+   521→      expect(result.length).toBe(8);
+   522→    });
+   523→
+   524→    it('should use custom suffix', () => {
+   525→      const result = stringUtils.truncate('Hello World!', 10, '>>');
+   526→      // Takes (10 - 2) = 8 characters + '>>' = 10 total
+   527→      expect(result).toBe('Hello Wo>>');
+   528→      expect(result.length).toBe(10);
+   529→    });
+   530→
+   531→    it('should handle empty strings', () => {
+   532→      expect(stringUtils.truncate('', 10)).toBe('');
+   533→    });
+   534→
+   535→    it('should handle exact length strings', () => {
+   536→      expect(stringUtils.truncate('Hello', 5)).toBe('Hello');
+   537→    });
+   538→  });
+   539→
+   540→  // ==========================================
+   541→  // String Capitalization
+   542→  // ==========================================
+   543→  describe('stringUtils.capitalize()', () => {
+   544→    it('should capitalize first letter', () => {
+   545→      expect(stringUtils.capitalize('hello')).toBe('Hello');
+   546→    });
+   547→
+   548→    it('should lowercase rest of string', () => {
+   549→      expect(stringUtils.capitalize('HELLO')).toBe('Hello');
+   550→    });
+   551→
+   552→    it('should handle single character', () => {
+   553→      expect(stringUtils.capitalize('h')).toBe('H');
+   554→    });
+   555→
+   556→    it('should handle empty string', () => {
+   557→      expect(stringUtils.capitalize('')).toBe('');
+   558→    });
+   559→  });
+   560→
+   561→  // ==========================================
+   562→  // Camel Case to Title
+   563→  // ==========================================
+   564→  describe('stringUtils.camelToTitle()', () => {
+   565→    it('should convert camelCase to Title Case', () => {
+   566→      expect(stringUtils.camelToTitle('helloWorld')).toBe('Hello World');
+   567→    });
+   568→
+   569→    it('should handle PascalCase', () => {
+   570→      expect(stringUtils.camelToTitle('UserService')).toBe('User Service');
+   571→    });
+   572→
+   573→    it('should handle acronyms', () => {
+   574→      expect(stringUtils.camelToTitle('parseURL')).toBe('Parse U R L');
+   575→    });
+   576→
+   577→    it('should handle single word', () => {
+   578→      expect(stringUtils.camelToTitle('hello')).toBe('Hello');
+   579→    });
+   580→  });
+   581→
+   582→  // ==========================================
+   583→  // Slugify
+   584→  // ==========================================
+   585→  describe('stringUtils.slugify()', () => {
+   586→    it('should convert to lowercase with hyphens', () => {
+   587→      expect(stringUtils.slugify('Hello World')).toBe('hello-world');
+   588→    });
+   589→
+   590→    it('should remove special characters', () => {
+   591→      expect(stringUtils.slugify('Hello, World!')).toBe('hello-world');
+   592→    });
+   593→
+   594→    it('should replace spaces with hyphens', () => {
+   595→      expect(stringUtils.slugify('multiple   spaces')).toBe('multiple-spaces');
+   596→    });
+   597→
+   598→    it('should handle underscores', () => {
+   599→      expect(stringUtils.slugify('hello_world_test')).toBe('hello-world-test');
+   600→    });
+   601→
+   602→    it('should trim leading/trailing hyphens', () => {
+   603→      expect(stringUtils.slugify('---hello---')).toBe('hello');
+   604→    });
+   605→  });
+   606→
+   607→  // ==========================================
+   608→  // Generate ID
+   609→  // ==========================================
+   610→  describe('stringUtils.generateId()', () => {
+   611→    it('should generate unique IDs', () => {
+   612→      const id1 = stringUtils.generateId();
+   613→      const id2 = stringUtils.generateId();
+   614→      
+   615→      expect(id1).not.toBe(id2);
+   616→    });
+   617→
+   618→    it('should include prefix when provided', () => {
+   619→      const id = stringUtils.generateId('usr');
+   620→      expect(id).toMatch(/^usr_/);
+   621→    });
+   622→
+   623→    it('should generate alphanumeric IDs', () => {
+   624→      const id = stringUtils.generateId();
+   625→      expect(id).toMatch(/^[a-z0-9]+$/);
+   626→    });
+   627→
+   628→    it('should generate reasonable length IDs', () => {
+   629→      const id = stringUtils.generateId();
+   630→      expect(id.length).toBeGreaterThanOrEqual(10);
+   631→    });
+   632→  });
+   633→
+   634→  // ==========================================
+   635→  // HTML Escaping
+   636→  // ==========================================
+   637→  describe('stringUtils.escapeHtml()', () => {
+   638→    it('should escape ampersand', () => {
+   639→      expect(stringUtils.escapeHtml('a & b')).toBe('a &amp; b');
+   640→    });
+   641→
+   642→    it('should escape angle brackets', () => {
+   643→      expect(stringUtils.escapeHtml('<div>')).toBe('&lt;div&gt;');
+   644→    });
+   645→
+   646→    it('should escape quotes', () => {
+   647→      expect(stringUtils.escapeHtml('"hello"')).toBe('&quot;hello&quot;');
+   648→      // Test single quote escape
+   649→      const escaped = stringUtils.escapeHtml("'hello'");
+   650→      expect(escaped).toContain('hello');
+   651→      expect(escaped).not.toContain("'");
+   652→    });
+   653→
+   654→    it('should handle multiple special chars', () => {
+   655→      expect(stringUtils.escapeHtml('<script>alert("xss")</script>')).toBe(
+   656→        '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
+   657→      );
+   658→    });
+   659→
+   660→    it('should leave safe text unchanged', () => {
+   661→      expect(stringUtils.escapeHtml('Hello World 123')).toBe('Hello World 123');
+   662→    });
+   663→  });
+   664→
+   665→  // ==========================================
+   666→  // Array Chunking
+   667→  // ==========================================
+   668→  describe('collectionUtils.chunk()', () => {
+   669→    it('should split array into chunks', () => {
+   670→      const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+   671→      const chunks = collectionUtils.chunk(arr, 3);
+   672→      
+   673→      expect(chunks).toHaveLength(4);
+   674→      expect(chunks[0]).toEqual([1, 2, 3]);
+   675→      expect(chunks[3]).toEqual([10]);
+   676→    });
+   677→
+   678→    it('should handle empty arrays', () => {
+   679→      expect(collectionUtils.chunk([], 5)).toEqual([]);
+   680→    });
+   681→
+   682→    it('should handle chunk size larger than array', () => {
+   683→      const arr = [1, 2, 3];
+   684→      expect(collectionUtils.chunk(arr, 10)).toEqual([[1, 2, 3]]);
+   685→    });
+   686→
+   687→    it('should preserve element order', () => {
+   688→      const arr = [1, 2, 3, 4, 5];
+   689→      const chunks = collectionUtils.chunk(arr, 2);
+   690→      const flat = chunks.flat();
+   691→      expect(flat).toEqual(arr);
+   692→    });
+   693→  });
+   694→
+   695→  // ==========================================
+   696→  // Group By
+   697→  // ==========================================
+   698→  describe('collectionUtils.groupBy()', () => {
+   699→    it('should group items by key function', () => {
+   700→      const items = [
+   701→        { category: 'A', value: 1 },
+   702→        { category: 'B', value: 2 },
+   703→        { category: 'A', value: 3 },
+   704→      ];
+   705→      
+   706→      const grouped = collectionUtils.groupBy(items, item => item.category);
+   707→      
+   708→      expect(grouped.A).toHaveLength(2);
+   709→      expect(grouped.B).toHaveLength(1);
+   710→      expect(grouped.A[0].value).toBe(1);
+   711→    });
+   712→
+   713→    it('should handle empty arrays', () => {
+   714→      const result = collectionUtils.groupBy([], () => 'x');
+   715→      expect(result).toEqual({});
+   716→    });
+   717→  });
+   718→
+   719→  // ==========================================
+   720→  // Unique
+   721→  // ==========================================
+   722→  describe('collectionUtils.unique()', () => {
+   723→    it('should remove duplicates', () => {
+   724→      const arr = [1, 2, 2, 3, 3, 3, 4, 5, 5];
+   725→      expect(collectionUtils.unique(arr)).toEqual([1, 2, 3, 4, 5]);
+   726→    });
+   727→
+   728→    it('should handle empty arrays', () => {
+   729→      expect(collectionUtils.unique([])).toEqual([]);
+   730→    });
+   731→
+   732→    it('should work with strings', () => {
+   733→      const arr = ['a', 'b', 'a', 'c', 'b'];
+   734→      expect(collectionUtils.unique(arr)).toEqual(['a', 'b', 'c']);
+   735→    });
+   736→  });
+   737→
+   738→  // ==========================================
+   739→  // Pick
+   740→  // ==========================================
+   741→  describe('collectionUtils.pick()', () => {
+   742→    it('should select specified keys', () => {
+   743→      const obj = { a: 1, b: 2, c: 3, d: 4 };
+   744→      const result = collectionUtils.pick(obj, ['a', 'c']);
+   745→      
+   746→      expect(result).toEqual({ a: 1, c: 3 });
+   747→    });
+   748→
+   749→    it('should ignore non-existent keys', () => {
+   750→      const obj = { a: 1 };
+   751→      const result = collectionUtils.pick(obj, ['a', 'b']);
+   752→      
+   753→      expect(result).toEqual({ a: 1 });
+   754→    });
+   755→  });
+   756→
+   757→  // ==========================================
+   758→  // Omit
+   759→  // ==========================================
+   760→  describe('collectionUtils.omit()', () => {
+   761→    it('should remove specified keys', () => {
+   762→      const obj = { a: 1, b: 2, c: 3, d: 4 };
+   763→      const result = collectionUtils.omit(obj, ['b', 'd']);
+   764→      
+   765→      expect(result).toEqual({ a: 1, c: 3 });
+   766→    });
+   767→
+   768→    it('should return copy without modifying original', () => {
+   769→      const obj = { a: 1, b: 2 };
+   770→      const result = collectionUtils.omit(obj, ['a']);
+   771→      
+   772→      expect(obj).toHaveProperty('a');
+   773→      expect(result).not.toHaveProperty('a');
+   774→    });
+   775→  });
+   776→});
+   777→
