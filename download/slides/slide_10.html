@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Ask - Endeavor Science</title>
+  <link rel="stylesheet" href="global.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&family=Material+Icons&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="slide">
+    <!-- Decorative Background Elements -->
+    <div data-decor aria-hidden="true" style="position: absolute; bottom: -150px; left: -150px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+    
+    <!-- Header -->
+    <header style="margin-bottom: 32px;">
+      <h1 class="micro" style="color: var(--accent-primary); margin-bottom: 12px;">THE ASK</h1>
+      <h2>Raising $5M Seed Round</h2>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div style="display: grid; grid-template-columns: 340px 1fr; gap: 40px; flex: 1;">
+      
+      <!-- Left Column - Large Funding Display -->
+      <div class="flex-col" style="justify-content: center; align-items: center; text-align: center;">
+        <div style="background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated)); border-radius: var(--radius-xl); padding: 40px 32px; border: 2px solid rgba(59,130,246,0.3); box-shadow: 0 20px 60px rgba(59,130,246,0.15);">
+          <p class="micro" style="color: var(--accent-primary); margin-bottom: 16px;">SEED ROUND</p>
+          <div style="font-family: var(--font-heading); font-size: 56px; font-weight: 800; color: var(--text-primary); line-height: 1; letter-spacing: -0.03em;">$5M</div>
+          <p style="font-size: 16px; color: var(--text-muted); margin-top: 8px;">$5,000,000</p>
+        </div>
+        
+        <!-- Runway Info -->
+        <div style="margin-top: 28px; text-align: left; width: 100%;">
+          <div class="card" style="padding: 18px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+              <span class="material-icons" style="font-size: 20px; color: var(--accent-success);">schedule</span>
+              <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Runway</span>
+            </div>
+            <p style="font-size: 22px; font-weight: 700; color: var(--accent-primary);">18-24 months to Series A</p>
+            <p class="small" style="margin-top: 4px;">Target milestones: 100K users, product-market fit, initial revenue</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Use of Funds Breakdown -->
+      <div class="flex-col" style="gap: 14px;">
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Use of Funds</h3>
+        
+        <!-- Engineering - 60% -->
+        <div class="card card-glow" style="padding: 18px 20px; display: grid; grid-template-columns: 50px 1fr auto; gap: 16px; align-items: start;">
+          <div style="width: 50px; height: 50px; background: rgba(59,130,246,0.15); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+            <span class="material-icons" style="color: var(--accent-primary);">engineering</span>
+          </div>
+          <div>
+            <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px;">
+              <span style="font-size: 17px; font-weight: 700; color: var(--text-primary);">Engineering</span>
+              <span class="badge" style="padding: 3px 10px; font-size: 13px;">60% · $3.0M</span>
+            </div>
+            <ul style="list-style: none; font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+              <li>• Hire 8-10 world-class engineers</li>
+              <li>• Build MVP + core scientific tools</li>
+              <li>• Infrastructure setup</li>
+            </ul>
+          </div>
+          <div style="width: 80px; height: 8px; background: var(--bg-elevated); border-radius: 4px; overflow: hidden; position: relative; top: 8px;">
+            <div style="width: 60%; height: 100%; background: var(--gradient-accent); border-radius: 4px;"></div>
+          </div>
+        </div>
+
+        <!-- Operations - 15% -->
+        <div class="card" style="padding: 16px 20px; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: start; border-color: rgba(255,255,255,0.06);">
+          <div style="width: 44px; height: 44px; background: rgba(6,182,212,0.15); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;">
+            <span class="material-icons" style="font-size: 22px; color: var(--accent-secondary);">cloud_queue</span>
+          </div>
+          <div>
+            <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;">
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Operations</span>
+              <span style="font-size: 13px; color: var(--accent-secondary); font-weight: 500;">15% · $750K</span>
+            </div>
+            <p class="small">Cloud hosting, DevOps tooling, Security audits</p>
+          </div>
+          <div style="width: 60px; height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden;">
+            <div style="width: 15%; height: 100%; background: var(--accent-secondary); border-radius: 3px;"></div>
+          </div>
+        </div>
+
+        <!-- Design & UX - 10% -->
+        <div class="card" style="padding: 16px 20px; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: start; border-color: rgba(255,255,255,0.06);">
+          <div style="width: 44px; height: 44px; background: rgba(168,85,247,0.15); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;">
+            <span class="material-icons" style="font-size: 22px; color: #a855f7;">palette</span>
+          </div>
+          <div>
+            <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;">
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Design & UX</span>
+              <span style="font-size: 13px; color: #a855f7; font-weight: 500;">10% · $500K</span>
+            </div>
+            <p class="small">2 designers, user research, Design system creation</p>
+          </div>
+          <div style="width: 60px; height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden;">
+            <div style="width: 10%; height: 100%; background: #a855f7; border-radius: 3px;"></div>
+          </div>
+        </div>
+
+        <!-- Marketing - 10% -->
+        <div class="card" style="padding: 16px 20px; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: start; border-color: rgba(255,255,255,0.06);">
+          <div style="width: 44px; height: 44px; background: rgba(16,185,129,0.15); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;">
+            <span class="material-icons" style="font-size: 22px; color: var(--accent-success);">campaign</span>
+          </div>
+          <div>
+            <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;">
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Marketing</span>
+              <span style="font-size: 13px; color: var(--accent-success); font-weight: 500;">10% · $500K</span>
+            </div>
+            <p class="small">Content, community building, Conference presence, beta recruitment</p>
+          </div>
+          <div style="width: 60px; height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden;">
+            <div style="width: 10%; height: 100%; background: var(--accent-success); border-radius: 3px;"></div>
+          </div>
+        </div>
+
+        <!-- Legal - 5% -->
+        <div class="card" style="padding: 16px 20px; display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: start; border-color: rgba(255,255,255,0.06);">
+          <div style="width: 44px; height: 44px; background: rgba(245,158,11,0.15); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;">
+            <span class="material-icons" style="font-size: 22px; color: var(--accent-warning);">gavel</span>
+          </div>
+          <div>
+            <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;">
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Legal</span>
+              <span style="font-size: 13px; color: var(--accent-warning); font-weight: 500;">5% · $250K</span>
+            </div>
+            <p class="small">Entity formation, IP protection, Insurance, compliance prep</p>
+          </div>
+          <div style="width: 60px; height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden;">
+            <div style="width: 5%; height: 100%; background: var(--accent-warning); border-radius: 3px;"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Speaker Notes -->
+    <aside data-notes class="hidden">
+      We're not raising to burn cash. We're raising to build the foundation of a category-defining company. Five million dollars gives us approximately 18 to 24 months of runway to reach our Series A milestone. The majority of funds—sixty percent—goes directly into engineering because that's where we create value. We're building real technology, not just marketing hype. Our lean operations and focused spending mean every dollar goes toward product development and user acquisition. Compare this to typical seed rounds in this space that often burn through cash on premature scaling—we're being deliberate about building sustainable unit economics from day one.
+    </aside>
+  </div>
+</body>
+</html>

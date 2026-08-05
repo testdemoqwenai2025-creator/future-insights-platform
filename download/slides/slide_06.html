@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Model - Endeavor Science (AETH-1)</title>
+  <link rel="stylesheet" href="global.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&family=Material+Icons&display=swap" rel="stylesheet">
+  <style>
+    .slide {
+      background: var(--bg-primary);
+    }
+    .headline {
+      font-size: var(--fs-h1);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+      text-align: center;
+    }
+    .sub-headline {
+      font-size: var(--fs-body);
+      color: var(--accent-primary);
+      text-align: center;
+      margin-bottom: var(--space-xl);
+      font-weight: 500;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-md);
+      flex: 1;
+    }
+    .pricing-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-sm);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    .pricing-card.featured {
+      border-color: rgba(59, 130, 246, 0.4);
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, var(--bg-card) 100%);
+    }
+    .pricing-card.featured::before {
+      content: 'POPULAR';
+      position: absolute;
+      top: 12px;
+      right: -28px;
+      background: var(--gradient-accent);
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 32px;
+      transform: rotate(45deg);
+      letter-spacing: 0.05em;
+    }
+    .tier-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .tier-price {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent-primary);
+      margin-bottom: var(--space-xs);
+    }
+    .tier-price span {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .tier-features {
+      list-style: none;
+      flex: 1;
+      margin: var(--space-sm) 0;
+    }
+    .tier-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+    .tier-features li::before {
+      content: "✓";
+      color: var(--accent-success);
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .tier-target {
+      margin-top: auto;
+      padding-top: var(--space-sm);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .tier-target strong {
+      color: var(--text-secondary);
+    }
+    /* Funnel visual */
+    .funnel-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-md);
+      margin-top: var(--space-lg);
+      padding: var(--space-md) 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .funnel-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .funnel-arrow {
+      color: var(--accent-primary);
+      font-size: 18px;
+    }
+    .metric-callout {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: var(--radius-md);
+      padding: 8px 20px;
+      margin-left: var(--space-md);
+    }
+    .metric-callout strong {
+      color: var(--accent-primary);
+      font-size: 14px;
+    }
+    /* Decorative */
+    .decor-glow {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
+      bottom: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide" style="position: relative;">
+    <div data-decor class="decor-glow"></div>
+    
+    <h1 class="headline">Proven Freemium Model.</h1>
+    <p class="sub-headline">GitHub for Science.</p>
+
+    <div class="pricing-grid">
+      <!-- Community (Free) -->
+      <div class="pricing-card">
+        <div class="tier-name">Community</div>
+        <div class="tier-price">Free</div>
+        <ul class="tier-features">
+          <li>All core scientific tools</li>
+          <li>Unlimited public projects</li>
+          <li>3 private projects (1GB each)</li>
+          <li>Basic collaboration features</li>
+        </ul>
+        <div class="tier-target"><strong>For:</strong> Individual researchers, students</div>
+      </div>
+
+      <!-- Pro ($29/mo) -->
+      <div class="pricing-card featured">
+        <div class="tier-name">Pro</div>
+        <div class="tier-price">$29<span>/mo</span></div>
+        <ul class="tier-features">
+          <li>Unlimited private projects</li>
+          <li>Priority compute resources</li>
+          <li>Advanced code editors</li>
+          <li>Priority support access</li>
+        </ul>
+        <div class="tier-target"><strong>For:</strong> Professionals, consultants</div>
+      </div>
+
+      <!-- Team ($149/mo) -->
+      <div class="pricing-card">
+        <div class="tier-name">Team</div>
+        <div class="tier-price">$149<span>/mo</span></div>
+        <ul class="tier-features">
+          <li>Team workspace & management</li>
+          <li>SSO (Google, Microsoft)</li>
+          <li>Shared templates library</li>
+          <li>Admin controls & analytics</li>
+        </ul>
+        <div class="tier-target"><strong>For:</strong> Research groups, startups</div>
+      </div>
+
+      <!-- Enterprise (Custom) -->
+      <div class="pricing-card">
+        <div class="tier-name">Enterprise</div>
+        <div class="tier-price">Custom</div>
+        <ul class="tier-features">
+          <li>Private cloud deployment</li>
+          <li>Full compliance (FDA/HIPAA/GDPR)</li>
+          <li>Dedicated support & SLA</li>
+          <li>Custom integrations & training</li>
+        </ul>
+        <div class="tier-target"><strong>For:</strong> Pharma, government, universities</div>
+      </div>
+    </div>
+
+    <!-- Conversion Funnel -->
+    <div class="funnel-section">
+      <span class="funnel-step">Free Users</span>
+      <span class="funnel-arrow">→</span>
+      <span class="funnel-step">Pro</span>
+      <span class="funnel-arrow">→</span>
+      <span class="funnel-step">Team</span>
+      <span class="funnel-arrow">→</span>
+      <span class="funnel-step">Enterprise</span>
+      <div class="metric-callout">
+        Target: <strong>5-10%</strong> conversion rate
+      </div>
+    </div>
+
+    <aside data-notes class="hidden">
+      This model built GitHub ($7.5B acquisition), VS Code, Slack, Canva — it works. We're applying it to science. The key insight is that the free tier creates massive adoption and network effects among researchers and students who become our evangelists. When they join companies or labs, they bring AETH-1 with them. The conversion funnel is proven: free users get value, hit usage limits, upgrade to Pro for more power or privacy. Teams need collaboration features. Enterprise needs compliance and security. Our target of 5-10% free-to-paid conversion is conservative compared to GitHub's actual numbers. Even at the low end with our TAM, that's a very large business.
+    </aside>
+  </div>
+</body>
+</html>

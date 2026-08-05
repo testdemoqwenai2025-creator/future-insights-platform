@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How It Works - Endeavor Science</title>
+  <link rel="stylesheet" href="global.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    .slide {
+      background: var(--bg-primary);
+    }
+    
+    .arch-header {
+      margin-bottom: 28px;
+    }
+    
+    .headline {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 18px;
+      flex: 1;
+    }
+    
+    .bento-card {
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.5) 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .bento-card:hover {
+      border-color: rgba(59, 130, 246, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25), 0 0 30px rgba(59,130,246,0.08);
+    }
+    
+    .card-glow {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      filter: blur(50px);
+      opacity: 0.12;
+      pointer-events: none;
+      top: -20px;
+      right: -20px;
+    }
+    
+    .card-1 .card-glow { background: #818cf8; }
+    .card-2 .card-glow { background: #3b82f6; }
+    .card-3 .card-glow { background: #06b6d4; }
+    .card-4 .card-glow { background: #10b981; }
+    .card-5 .card-glow { background: #f59e0b; }
+    .card-6 .card-glow { background: #ec4899; }
+    
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+    
+    .card-1 .card-icon { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .card-2 .card-icon { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .card-3 .card-icon { background: rgba(6, 182, 212, 0.15); color: #06b6d4; }
+    .card-4 .card-icon { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .card-5 .card-icon { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .card-6 .card-icon { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+    
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.25;
+    }
+    
+    .card-description {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 14px;
+      flex: 1;
+    }
+    
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    
+    .tech-tag {
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+    
+    /* Card-specific accent borders */
+    .card-1 { border-left: 3px solid #818cf8; }
+    .card-2 { border-left: 3px solid #3b82f6; }
+    .card-3 { border-left: 3px solid #06b6d4; }
+    .card-4 { border-left: 3px solid #10b981; }
+    .card-5 { border-left: 3px solid #f59e0b; }
+    .card-6 { border-left: 3px solid #ec4899; }
+    
+    /* Subtle pattern overlay */
+    .card-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
+      background-size: 20px 20px;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="arch-header">
+      <h1 class="headline">Built for Science. Engineered for Scale.</h1>
+    </div>
+    
+    <div class="bento-grid">
+      <!-- Card 1: Scientific Microservices -->
+      <div class="bento-card card-1">
+        <div class="card-pattern"></div>
+        <div class="card-glow"></div>
+        <div class="card-header">
+          <div class="card-icon">
+            <span class="material-icons">biotech</span>
+          </div>
+          <h3 class="card-title">Scientific Microservices</h3>
+        </div>
+        <p class="card-description">
+          Domain-specific engines for every scientific workflow, built as isolated, composable services.
+        </p>
+        <div class="card-tags">
+          <span class="tech-tag">Sequence Alignment</span>
+          <span class="tech-tag">Molecule Viewer</span>
+          <span class="tech-tag">Cheminformatics</span>
+          <span class="tech-tag">Data Viz</span>
+          <span class="tech-tag">Notebooks</span>
+        </div>
+      </div>
+      
+      <!-- Card 2: Containerized Execution -->
+      <div class="bento-card card-2">
+        <div class="card-pattern"></div>
+        <div class="card-glow"></div>
+        <div class="card-header">
+          <div class="card-icon">
+            <span class="material-icons">docker</span>
+          </div>
+          <h3 class="card-title">Containerized Execution</h3>
+        </div>
+        <p class="card-description">
+          Every analysis runs in fully isolated containers with complete environment snapshots for perfect reproducibility.
+        </p>
+        <div class="card-tags">
+          <span class="tech-tag">Docker/K8s</span>
+          <span class="tech-tag">Isolated Env</span>
+          <span class="tech-tag">Snapshots</span>
+          <span class="tech-tag">Reproducible</span>
+        </div>
+      </div>
+      
+      <!-- Card 3: Web-Native Computation -->
+      <div class="bento-card card-3">
+        <div class="card-pattern"></div>
+        <div class="card-glow"></div>
+        <div class="card-header">
+          <div class="card-icon">
+            <span class="material-icons">language</span>
+          </div>
+          <h3 class="card-title">Web-Native Computation</h3>
+        </div>
+        <p class="card-description">
+          WebAssembly powers browser-side compute for interactive analysis, with seamless cloud offload for heavy jobs.
+        </p>
+        <div class="card-tags">
+          <span class="tech-tag">WebAssembly</span>
+          <span class="tech-tag">Browser Compute</span>
+          <span class="tech-tag">Cloud Offload</span>
+          <span class="tech-tag">Progressive</span>
+        </div>
+      </div>
+      
+      <!-- Card 4: Package Ecosystem -->
+      <div class="bento-card card-4">
+        <div class="card-pattern"></div>
+        <div class="card-glow"></div>
+        <div class="card-header">
+          <div class="card-icon">
+            <span class="material-icons">widgets</span>
+          </div>
+          <h3 class="card-title">Package Ecosystem</h3>
+        </div>
+        <p class="card-description">
+          An app store for scientific tools — community-contributed packages with managed dependencies and versioning.
+        </p>
+        <div class="card-tags">
+          <span class="tech-tag">App Store</span>
+          <span class="tech-tag">Community PKG</span>
+          <span class="tech-tag">Dep Management</span>
+          <span class="tech-tag">Versioned</span>
+        </div>
+      </div>
+      
+      <!-- Card 5: Enterprise Security -->
+      <div class="bento-card card-5">
+        <div class="card-pattern"></div>
+        <div class="card-glow"></div>
+        <div class="card-header">
+          <div class="card-icon">
+            <span class="material-icons">verified_user</span>
+          </div>
+          <h3 class="card-title">Enterprise Security</h3>
+        </div>
+        <p class="card-description">
+          Enterprise-grade compliance and security built from day one — ready for pharma, government, and regulated industries.
+        </p>
+        <div class="card-tags">
+          <span class="tech-tag">SOC 2</span>
+          <span class="tech-tag">HIPAA Ready</span>
+          <span class="tech-tag">FDA 21 CFR 11</span>
+          <span class="tech-tag">GDPR</span>
+        </div>
+      </div>
+      
+      <!-- Card 6: AI/ML Integrated -->
+      <div class="bento-card card-6">
+        <div class="card-pattern"></div>
+        <div class="card-glow"></div>
+        <div class="card-header">
+          <div class="card-icon">
+            <span class="material-icons">psychology</span>
+          </div>
+          <h3 class="card-title">AI/ML Integrated</h3>
+        </div>
+        <p class="card-description">
+          AlphaFold-class predictions, automated insights generation, and natural language queries — AI as a first-class citizen.
+        </p>
+        <div class="card-tags">
+          <span class="tech-tag">AlphaFold-like</span>
+          <span class="tech-tag">Auto Insights</span>
+          <span class="tech-tag">NL Queries</span>
+          <span class="tech-tag">ML Pipeline</span>
+        </div>
+      </div>
+    </div>
+    
+    <aside data-notes class="hidden">
+      We're not just wrapping existing tools — we're building a proper platform with serious engineering. Each of these six pillars represents months of architectural decisions and real engineering work. The microservices architecture means we can add new scientific domains without touching core systems. Containerization solves the reproducibility crisis that's plagued science for decades. WebAssembly lets us deliver desktop-class performance in the browser. The package ecosystem creates network effects — the more users contribute, the more valuable the platform becomes. And we're building enterprise compliance in from day one, not bolting it on later like our competitors. This is infrastructure-grade software for the scientific age.
+    </aside>
+  </div>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Endeavor Science (AETH-1) - Cover</title>
+  <link rel="stylesheet" href="global.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    .slide {
+      background: var(--bg-primary);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .cover-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .title-block {
+      max-width: 720px;
+    }
+    
+    .main-title {
+      font-size: 64px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .subtitle {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      letter-spacing: 0.05em;
+      margin-bottom: 24px;
+    }
+    
+    .tagline {
+      font-size: 28px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 48px;
+    }
+    
+    .decorative-element {
+      position: absolute;
+      right: -80px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 480px;
+      height: 560px;
+      opacity: 0.15;
+      z-index: 1;
+    }
+    
+    .dna-helix {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .helix-strand {
+      position: absolute;
+      width: 3px;
+      height: 100%;
+      border-radius: 2px;
+    }
+    
+    .helix-left {
+      left: 35%;
+      background: linear-gradient(180deg, #3b82f6, #06b6d4);
+      animation: helixPulse 4s ease-in-out infinite;
+    }
+    
+    .helix-right {
+      left: 55%;
+      background: linear-gradient(180deg, #06b6d4, #3b82f6);
+      animation: helixPulse 4s ease-in-out infinite reverse;
+    }
+    
+    @keyframes helixPulse {
+      0%, 100% { opacity: 0.6; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.02); }
+    }
+    
+    .molecule-node {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    }
+    
+    .node-1 { top: 10%; left: 30%; animation: nodeFloat 6s ease-in-out infinite; }
+    .node-2 { top: 25%; left: 58%; animation: nodeFloat 6s ease-in-out infinite 0.5s; }
+    .node-3 { top: 40%; left: 32%; animation: nodeFloat 6s ease-in-out infinite 1s; }
+    .node-4 { top: 55%; left: 56%; animation: nodeFloat 6s ease-in-out infinite 1.5s; }
+    .node-5 { top: 70%; left: 34%; animation: nodeFloat 6s ease-in-out infinite 2s; }
+    .node-6 { top: 85%; left: 54%; animation: nodeFloat 6s ease-in-out infinite 2.5s; }
+    
+    @keyframes nodeFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(8px, -10px) scale(1.15); }
+    }
+    
+    .connection-line {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(59,130,246,0.4), rgba(6,182,212,0.4));
+      transform-origin: left center;
+    }
+    
+    .line-1 { top: 17%; left: 38%; width: 18%; transform: rotate(20deg); }
+    .line-2 { top: 32%; left: 36%; width: 20%; transform: rotate(-15deg); }
+    .line-3 { top: 47%; left: 37%; width: 17%; transform: rotate(25deg); }
+    .line-4 { top: 62%; left: 36%; width: 19%; transform: rotate(-10deg); }
+    .line-5 { top: 77%; left: 38%; width: 14%; transform: rotate(18deg); }
+    
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+    
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+    }
+    
+    .orb-1 {
+      width: 300px;
+      height: 300px;
+      background: rgba(59, 130, 246, 0.08);
+      top: -50px;
+      right: 100px;
+    }
+    
+    .orb-2 {
+      width: 200px;
+      height: 200px;
+      background: rgba(6, 182, 212, 0.06);
+      bottom: 50px;
+      right: 250px;
+    }
+    
+    .footer-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: auto;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    
+    .founder-info {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    
+    .founder-name {
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 15px;
+    }
+    
+    .meta-info {
+      text-align: right;
+      color: var(--text-muted);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+    
+    .confidential-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 4px;
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="grid-pattern"></div>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    
+    <div class="decorative-element" data-decor aria-hidden="true">
+      <svg class="dna-helix" viewBox="0 0 200 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Left strand -->
+        <path d="M70 0 Q30 43.75 70 87.5 Q110 131.25 70 175 Q30 218.75 70 262.5 Q110 306.25 70 350" 
+              stroke="url(#helixGradient1)" stroke-width="3" fill="none"/>
+        <!-- Right strand -->
+        <path d="M130 0 Q170 43.75 130 87.5 Q90 131.25 130 175 Q170 218.75 130 262.5 Q90 306.25 130 350" 
+              stroke="url(#helixGradient2)" stroke-width="3" fill="none"/>
+        <!-- Connection bars -->
+        <line x1="72" y1="44" x2="128" y2="44" stroke="rgba(59,130,246,0.4)" stroke-width="2"/>
+        <line x1="85" y1="88" x2="115" y2="88" stroke="rgba(6,182,212,0.4)" stroke-width="2"/>
+        <line x1="72" y1="132" x2="128" y2="132" stroke="rgba(59,130,246,0.4)" stroke-width="2"/>
+        <line x1="88" y1="176" x2="112" y2="176" stroke="rgba(6,182,212,0.4)" stroke-width="2"/>
+        <line x1="72" y1="220" x2="128" y2="220" stroke="rgba(59,130,246,0.4)" stroke-width="2"/>
+        <line x1="82" y1="264" x2="118" y2="264" stroke="rgba(6,182,212,0.4)" stroke-width="2"/>
+        <line x1="72" y1="308" x2="128" y2="308" stroke="rgba(59,130,246,0.4)" stroke-width="2"/>
+        <!-- Nodes -->
+        <circle cx="100" cy="44" r="6" fill="#3b82f6" opacity="0.8"/>
+        <circle cx="100" cy="132" r="6" fill="#06b6d4" opacity="0.8"/>
+        <circle cx="100" cy="220" r="6" fill="#3b82f6" opacity="0.8"/>
+        <circle cx="100" cy="308" r="6" fill="#06b6d4" opacity="0.8"/>
+        
+        <defs>
+          <linearGradient id="helixGradient1" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#3b82f6"/>
+            <stop offset="100%" stop-color="#06b6d4"/>
+          </linearGradient>
+          <linearGradient id="helixGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#06b6d4"/>
+            <stop offset="100%" stop-color="#3b82f6"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    
+    <div class="cover-container">
+      <div class="title-block">
+        <h1 class="main-title">ENDEAVOR SCIENCE</h1>
+        <p class="subtitle">(AETH-1)</p>
+        <p class="tagline">The GitHub for Scientific Computing</p>
+      </div>
+      
+      <div class="footer-info">
+        <div class="founder-info">
+          <span class="founder-name">TestDemo</span>, Founder & CEO<br>
+          testdemoqwenai2025@gmail.com
+        </div>
+        <div class="meta-info">
+          August 2026
+          <div class="confidential-badge">
+            <span class="material-icons" style="font-size: 12px;">lock</span>
+            Confidential
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <aside data-notes class="hidden">
+      Open with confidence. This is a vision pitch. Emphasize the magnitude of the opportunity — $50B market, democratizing science. The cover sets the tone for everything that follows. You're presenting a category-defining platform that will transform how scientists work. Let the audience feel the ambition and professionalism from the first moment. Remember: you're not just pitching a product—you're pitching a movement to democratize access to world-class scientific computing tools.
+    </aside>
+  </div>
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Solution - Endeavor Science</title>
+  <link rel="stylesheet" href="global.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    .slide {
+      background: var(--bg-primary);
+    }
+    
+    .solution-header {
+      margin-bottom: 28px;
+    }
+    
+    .headline {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    
+    .content-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 36px;
+      flex: 1;
+      align-items: stretch;
+    }
+    
+    /* Platform Mockup */
+    .mockup-container {
+      background: linear-gradient(145deg, #151b2d 0%, #0d1220 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(59,130,246,0.08);
+    }
+    
+    .mockup-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: rgba(0,0,0,0.3);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    
+    .window-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #22c55e; }
+    
+    .mockup-app-name {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-left: 8px;
+    }
+    
+    .mockup-body {
+      display: flex;
+      flex: 1;
+      min-height: 380px;
+    }
+    
+    /* Sidebar */
+    .mockup-sidebar {
+      width: 160px;
+      background: rgba(0,0,0,0.25);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+    
+    .sidebar-item.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-primary);
+    }
+    
+    .sidebar-item:hover:not(.active) {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-secondary);
+    }
+    
+    .sidebar-icon {
+      font-size: 16px;
+    }
+    
+    /* Main Canvas */
+    .mockup-main {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .canvas-tabs {
+      display: flex;
+      gap: 4px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    
+    .canvas-tab {
+      padding: 6px 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+    }
+    
+    .canvas-tab.active {
+      background: rgba(59, 130, 246, 0.12);
+      color: var(--accent-primary);
+    }
+    
+    .canvas-content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .molecule-viewer {
+      background: linear-gradient(135deg, rgba(30,41,59,0.5) 0%, rgba(15,23,42,0.5) 100%);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .viewer-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    
+    .molecule-visual {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .mol-bond {
+      position: absolute;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #06b6d4);
+      border-radius: 2px;
+    }
+    
+    .mol-atom {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: white;
+    }
+    
+    .atom-c { background: #374151; left: 35%; top: 45%; }
+    .atom-o { background: #ef4444; left: 55%; top: 32%; }
+    .atom-n { background: #3b82f6; left: 52%; top: 58%; }
+    .atom-h { background: #94a3b8; left: 25%; top: 38%; width: 12px; height: 12px; }
+    
+    .data-panel {
+      background: linear-gradient(135deg, rgba(30,41,59,0.5) 0%, rgba(15,23,42,0.5) 100%);
+      border: 1px solid rgba(6,182,212,0.15);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .chart-placeholder {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      padding: 12px 8px;
+      gap: 6px;
+    }
+    
+    .chart-bar {
+      width: 20px;
+      background: linear-gradient(180deg, var(--accent-primary) 0%, rgba(59,130,246,0.3) 100%);
+      border-radius: 3px 3px 0 0;
+    }
+    
+    /* Right Panel */
+    .mockup-right {
+      width: 140px;
+      background: rgba(0,0,0,0.2);
+      border-left: 1px solid rgba(255,255,255,0.06);
+      padding: 12px;
+    }
+    
+    .right-section-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    
+    .property-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      font-size: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    
+    .prop-key { color: var(--text-muted); }
+    .prop-val { color: var(--text-secondary); font-family: var(--font-mono); }
+    
+    /* Toolbar */
+    .mockup-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(0,0,0,0.2);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    
+    .toolbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--accent-primary);
+    }
+    
+    .toolbar-btn .material-icons { font-size: 13px; }
+    
+    /* Value Props */
+    .value-props {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    
+    .props-header {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    
+    .check-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease;
+    }
+    
+    .check-item:hover {
+      background: rgba(16, 185, 129, 0.06);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    
+    .check-icon {
+      width: 26px;
+      height: 26px;
+      min-width: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(16, 185, 129, 0.15);
+      border-radius: 50%;
+      color: var(--accent-success);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    
+    .check-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+    
+    .accent-tag {
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: var(--radius-md);
+    }
+    
+    .tag-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(59, 130, 246, 0.2);
+      border-radius: var(--radius-sm);
+      color: var(--accent-primary);
+    }
+    
+    .tag-content {
+      flex: 1;
+    }
+    
+    .tag-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 2px;
+    }
+    
+    .tag-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent-primary);
+      letter-spacing: -0.01em;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="solution-header">
+      <h1 class="headline">One Platform. All Tools. Zero Friction.</h1>
+    </div>
+    
+    <div class="content-layout">
+      <!-- Left: Platform Mockup -->
+      <div class="mockup-container">
+        <div class="mockup-titlebar">
+          <span class="window-dot dot-red"></span>
+          <span class="window-dot dot-yellow"></span>
+          <span class="window-dot dot-green"></span>
+          <span class="mockup-app-name">AETH-1 Workspace — DrugDiscovery_Project</span>
+        </div>
+        
+        <div class="mockup-body">
+          <!-- Sidebar -->
+          <div class="mockup-sidebar">
+            <div class="sidebar-item active">
+              <span class="material-icons sidebar-icon">folder_open</span>
+              Projects
+            </div>
+            <div class="sidebar-item">
+              <span class="material-icons sidebar-icon">biotech</span>
+              Molecules
+            </div>
+            <div class="sidebar-item">
+              <span class="material-icons sidebar-icon">dna</span>
+              Sequences
+            </div>
+            <div class="sidebar-item">
+              <span class="material-icons sidebar-icon">analytics</span>
+              Analysis
+            </div>
+            <div class="sidebar-item">
+              <span class="material-icons sidebar-icon">note_add</span>
+              Notebooks
+            </div>
+            <div class="sidebar-item">
+              <span class="material-icons sidebar-icon">storage</span>
+              Datasets
+            </div>
+          </div>
+          
+          <!-- Main Content -->
+          <div class="mockup-main">
+            <div class="canvas-tabs">
+              <span class="canvas-tab active">Molecule Viewer</span>
+              <span class="canvas-tab">Alignment</span>
+              <span class="canvas-tab">Properties</span>
+            </div>
+            
+            <div class="canvas-content">
+              <div class="molecule-viewer">
+                <div class="viewer-label">3D Molecule Structure</div>
+                <div class="molecule-visual">
+                  <div class="mol-bond" style="width: 50px; top: 48%; left: 39%; transform: rotate(-25deg);"></div>
+                  <div class="mol-bond" style="width: 35px; top: 42%; left: 54%; transform: rotate(35deg);"></div>
+                  <div class="mol-bond" style="width: 40px; top: 56%; left: 46%; transform: rotate(15deg);"></div>
+                  <div class="mol-atom atom-c">C</div>
+                  <div class="mol-atom atom-o">O</div>
+                  <div class="mol-atom atom-n">N</div>
+                  <div class="mol-atom atom-h">H</div>
+                </div>
+              </div>
+              
+              <div class="data-panel">
+                <div class="viewer-label">Binding Affinity Results</div>
+                <div class="chart-placeholder">
+                  <div class="chart-bar" style="height: 45%;"></div>
+                  <div class="chart-bar" style="height: 72%;"></div>
+                  <div class="chart-bar" style="height: 58%;"></div>
+                  <div class="chart-bar" style="height: 90%;"></div>
+                  <div class="chart-bar" style="height: 65%;"></div>
+                  <div class="chart-bar" style="height: 82%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Panel -->
+          <div class="mockup-right">
+            <div class="right-section-label">Properties</div>
+            <div class="property-row">
+              <span class="prop-key">MW</span>
+              <span class="prop-val">312.4</span>
+            </div>
+            <div class="property-row">
+              <span class="prop-key">LogP</span>
+              <span class="prop-val">2.87</span>
+            </div>
+            <div class="property-row">
+              <span class="prop-key">HBA</span>
+              <span class="prop-val">5</span>
+            </div>
+            <div class="property-row">
+              <span class="prop-key">HBD</span>
+              <span class="prop-val">2</span>
+            </div>
+            <div class="property-row">
+              <span class="prop-key">TPSA</span>
+              <span class="prop-val">78.3</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mockup-toolbar">
+          <div class="toolbar-btn">
+            <span class="material-icons">play_arrow</span>
+            Run Workflow
+          </div>
+          <div class="toolbar-btn">
+            <span class="material-icons">share</span>
+            Share
+          </div>
+          <div class="toolbar-btn">
+            <span class="material-icons">history</span>
+            History
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right: Value Propositions -->
+      <div class="value-props">
+        <div class="props-header">Why AETH-1 Wins</div>
+        
+        <ul class="check-list">
+          <li class="check-item">
+            <span class="check-icon">✓</span>
+            <span class="check-text"><strong>Replace 15+ tools</strong> with ONE unified platform</span>
+          </li>
+          <li class="check-item">
+            <span class="check-icon">✓</span>
+            <span class="check-text"><strong>Free Community Edition</strong> — like GitHub for science</span>
+          </li>
+          <li class="check-item">
+            <span class="check-icon">✓</span>
+            <span class="check-text"><strong>Enterprise-ready</strong> with compliance & security</span>
+          </li>
+          <li class="check-item">
+            <span class="check-icon">✓</span>
+            <span class="check-text"><strong>Reproducibility by default</strong> — every run is tracked</span>
+          </li>
+          <li class="check-item">
+            <span class="check-icon">✓</span>
+            <span class="check-text"><strong>Browser-based</strong> — zero installation required</span>
+          </li>
+          <li class="check-item">
+            <span class="check-icon">✓</span>
+            <span class="check-text"><strong>Community-powered</strong> package ecosystem</span>
+          </li>
+        </ul>
+        
+        <div class="accent-tag">
+          <div class="tag-icon">
+            <span class="material-icons">bolt</span>
+          </div>
+          <div class="tag-content">
+            <div class="tag-label">Workflow Compression</div>
+            <div class="tag-value">3 days → 3 hours</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <aside data-notes class="hidden">
+      Show the vision. This is what the future looks like — one place for everything a scientist needs. The mockup shows our unified IDE: project navigator on the left, molecule viewer and data visualization in the main canvas, properties panel on the right, and workflow orchestration at the bottom. No more switching between five different applications. No more data format conversion hell. No more "works on my machine" problems. The key message here is that we're not just another tool — we're the platform that replaces the entire fragmented stack. And that "3 days to 3 hours" stat? That's real workflow compression from our alpha users who tested drug discovery pipelines.
+    </aside>
+  </div>
+</body>
+</html>

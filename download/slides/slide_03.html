@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Opportunity - Endeavor Science</title>
+  <link rel="stylesheet" href="global.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    .slide {
+      background: var(--bg-primary);
+    }
+    
+    .market-header {
+      margin-bottom: 32px;
+    }
+    
+    .headline {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    
+    .market-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    
+    .tier-card {
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(30, 41, 59, 0.4) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+    
+    .tier-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .tier-card.tam {
+      border-top: 3px solid #6366f1;
+    }
+    
+    .tier-card.sam {
+      border-top: 3px solid var(--accent-primary);
+    }
+    
+    .tier-card.som {
+      border-top: 3px solid var(--accent-success);
+    }
+    
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    
+    .tam .tier-badge {
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+    }
+    
+    .sam .tier-badge {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-primary);
+    }
+    
+    .som .tier-badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-success);
+    }
+    
+    .tier-values {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    
+    .tier-amount {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    
+    .tam .tier-amount { color: #818cf8; }
+    .sam .tier-amount { color: var(--accent-primary); }
+    .som .tier-amount { color: var(--accent-success); }
+    
+    .tier-growth {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    
+    .tier-arrow {
+      color: var(--accent-success);
+      font-size: 18px;
+    }
+    
+    .tier-label {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    
+    .tier-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+    
+    .cagr-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-success);
+    }
+    
+    .insight-bar {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: var(--radius-md);
+      padding: 20px 28px;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    
+    .insight-text {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .insight-highlight {
+      color: var(--accent-primary);
+      font-weight: 800;
+    }
+    
+    .drivers-section {
+      margin-top: auto;
+    }
+    
+    .drivers-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    
+    .drivers-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    
+    .driver-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .driver-icon {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(59, 130, 246, 0.12);
+      border-radius: var(--radius-sm);
+      color: var(--accent-primary);
+      font-size: 22px;
+    }
+    
+    .driver-content {
+      flex: 1;
+    }
+    
+    .driver-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+      line-height: 1.3;
+    }
+    
+    .driver-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="market-header">
+      <h1 class="headline">A $50 Billion Market Waiting to Be Unified</h1>
+    </div>
+    
+    <div class="market-grid">
+      <!-- TAM -->
+      <div class="tier-card tam">
+        <span class="tier-badge">
+          <span class="material-icons" style="font-size: 14px;">public</span>
+          TAM
+        </span>
+        <div class="tier-values">
+          <span class="tier-amount">$45B</span>
+          <span class="tier-growth">→ $78B</span>
+          <span class="material-icons tier-arrow">trending_up</span>
+        </div>
+        <div class="tier-label">Global Scientific Software Market</div>
+        <div class="tier-desc">Total addressable market encompassing all scientific computing tools worldwide</div>
+        <span class="cagr-badge">
+          <span class="material-icons" style="font-size: 13px;">show_chart</span>
+          CAGR 11.6%
+        </span>
+      </div>
+      
+      <!-- SAM -->
+      <div class="tier-card sam">
+        <span class="tier-badge">
+          <span class="material-icons" style="font-size: 14px;">cloud</span>
+          SAM
+        </span>
+        <div class="tier-values">
+          <span class="tier-amount">$12B</span>
+          <span class="tier-growth">→ $35B</span>
+          <span class="material-icons tier-arrow">trending_up</span>
+        </div>
+        <div class="tier-label">Cloud-Based Scientific Computing</div>
+        <div class="tier-desc">Serviceable market — cloud-native and web-based platforms only</div>
+        <span class="cagr-badge">
+          <span class="material-icons" style="font-size: 13px;">rocket_launch</span>
+          CAGR 24% — Fastest Segment
+        </span>
+      </div>
+      
+      <!-- SOM -->
+      <div class="tier-card som">
+        <span class="tier-badge">
+          <span class="material-icons" style="font-size: 14px;">flag</span>
+          SOM
+        </span>
+        <div class="tier-values">
+          <span class="tier-amount">$8.5B</span>
+          <span class="tier-growth">Initial Target</span>
+        </div>
+        <div class="tier-label">Academic + Biotech + Materials Science</div>
+        <div class="tier-desc">Our beachhead markets — segments we can win first with focused execution</div>
+        <span class="cagr-badge">
+          <span class="material-icons" style="font-size: 13px;">gps_fixed</span>
+          Target Beachhead
+        </span>
+      </div>
+    </div>
+    
+    <div class="insight-bar">
+      <p class="insight-text">
+        Even <span class="insight-highlight">1% capture = $350M business</span>
+      </p>
+    </div>
+    
+    <div class="drivers-section">
+      <div class="drivers-label">Growth Drivers</div>
+      <div class="drivers-grid">
+        <div class="driver-item">
+          <div class="driver-icon">
+            <span class="material-icons">biotech</span>
+          </div>
+          <div class="driver-content">
+            <div class="driver-title">AI in Drug Discovery</div>
+            <div class="driver-desc">Exploding demand for computational biology tools</div>
+          </div>
+        </div>
+        
+        <div class="driver-item">
+          <div class="driver-icon">
+            <span class="material-icons">groups</span>
+          </div>
+          <div class="driver-content">
+            <div class="driver-title">Remote Collaboration</div>
+            <div class="driver-desc">Post-COVID normalized distributed research teams</div>
+          </div>
+        </div>
+        
+        <div class="driver-item">
+          <div class="driver-icon">
+            <span class="material-icons">hub</span>
+          </div>
+          <div class="driver-content">
+            <div class="driver-title">Open Source Matured</div>
+            <div class="driver-desc">Ecosystem ready for platform consolidation</div>
+          </div>
+        </div>
+        
+        <div class="driver-item">
+          <div class="driver-icon">
+            <span class="material-icons">account_balance</span>
+          </div>
+          <div class="driver-content">
+            <div class="driver-title">Government R&D</div>
+            <div class="driver-desc">Historic highs in public science funding globally</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <aside data-notes class="hidden">
+      This isn't a small niche — this is a massive market that's growing fast and it's fragmented, which is perfect for platform consolidation. The TAM of $78B by 2030 represents the entire scientific software landscape. Our SAM of $35B focuses on the fastest-growing segment: cloud-native tools. And our SOM of $8.5B is our realistic beachhead — academic labs, biotech startups, and materials science groups that are most desperate for a unified solution. The key insight here is that even capturing just 1% of our target market yields a $350M business. That's before we even expand into adjacent verticals. The growth drivers are all tailwinds — AI drug discovery is booming, remote collaboration is now standard, open source has matured enough to build on top of, and governments are pouring money into R&D.
+    </aside>
+  </div>
+</body>
+</html>

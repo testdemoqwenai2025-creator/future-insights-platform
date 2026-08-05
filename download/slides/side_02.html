@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Problem - Endeavor Science</title>
+  <link rel="stylesheet" href="global.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    .slide {
+      background: var(--bg-primary);
+    }
+    
+    .problem-header {
+      margin-bottom: 36px;
+    }
+    
+    .headline {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .warning-icon {
+      color: #ef4444;
+      font-size: 40px;
+    }
+    
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 40px;
+      flex: 1;
+      align-items: stretch;
+    }
+    
+    .pain-section {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    
+    .section-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #f87171;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .pain-item {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    
+    .pain-item:hover {
+      border-color: rgba(239, 68, 68, 0.4);
+      transform: translateX(4px);
+    }
+    
+    .pain-icon {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(239, 68, 68, 0.15);
+      border-radius: var(--radius-sm);
+      color: #f87171;
+      font-size: 24px;
+    }
+    
+    .pain-content {
+      flex: 1;
+    }
+    
+    .pain-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    
+    .pain-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    
+    .stat-card {
+      background: linear-gradient(145deg, #1a1f3a 0%, #0f1429 100%);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-glow {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    
+    .stat-amount {
+      font-size: 56px;
+      font-weight: 900;
+      color: #f87171;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .stat-currency {
+      font-size: 28px;
+      font-weight: 700;
+      opacity: 0.7;
+    }
+    
+    .stat-description {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .stat-sublabel {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .tools-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .tool-badge {
+      padding: 5px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+    
+    .fragmented-icon {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    
+    .frag-line {
+      width: 24px;
+      height: 2px;
+      background: rgba(239, 68, 68, 0.4);
+    }
+    
+    .frag-dot {
+      width: 6px;
+      height: 6px;
+      background: #f87171;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="problem-header">
+      <h1 class="headline">
+        <span class="material-icons warning-icon">error_outline</span>
+        Scientific Software is Broken
+      </h1>
+    </div>
+    
+    <div class="content-grid">
+      <div class="pain-section">
+        <div class="section-label">
+          <span class="material-icons" style="font-size: 16px;">crisis_alert</span>
+          The Pain Points
+        </div>
+        
+        <div class="pain-item">
+          <div class="pain-icon">
+            <span class="material-icons">apps</span>
+          </div>
+          <div class="pain-content">
+            <div class="pain-title">15+ Fragmented Tools Daily</div>
+            <div class="pain-desc">Scientists juggle BLAST, PyMOL, R, MATLAB, GROMACS and more — none of them talk to each other</div>
+          </div>
+        </div>
+        
+        <div class="pain-item">
+          <div class="pain-icon">
+            <span class="material-icons">attach_money</span>
+          </div>
+          <div class="pain-content">
+            <div class="pain-title">$10K–$100K Per License Annually</div>
+            <div class="pain-desc">Proprietary software costs drain research budgets before experiments even begin</div>
+          </div>
+        </div>
+        
+        <div class="pain-item">
+          <div class="pain-icon">
+            <span class="material-icons">schedule</span>
+          </div>
+          <div class="pain-content">
+            <div class="pain-title">60% Time Wasted Fighting Software</div>
+            <div class="pain-desc">Installation hell, format conversion, compatibility issues — not doing actual science</div>
+          </div>
+        </div>
+        
+        <div class="pain-item">
+          <div class="pain-icon">
+            <span class="material-icons">science</span>
+          </div>
+          <div class="pain-content">
+            <div class="pain-title">Reproducibility Crisis</div>
+            <div class="pain-desc"><strong style="color: #f87171;">52%</strong> of scientists can't reproduce their own work (Nature Survey, 2016)</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-glow"></div>
+        <div class="stat-amount">
+          <span class="stat-currency">$</span>54 BILLION
+        </div>
+        <div class="stat-description">
+          Annual global waste from fragmented scientific tools
+        </div>
+        <div class="stat-sublabel">
+          Lost productivity + license costs + failed reproductions
+        </div>
+        <div class="tools-row">
+          <span class="tool-badge">BLAST</span>
+          <span class="tool-badge">PyMOL</span>
+          <span class="tool-badge">R Studio</span>
+          <span class="tool-badge">MATLAB</span>
+          <span class="tool-badge">GROMACS</span>
+          <span class="tool-badge">VMD</span>
+          <span class="tool-badge">+ more...</span>
+        </div>
+      </div>
+    </div>
+    
+    <aside data-notes class="hidden">
+      Let this sink in. These are real numbers from Nature surveys — the reproducibility crisis alone affects over half of all researchers. Every scientist in your audience feels this pain personally. They've spent days just trying to get software installed, or weeks converting data formats between incompatible tools. The $54 billion figure isn't exaggerated — it's the sum of wasted time, exorbitant licensing fees, and research that can never be verified. This slide should make them nod in recognition. The problem isn't that scientists lack tools — it's that they have too many that don't work together.
+    </aside>
+  </div>
+</body>
+</html>

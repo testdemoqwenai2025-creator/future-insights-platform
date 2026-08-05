@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Competition - Endeavor Science (AETH-1)</title>
+  <link rel="stylesheet" href="global.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&family=Material+Icons&display=swap" rel="stylesheet">
+  <style>
+    .slide {
+      background: var(--bg-primary);
+    }
+    .headline {
+      font-size: var(--fs-h1);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-lg);
+      text-align: center;
+    }
+    .comparison-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      flex: 1;
+    }
+    /* Comparison Table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .comparison-table th,
+    .comparison-table td {
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 13px;
+    }
+    .comparison-table th {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .comparison-table th:first-child {
+      text-align: left;
+      width: 140px;
+    }
+    .comparison-table th.highlight-col {
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
+      color: var(--accent-primary);
+    }
+    .comparison-table td {
+      color: var(--text-secondary);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .comparison-table td:first-child {
+      text-align: left;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+    .comparison-table td.highlight-col {
+      background: rgba(59, 130, 246, 0.06);
+    }
+    /* Status indicators */
+    .status-yes {
+      color: var(--accent-success);
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .status-no {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .status-partial {
+      color: var(--accent-warning);
+      font-weight: 500;
+      font-style: italic;
+    }
+    .cost-free {
+      color: var(--accent-success);
+      font-weight: 600;
+    }
+    .cost-expensive {
+      color: #ef4444;
+      font-weight: 600;
+    }
+    /* Insight boxes */
+    .insights-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) 1.2fr;
+      gap: var(--space-sm);
+    }
+    .insight-box {
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: var(--space-sm);
+      border-left: 3px solid #ef4444;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .insight-box.winner {
+      border-left-color: var(--accent-success);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-card) 100%);
+    }
+    .insight-box .label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .insight-box.winner .label {
+      color: var(--accent-success);
+    }
+    .insight-box:not(.winner) .label {
+      color: #ef4444;
+    }
+    /* Key insight callout */
+    .key-insight {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      text-align: center;
+      margin-top: var(--space-sm);
+    }
+    .key-insight-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .key-insight-text span {
+      color: var(--accent-success);
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    
+    <h1 class="headline">The Only Platform That Does It All</h1>
+
+    <div class="comparison-wrapper">
+      <!-- Comparison Table -->
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="highlight-col">AETH-1<br><span style="font-weight:400;color:var(--text-muted);font-size:10px;">(Ours)</span></th>
+            <th>Traditional<br>Vendors</th>
+            <th>Cloud<br>Notebooks</th>
+            <th>Open-Source<br>Tools</th>
+            <th>Dev Platforms<br>(GitHub etc.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cost</td>
+            <td class="highlight-col"><span class="cost-free">FREE</span></td>
+            <td><span class="cost-expensive">$$$$</span></td>
+            <td><span class="cost-free">Free</span></td>
+            <td><span class="cost-free">Free</span></td>
+            <td><span class="cost-free">Free</span></td>
+          </tr>
+          <tr>
+            <td>Web-Based</td>
+            <td class="highlight-col"><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-partial">Partial</span></td>
+          </tr>
+          <tr>
+            <td>Domain-Specific</td>
+            <td class="highlight-col"><span class="status-yes">✅</span></td>
+            <td><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+          </tr>
+          <tr>
+            <td>Unified Interface</td>
+            <td class="highlight-col"><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-yes">✅</span></td>
+          </tr>
+          <tr>
+            <td>Reproducibility</td>
+            <td class="highlight-col"><span class="status-yes">✅</span></td>
+            <td><span class="status-partial">Partial</span></td>
+            <td><span class="status-partial">Partial</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-partial">Partial</span></td>
+          </tr>
+          <tr>
+            <td>Collaboration</td>
+            <td class="highlight-col"><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-yes">✅</span></td>
+          </tr>
+          <tr>
+            <td>On-Premise</td>
+            <td class="highlight-col"><span class="status-yes">✅</span></td>
+            <td><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+          </tr>
+          <tr>
+            <td>Community Ecosystem</td>
+            <td class="highlight-col"><span class="status-yes">✅</span></td>
+            <td><span class="status-no">❌</span></td>
+            <td><span class="status-yes">✅</span></td>
+            <td><span class="status-partial">Partial</span></td>
+            <td><span class="status-yes">✅</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Insight Boxes -->
+      <div class="insights-row">
+        <div class="insight-box">
+          <div class="label">❌ Traditional Vendors</div>
+          Expensive, proprietary licenses with slow innovation cycles
+        </div>
+        <div class="insight-box">
+          <div class="label">❌ Cloud Notebooks</div>
+          General-purpose tools lacking scientific domain depth
+        </div>
+        <div class="insight-box">
+          <div class="label">❌ Open-Source Tools</div>
+          Fragmented ecosystem — integration left to the user
+        </div>
+        <div class="insight-box">
+          <div class="label">❌ Dev Platforms</div>
+          Don't understand scientific data types or workflows
+        </div>
+        <div class="insight-box winner">
+          <div class="label">✅ AETH-1 Advantage</div>
+          The ONLY player combining ALL advantages in one platform
+        </div>
+      </div>
+
+      <!-- Key Insight Callout -->
+      <div class="key-insight">
+        <p class="key-insight-text">There are players in adjacent spaces, but <span>NOBODY is doing exactly what we're doing.</span> This positioning is our moat.</p>
+      </div>
+    </div>
+
+    <aside data-notes class="hidden">
+      There are players in adjacent spaces, but NOBODY is doing exactly what we're doing. This positioning is our moat. Let me walk you through why each competitor falls short. Traditional vendors like Schrödinger or Dassault are expensive, proprietary, and innovate slowly — they serve enterprise but exclude everyone else. Cloud notebooks like Colab or JupyterHub are great for general coding but have zero domain-specific features for molecular biology or chemistry. Open-source tools like PyMOL or GROMACS are powerful but fragmented — scientists spend weeks just getting them to talk to each other. Dev platforms like GitHub understand collaboration but don't understand scientific data formats or reproducibility requirements. AETH-1 is the only solution that checks every box: free tier, web-based, domain-specific, unified interface, built-in reproducibility, collaboration, on-premise option, AND a community ecosystem. This comprehensive coverage is extremely hard to replicate and creates genuine competitive advantage.
+    </aside>
+  </div>
+</body>
+</html>
