@@ -1,0 +1,763 @@
+     1→/**
+     2→ * TemplateGalleryPage - Scientific Computing Template Gallery
+     3→ * Minimal working version with full hash-based routing support
+     4→ */
+     5→
+     6→'use client';
+     7→
+     8→import { useState, useCallback, useEffect } from 'react';
+     9→import {
+    10→  ArrowRight,
+    11→  ChevronDown,
+    12→  ExternalLink,
+    13→  Zap,
+    14→  Brain,
+    15→  FlaskConical,
+    16→  BarChart3,
+    17→  Atom,
+    18→  Image,
+    19→  Sparkles,
+    20→  Rocket,
+    21→  GraduationCap,
+    22→  BookOpen,
+    23→  Users,
+    24→  Gift,
+    25→  Star
+    26→} from 'lucide-react';
+    27→
+    28→// ============================================================================
+    29→// DATA TYPES
+    30→// ============================================================================
+    31→
+    32→type TemplateCategory = 'bioinformatics' | 'cheminformatics' | 'machine-learning' | 
+    33→                         'statistics' | 'visualization' | 'quantum-computing' |
+    34→                         'computational-physics' | 'image-analysis' | 'nlp' | 
+    35→                         'signal-processing';
+    36→
+    37→interface TemplateData {
+    38→  id: string;
+    39→  name: string;
+    40→  description: string;
+    41→  category: TemplateCategory;
+    42→  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+    43→  oneClickSetup: boolean;
+    44→  icon: React.ElementType;
+    45→  tags: string[];
+    46→}
+    47→
+    48→// ============================================================================
+    49→// TEMPLATE DATA
+    50→// ============================================================================
+    51→
+    52→const templates: TemplateData[] = [
+    53→  {
+    54→    id: 'blast-sequence-analysis',
+    55→    name: 'BLAST+ Sequence Analysis',
+    56→    description: 'Perform BLAST sequence alignments with customizable parameters for DNA/RNA/protein analysis',
+    57→    category: 'bioinformatics',
+    58→    difficulty: 'intermediate',
+    59→    oneClickSetup: true,
+    60→    icon: Zap,
+    61→    tags: ['bioinformatics', 'genomics', 'sequence-alignment']
+    62→  },
+    63→  {
+    64→    id: 'molecular-docking-workflow',
+    65→    name: 'Molecular Docking Workflow',
+    66→    description: 'AutoDock Vina docking pipeline with ligand preparation and binding analysis',
+    67→    category: 'cheminformatics',
+    68→    difficulty: 'advanced',
+    69→    oneClickSetup: true,
+    70→    icon: FlaskConical,
+    71→    tags: ['chemistry', 'docking', 'drug-discovery']
+    72→  },
+    73→  {
+    74→    id: 'transformer-training-pipeline',
+    75→    name: 'ML Model Training Pipeline',
+    76→    description: 'End-to-end transformer model training with data preprocessing and evaluation',
+    77→    category: 'machine-learning',
+    78→    difficulty: 'advanced',
+    79→    oneClickSetup: true,
+    80→    icon: Brain,
+    81→    tags: ['machine-learning', 'transformers', 'deep-learning']
+    82→  },
+    83→  {
+    84→    id: 'bayesian-inference-framework',
+    85→    name: 'Statistical Analysis Suite',
+    86→    description: 'Bayesian inference and statistical modeling with MCMC sampling',
+    87→    category: 'statistics',
+    88→    difficulty: 'advanced',
+    89→    oneClickSetup: true,
+    90→    icon: BarChart3,
+    91→    tags: ['statistics', 'bayesian', 'mcmc']
+    92→  },
+    93→  {
+    94→    id: 'quantum-algorithm-simulator',
+    95→    name: 'Quantum Algorithm Simulator',
+    96→    description: 'Simulate quantum algorithms including QAOA, VQE, and Grover search',
+    97→    category: 'quantum-computing',
+    98→    difficulty: 'expert',
+    99→    oneClickSetup: false,
+   100→    icon: Atom,
+   101→    tags: ['quantum', 'algorithms', 'simulation']
+   102→  },
+   103→  {
+   104→    id: 'medical-image-segmentation',
+   105→    name: 'Medical Image Segmentation',
+   106→    description: 'U-Net based segmentation for medical imaging with DICOM support',
+   107→    category: 'image-analysis',
+   108→    difficulty: 'advanced',
+   109→    oneClickSetup: true,
+   110→    icon: Image,
+   111→    tags: ['imaging', 'segmentation', 'medical']
+   112→  }
+   113→];
+   114→
+   115→// ============================================================================
+   116→// URL ROUTING CONFIGURATION
+   117→// ============================================================================
+   118→
+   119→const CATEGORY_SLUGS: Record<string, TemplateCategory> = {
+   120→  'bio': 'bioinformatics', 'bioinformatics': 'bioinformatics',
+   121→  'chem': 'cheminformatics', 'cheminformatics': 'cheminformatics',
+   122→  'ml': 'machine-learning', 'machine-learning': 'machine-learning',
+   123→  'training': 'machine-learning',
+   124→  'stats': 'statistics', 'statistics': 'statistics',
+   125→  'viz': 'visualization', 'visualization': 'visualization',
+   126→  'quantum': 'quantum-computing', 'quantum-computing': 'quantum-computing',
+   127→};
+   128→
+   129→const TEMPLATE_SLUGS: Record<string, string> = {
+   130→  'blast': 'blast-sequence-analysis',
+   131→  'docking': 'molecular-docking-workflow',
+   132→  'training': 'transformer-training-pipeline',
+   133→  'bayesian': 'bayesian-inference-framework',
+   134→  'quantum-sim': 'quantum-algorithm-simulator',
+   135→  'vqe': 'quantum-algorithm-simulator',
+   136→  'segmentation': 'medical-image-segmentation',
+   137→};
+   138→
+   139→function parseHashRoute(hash: string): { templateId: string | null; category: TemplateCategory | 'all' } {
+   140→  const cleanHash = hash.replace(/^#\/?/, '');
+   141→  const templatesMatch = cleanHash.match(/templates\/(?:([^/]+)\/)?([^/]+)\/?$/);
+   142→  
+   143→  if (templatesMatch) {
+   144→    const categorySlug = templatesMatch[1];
+   145→    const templateSlug = templatesMatch[2];
+   146→    
+   147→    // Direct ID match
+   148→    const directMatch = templates.find(t => t.id === templateSlug);
+   149→    if (directMatch) return { templateId: directMatch.id, category: directMatch.category };
+   150→    
+   151→    // Slug mapping
+   152→    const mappedId = TEMPLATE_SLUGS[templateSlug.toLowerCase()];
+   153→    if (mappedId) {
+   154→      const template = templates.find(t => t.id === mappedId);
+   155→      if (template) return { templateId: template.id, category: template.category };
+   156→    }
+   157→    
+   158→    // Category only
+   159→    if (categorySlug) {
+   160→      const mappedCategory = CATEGORY_SLUGS[categorySlug.toLowerCase()];
+   161→      if (mappedCategory) return { templateId: null, category: mappedCategory };
+   162→    }
+   163→  }
+   164→  
+   165→  return { templateId: null, category: 'all' };
+   166→}
+   167→
+   168→// ============================================================================
+   169→// MAIN COMPONENT
+   170→// ============================================================================
+   171→
+   172→interface TemplateGalleryPageProps {
+   173→  initialHash?: string;
+   174→}
+   175→
+   176→export default function TemplateGalleryPage({ initialHash }: TemplateGalleryPageProps) {
+   177→  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | 'all'>('all');
+   178→  const [selectedTemplate, setSelectedTemplate] = useState<TemplateData | null>(null);
+   179→  const [isInitialized, setIsInitialized] = useState(false);
+   180→  
+   181→  // Accordion state for all sections
+   182→  const [expandedSections, setExpandedSections] = useState<{
+   183→    'core-capabilities': boolean;
+   184→    'quick-start': boolean;
+   185→    'teaching-training': boolean;
+   186→    'standardization': boolean;
+   187→    'free-tier': boolean;
+   188→    'use-cases': boolean;
+   189→  }>({
+   190→    'core-capabilities': false,
+   191→    'quick-start': false,
+   192→    'teaching-training': false,
+   193→    'standardization': false,
+   194→    'free-tier': false,
+   195→    'use-cases': false,
+   196→  });
+   197→
+   198→  const toggleSection = useCallback((sectionId: keyof typeof expandedSections) => {
+   199→    setExpandedSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
+   200→  }, []);
+   201→
+   202→  // ====================================================================
+   203→  // HASH-BASED ROUTING EFFECT
+   204→  // ====================================================================
+   205→  
+   206→  useEffect(() => {
+   207→    if (typeof window === 'undefined') return;
+   208→    
+   209→    const hash = initialHash || window.location.hash;
+   210→    console.log('[TemplateGallery] Initial hash:', hash);
+   211→    
+   212→    // Check for section routing pattern: /#/templates#/{sectionId}
+   213→    const sectionMatch = hash.match(/templates\/?#\/(.+)$/);
+   214→    if (sectionMatch) {
+   215→      const sectionId = sectionMatch[1];
+   216→      console.log('[TemplateGallery] Section route:', sectionId);
+   217→      
+   218→      const validSections = ['core-capabilities', 'quick-start', 'teaching-training', 'standardization', 'free-tier', 'use-cases'];
+   219→      if (validSections.includes(sectionId)) {
+   220→        setExpandedSections(prev => ({ ...prev, [sectionId]: true }));
+   221→        
+   222→        setTimeout(() => {
+   223→          const element = document.getElementById(sectionId);
+   224→          if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+   225→        }, 300);
+   226→      }
+   227→      setIsInitialized(true);
+   228→      return;
+   229→    }
+   230→    
+   231→    // Parse template route
+   232→    const { templateId, category } = parseHashRoute(hash);
+   233→    console.log('[TemplateGallery] Parsed route:', { templateId, category });
+   234→    
+   235→    if (category !== 'all') setSelectedCategory(category);
+   236→    if (templateId) {
+   237→      const template = templates.find(t => t.id === templateId);
+   238→      if (template) {
+   239→        setSelectedTemplate(template);
+   240→        console.log('[TemplateGallery] Selected template:', template.name);
+   241→      }
+   242→    }
+   243→    
+   244→    setIsInitialized(true);
+   245→  }, [initialHash]);
+   246→
+   247→  // Listen for hash changes
+   248→  useEffect(() => {
+   249→    if (typeof window === 'undefined') return;
+   250→    
+   251→    const handleHashChange = () => {
+   252→      const hash = window.location.hash;
+   253→      console.log('[TemplateGallery] Hash changed:', hash);
+   254→      
+   255→      // Section routing
+   256→      const sectionMatch = hash.match(/templates\/?#\/(.+)$/);
+   257→      if (sectionMatch) {
+   258→        const sectionId = sectionMatch[1];
+   259→        const validSections = ['core-capabilities', 'quick-start', 'teaching-training', 'standardization', 'free-tier', 'use-cases'];
+   260→        if (validSections.includes(sectionId)) {
+   261→          setExpandedSections(prev => ({ ...prev, [sectionId]: true }));
+   262→          setTimeout(() => {
+   263→            const el = document.getElementById(sectionId);
+   264→            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+   265→          }, 100);
+   266→        }
+   267→        return;
+   268→      }
+   269→      
+   270→      // Template routing
+   271→      const { templateId, category } = parseHashRoute(hash);
+   272→      if (category !== 'all') setSelectedCategory(category);
+   273→      if (templateId) {
+   274→        const template = templates.find(t => t.id === templateId);
+   275→        if (template) setSelectedTemplate(template);
+   276→      } else {
+   277→        setSelectedTemplate(null);
+   278→      }
+   279→    };
+   280→    
+   281→    window.addEventListener('hashchange', handleHashChange);
+   282→    return () => window.removeEventListener('hashchange', handleHashChange);
+   283→  }, []);
+   284→
+   285→  // Filter templates by category
+   286→  const filteredTemplates = selectedCategory === 'all' 
+   287→    ? templates 
+   288→    : templates.filter(t => t.category === selectedCategory);
+   289→
+   290→  const categories: { id: TemplateCategory | 'all'; name: string; icon: React.ElementType }[] = [
+   291→    { id: 'all', name: 'All Templates', icon: Grid3X3 },
+   292→    { id: 'bioinformatics', name: 'Bioinformatics', icon: Zap },
+   293→    { id: 'cheminformatics', name: 'Chemistry', icon: FlaskConical },
+   294→    { id: 'machine-learning', name: 'Machine Learning', icon: Brain },
+   295→    { id: 'statistics', name: 'Statistics', icon: BarChart3 },
+   296→    { id: 'quantum-computing', name: 'Quantum', icon: Atom },
+   297→    { id: 'image-analysis', name: 'Imaging', icon: Image },
+   298→  ];
+   299→
+   300→  // ====================================================================
+   301→  // RENDER
+   302→  // ====================================================================
+   303→
+   304→  // If a template is selected, show detail view
+   305→  if (selectedTemplate) {
+   306→    const Icon = selectedTemplate.icon;
+   307→    return (
+   308→      <div className="min-h-screen bg-slate-950 text-white p-4 md:p-8">
+   309→        <div className="max-w-6xl mx-auto">
+   310→          {/* Back button */}
+   311→          <button
+   312→            onClick={() => {
+   313→              setSelectedTemplate(null);
+   314→              window.history.pushState('', '', '#/templates');
+   315→            }}
+   316→            className="mb-6 flex items-center gap-2 text-violet-400 hover:text-violet-300 transition-colors"
+   317→          >
+   318→            ← Back to Gallery
+   319→          </button>
+   320→
+   321→          {/* Template Header */}
+   322→          <div className="bg-gradient-to-br from-violet-600/20 to-cyan-600/20 rounded-2xl p-8 border border-violet-500/30 mb-8">
+   323→            <div className="flex items-start gap-6">
+   324→              <div className="w-16 h-16 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+   325→                <Icon className="w-8 h-8 text-violet-400" />
+   326→              </div>
+   327→              <div className="flex-1">
+   328→                <h1 className="text-3xl font-bold mb-2">{selectedTemplate.name}</h1>
+   329→                <p className="text-lg text-slate-300 mb-4">{selectedTemplate.description}</p>
+   330→                <div className="flex gap-2 flex-wrap">
+   331→                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+   332→                    selectedTemplate.difficulty === 'beginner' ? 'bg-green-500/20 text-green-400' :
+   333→                    selectedTemplate.difficulty === 'intermediate' ? 'bg-yellow-500/20 text-yellow-400' :
+   334→                    selectedTemplate.difficulty === 'advanced' ? 'bg-orange-500/20 text-orange-400' :
+   335→                    'bg-red-500/20 text-red-400'
+   336→                  }`}>
+   337→                    {selectedTemplate.difficulty}
+   338→                  </span>
+   339→                  {selectedTemplate.oneClickSetup && (
+   340→                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-emerald-500/20 text-emerald-400">
+   341→                      ✓ One-Click Setup
+   342→                    </span>
+   343→                  )}
+   344→                  {selectedTemplate.tags.map(tag => (
+   345→                    <span key={tag} className="px-3 py-1 rounded-full text-sm bg-slate-700/50 text-slate-300">
+   346→                      {tag}
+   347→                    </span>
+   348→                  ))}
+   349→                </div>
+   350→              </div>
+   351→            </div>
+   352→          </div>
+   353→
+   354→          {/* Template Content Portal */}
+   355→          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+   356→            {/* Code Editor Panel */}
+   357→            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+   358→              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+   359→                <Code className="w-5 h-5 text-cyan-400" />
+   360→                Starter Code
+   361→              </h3>
+   362→              <pre className="bg-slate-950 rounded-lg p-4 overflow-x-auto text-sm text-slate-300">
+   363→{`# ${selectedTemplate.name} - SciCMPMATH Template
+   364→import scicmppath as sci
+   365→
+   366→# Initialize workspace
+   367→workspace = sci.Workspace("${selectedTemplate.id}")
+   368→
+   369→# Load your data
+   370→data = workspace.load_data("./your_data.csv")
+   371→
+   372→# Configure parameters
+   373→config = workspace.configure({
+   374→    "method": "auto",
+   375→    "confidence": 0.95,
+   376→})
+   377→
+   378→# Run analysis
+   379→results = workspace.analyze(data, config)
+   380→
+   381→# Export results
+   382→workspace.export(results, format=["pdf", "csv"])
+   383→print("✅ Analysis complete!")`}
+   384→              </pre>
+   385→              <button className="mt-4 w-full py-2 bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors font-medium">
+   386→                <Play className="w-4 h-4 inline mr-2" />
+   387→                Run Code
+   388→              </button>
+   389→            </div>
+   390→
+   391→            {/* AI Assistant Panel */}
+   392→            <div className="bg-slate-900 rounded-xl p-6 border border-slate-700">
+   393→              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+   394→                <Sparkles className="w-5 h-5 text-violet-400" />
+   395→                AI Research Assistant
+   396→              </h3>
+   397→              <div className="space-y-4">
+   398→                <div className="bg-slate-950 rounded-lg p-4">
+   399→                  <p className="text-sm text-slate-300">
+   400→                    Hello! I'm your AI assistant for <strong>{selectedTemplate.name}</strong>. 
+   401→                    I can help you understand the algorithms, optimize parameters, or troubleshoot issues.
+   402→                  </p>
+   403→                </div>
+   404→                <div className="flex gap-2">
+   405→                  <input 
+   406→                    type="text" 
+   407→                    placeholder="Ask about this template..."
+   408→                    className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-violet-500"
+   409→                  />
+   410→                  <button className="px-4 py-2 bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors">
+   411→                    Send
+   412→                  </button>
+   413→                </div>
+   414→              </div>
+   415→            </div>
+   416→          </div>
+   417→        </div>
+   418→      </div>
+   419→    );
+   420→  }
+   421→
+   422→  // Main Gallery View
+   423→  return (
+   424→    <div className="min-h-screen bg-slate-950 text-white">
+   425→      {/* Hero Section */}
+   426→      <header className="bg-gradient-to-b from-violet-600/10 to-transparent py-12 px-4">
+   427→        <div className="max-w-7xl mx-auto text-center">
+   428→          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/20 border border-violet-500/30 mb-6">
+   429→            <Sparkles className="w-4 h-4 text-violet-400" />
+   430→            <span className="text-sm font-medium text-violet-300">Scientific Computing Platform</span>
+   431→          </div>
+   432→          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+   433→            Template Gallery
+   434→          </h1>
+   435→          <p className="text-xl text-slate-400 max-w-3xl mx-auto mb-8">
+   436→            Production-ready scientific computing templates with one-click setup, parameter presets, and embedded best practices.
+   437→          </p>
+   438→          <div className="flex justify-center gap-4 text-sm text-slate-500">
+   439→            <span>{templates.length} Templates</span>
+   440→            <span>•</span>
+   441→            <span>{categories.length - 1} Categories</span>
+   442→            <span>•</span>
+   443→            <span>{templates.filter(t => t.oneClickSetup).length} One-Click Setup</span>
+   444→          </div>
+   445→        </div>
+   446→      </header>
+   447→
+   448→      <main className="max-w-7xl mx-auto px-4 pb-12">
+   449→        {/* Category Filter */}
+   450→        <div className="flex flex-wrap gap-3 mb-8 justify-center">
+   451→          {categories.map(cat => {
+   452→            const CatIcon = cat.icon;
+   453→            return (
+   454→              <button
+   455→                key={cat.id}
+   456→                onClick={() => setSelectedCategory(cat.id)}
+   457→                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+   458→                  selectedCategory === cat.id
+   459→                    ? 'bg-violet-600 text-white'
+   460→                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+   461→                }`}
+   462→              >
+   463→                <CatIcon className="w-4 h-4" />
+   464→                {cat.name}
+   465→              </button>
+   466→            );
+   467→          })}
+   468→        </div>
+   469→
+   470→        {/* Templates Grid */}
+   471→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+   472→          {filteredTemplates.map(template => {
+   473→            const Icon = template.icon;
+   474→            return (
+   475→              <button
+   476→                key={template.id}
+   477→                onClick={() => {
+   478→                  setSelectedTemplate(template);
+   479→                  window.history.pushState('', '', `#/templates/${template.category}/${template.id}`);
+   480→                }}
+   481→                className="bg-slate-900 rounded-xl p-6 border border-slate-800 hover:border-violet-500/50 transition-all text-left group"
+   482→              >
+   483→                <div className="flex items-start gap-4">
+   484→                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
+   485→                    template.category === 'bioinformatics' ? 'bg-emerald-500/20' :
+   486→                    template.category === 'cheminformatics' ? 'bg-blue-500/20' :
+   487→                    template.category === 'machine-learning' ? 'bg-violet-500/20' :
+   488→                    template.category === 'quantum-computing' ? 'bg-purple-500/20' :
+   489→                    'bg-slate-700/50'
+   490→                  }`}>
+   491→                    <Icon className={`w-6 h-6 ${
+   492→                      template.category === 'bioinformatics' ? 'text-emerald-400' :
+   493→                      template.category === 'cheminformatics' ? 'text-blue-400' :
+   494→                      template.category === 'machine-learning' ? 'text-violet-400' :
+   495→                      template.category === 'quantum-computing' ? 'text-purple-400' :
+   496→                      'text-slate-400'
+   497→                    }`} />
+   498→                  </div>
+   499→                  <div className="flex-1 min-w-0">
+   500→                    <h3 className="font-semibold text-lg mb-1 group-hover:text-violet-400 transition-colors">
+   501→                      {template.name}
+   502→                    </h3>
+   503→                    <p className="text-sm text-slate-400 line-clamp-2 mb-3">
+   504→                      {template.description}
+   505→                    </p>
+   506→                    <div className="flex items-center gap-2 flex-wrap">
+   507→                      <span className={`text-xs px-2 py-0.5 rounded ${
+   508→                        template.difficulty === 'beginner' ? 'bg-green-500/20 text-green-400' :
+   509→                        template.difficulty === 'intermediate' ? 'bg-yellow-500/20 text-yellow-400' :
+   510→                        'bg-orange-500/20 text-orange-400'
+   511→                      }`}>
+   512→                        {template.difficulty}
+   513→                      </span>
+   514→                      {template.oneClickSetup && (
+   515→                        <span className="text-xs text-emerald-400">⚡ One-click</span>
+   516→                      )}
+   517→                    </div>
+   518→                  </div>
+   519→                </div>
+   520→              </button>
+   521→            );
+   522→          })}
+   523→        </div>
+   524→
+   525→        {/* ================================================================== */}
+   526→        {/* EXPANDABLE SECTIONS WITH ROUTING SUPPORT */}
+   527→        {/* ================================================================== */}
+   528→
+   529→        {/* Core Capabilities Section */}
+   530→        <section id="core-capabilities" className="mb-8 bg-gradient-to-b from-primary/5 to-transparent rounded-2xl p-6 border border-slate-800">
+   531→          <div 
+   532→            onClick={() => toggleSection('core-capabilities')}
+   533→            className="cursor-pointer select-none"
+   534→          >
+   535→            <div className="flex items-center justify-between">
+   536→              <div className="flex items-center gap-3">
+   537→                <Sparkles className="w-6 h-6 text-primary" />
+   538→                <h2 className="text-2xl font-bold">Core Capabilities</h2>
+   539→              </div>
+   540→              <ChevronDown className={`w-5 h-5 transition-transform ${expandedSections['core-capabilities'] ? 'rotate-180' : ''}`} />
+   541→            </div>
+   542→            <p className="text-slate-400 mt-2">Platform features that make SciCMPMATH powerful</p>
+   543→          </div>
+   544→          
+   545→          {expandedSections['core-capabilities'] && (
+   546→            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-top-4 duration-300">
+   547→              {[
+   548→                { icon: Zap, title: 'One-Click Setup', desc: 'Instantly configure environments with pre-built templates' },
+   549→                { icon: Settings, title: 'Parameter Presets', desc: 'Optimized defaults for common research scenarios' },
+   550→                { icon: BookOpen, title: 'Best Practices', desc: 'Embedded community-vetted methodologies' },
+   551→                { icon: Users, title: 'Community Curated', desc: 'Templates reviewed and improved by researchers' },
+   552→              ].map((item, i) => (
+   553→                <div key={i} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+   554→                  <item.icon className="w-8 h-8 text-violet-400 mb-3" />
+   555→                  <h3 className="font-semibold mb-1">{item.title}</h3>
+   556→                  <p className="text-sm text-slate-400">{item.desc}</p>
+   557→                </div>
+   558→              ))}
+   559→            </div>
+   560→          )}
+   561→        </section>
+   562→
+   563→        {/* Quick Start Projects Section */}
+   564→        <section id="quick-start" className="mb-8 bg-card/50 rounded-2xl p-6 border border-slate-800">
+   565→          <div onClick={() => toggleSection('quick-start')} className="cursor-pointer select-none">
+   566→            <div className="flex items-center justify-between">
+   567→              <div className="flex items-center gap-3">
+   568→                <Rocket className="w-6 h-6 text-emerald-500" />
+   569→                <h2 className="text-2xl font-bold">Quick Start Projects</h2>
+   570→              </div>
+   571→              <ChevronDown className={`w-5 h-5 transition-transform ${expandedSections['quick-start'] ? 'rotate-180' : ''}`} />
+   572→            </div>
+   573→            <p className="text-slate-400 mt-2">Beginner-friendly templates to get started fast</p>
+   574→          </div>
+   575→          
+   576→          {expandedSections['quick-start'] && (
+   577→            <div className="mt-6 space-y-4 animate-in slide-in-from-top-4 duration-300">
+   578→              {templates.filter(t => t.difficulty === 'beginner' || t.oneClickSetup).map(template => {
+   579→                const Icon = template.icon;
+   580→                return (
+   581→                  <button
+   582→                    key={template.id}
+   583→                    onClick={() => {
+   584→                      setSelectedTemplate(template);
+   585→                      window.history.pushState('', '', `#/templates/${template.category}/${template.id}`);
+   586→                    }}
+   587→                    className="w-full bg-slate-900/50 rounded-lg p-4 border border-slate-700 hover:border-emerald-500/50 transition-all flex items-center gap-4 text-left"
+   588→                  >
+   589→                    <Icon className="w-10 h-10 text-emerald-400" />
+   590→                    <div className="flex-1">
+   591→                      <h3 className="font-semibold">{template.name}</h3>
+   592→                      <p className="text-sm text-slate-400">{template.description.substring(0, 80)}...</p>
+   593→                    </div>
+   594→                    <ArrowRight className="w-5 h-5 text-slate-500" />
+   595→                  </button>
+   596→                );
+   597→              })}
+   598→            </div>
+   599→          )}
+   600→        </section>
+   601→
+   602→        {/* Teaching & Training Section */}
+   603→        <section id="teaching-training" className="mb-8 rounded-2xl p-6 border border-slate-800">
+   604→          <div onClick={() => toggleSection('teaching-training')} className="cursor-pointer select-none">
+   605→            <div className="flex items-center justify-between">
+   606→              <div className="flex items-center gap-3">
+   607→                <GraduationCap className="w-6 h-6 text-violet-500" />
+   608→                <h2 className="text-2xl font-bold">Teaching & Training</h2>
+   609→              </div>
+   610→              <ChevronDown className={`w-5 h-5 transition-transform ${expandedSections['teaching-training'] ? 'rotate-180' : ''}`} />
+   611→            </div>
+   612→            <p className="text-slate-400 mt-2">Educational resources for classrooms and workshops</p>
+   613→          </div>
+   614→          
+   615→          {expandedSections['teaching-training'] && (
+   616→            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-4 duration-300">
+   617→              {[
+   618→                { title: 'Classroom Ready', desc: 'Pre-configured for educational environments', icon: BookOpen },
+   619→                { title: 'Step-by-Step Guides', desc: 'Integrated tutorials and documentation', icon: ExternalLink },
+   620→                { title: 'Assessment Tools', desc: 'Built-in grading and progress tracking', icon: Star },
+   621→              ].map((item, i) => (
+   622→                <div key={i} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+   623→                  <item.icon className="w-8 h-8 text-violet-400 mb-3" />
+   624→                  <h3 className="font-semibold mb-1">{item.title}</h3>
+   625→                  <p className="text-sm text-slate-400">{item.desc}</p>
+   626→                </div>
+   627→              ))}
+   628→            </div>
+   629→          )}
+   630→        </section>
+   631→
+   632→        {/* Standardization Across Labs Section */}
+   633→        <section id="standardization" className="mb-8 bg-amber-500/5 rounded-2xl p-6 border border-amber-500/20">
+   634→          <div onClick={() => toggleSection('standardization')} className="cursor-pointer select-none">
+   635→            <div className="flex items-center justify-between">
+   636→              <div className="flex items-center gap-3">
+   637→                <Users className="w-6 h-6 text-amber-500" />
+   638→                <h2 className="text-2xl font-bold">Standardization Across Labs</h2>
+   639→              </div>
+   640→              <ChevronDown className={`w-5 h-5 transition-transform ${expandedSections['standardization'] ? 'rotate-180' : ''}`} />
+   641→            </div>
+   642→            <p className="text-slate-400 mt-2">Ensure reproducibility across research teams</p>
+   643→          </div>
+   644→          
+   645→          {expandedSections['standardization'] && (
+   646→            <div className="mt-6 space-y-4 animate-in slide-in-from-top-4 duration-300">
+   647→              <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+   648→                <h3 className="font-semibold mb-2">Version Control Integration</h3>
+   649→                <p className="text-sm text-slate-400">Track changes, collaborate, and ensure reproducibility with built-in Git integration.</p>
+   650→              </div>
+   651→              <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+   652→                <h3 className="font-semibold mb-2">Environment Snapshots</h3>
+   653→                <p className="text-sm text-slate-400">Capture complete computational environments for exact replication of results.</p>
+   654→              </div>
+   655→            </div>
+   656→          )}
+   657→        </section>
+   658→
+   659→        {/* Free Tier Resources Section */}
+   660→        <section id="free-tier" className="mb-8 rounded-2xl p-6 border border-slate-800">
+   661→          <div onClick={() => toggleSection('free-tier')} className="cursor-pointer select-none">
+   662→            <div className="flex items-center justify-between">
+   663→              <div className="flex items-center gap-3">
+   664→                <Gift className="w-6 h-6 text-green-500" />
+   665→                <h2 className="text-2xl font-bold">Free Tier Resources ({templates.filter(t => t.oneClickSetup).length} available)</h2>
+   666→              </div>
+   667→              <ChevronDown className={`w-5 h-5 transition-transform ${expandedSections['free-tier'] ? 'rotate-180' : ''}`} />
+   668→            </div>
+   669→            <p className="text-slate-400 mt-2">Start free with these fully-featured templates</p>
+   670→          </div>
+   671→          
+   672→          {expandedSections['free-tier'] && (
+   673→            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-4 duration-300">
+   674→              {templates.filter(t => t.oneClickSetup).map(template => {
+   675→                const Icon = template.icon;
+   676→                return (
+   677→                  <div key={template.id} className="bg-slate-900/50 rounded-lg p-4 border border-green-500/20">
+   678→                    <div className="flex items-center gap-3 mb-2">
+   679→                      <Icon className="w-6 h-6 text-green-400" />
+   680→                      <h3 className="font-semibold">{template.name}</h3>
+   681→                      <span className="ml-auto text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">FREE</span>
+   682→                    </div>
+   683→                    <p className="text-sm text-slate-400">{template.description.substring(0, 100)}...</p>
+   684→                  </div>
+   685→                );
+   686→              })}
+   687→            </div>
+   688→          )}
+   689→        </section>
+   690→
+   691→        {/* Use Cases Section */}
+   692→        <section id="use-cases" className="mb-8 bg-card/50 rounded-2xl p-6 border border-slate-800">
+   693→          <div onClick={() => toggleSection('use-cases')} className="cursor-pointer select-none">
+   694→            <div className="flex items-center justify-between">
+   695→              <div className="flex items-center gap-3">
+   696→                <ExternalLink className="w-6 h-6 text-cyan-500" />
+   697→                <h2 className="text-2xl font-bold">Use Cases</h2>
+   698→              </div>
+   699→              <ChevronDown className={`w-5 h-5 transition-transform ${expandedSections['use-cases'] ? 'rotate-180' : ''}`} />
+   700→            </div>
+   701→            <p className="text-slate-400 mt-2">Real-world applications and success stories</p>
+   702→          </div>
+   703→          
+   704→          {expandedSections['use-cases'] && (
+   705→            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-4 duration-300">
+   706→              {[
+   707→                { title: 'Genomic Research', desc: 'Sequence analysis pipelines processing millions of base pairs', category: 'Bioinformatics' },
+   708→                { title: 'Drug Discovery', desc: 'Virtual screening workflows identifying potential drug candidates', category: 'Chemistry' },
+   709→                { title: 'Model Training', desc: 'Production ML systems training on large-scale datasets', category: 'Machine Learning' },
+   710→                { title: 'Quantum Simulation', desc: 'Quantum algorithm development and testing environment', category: 'Quantum Computing' },
+   711→              ].map((useCase, i) => (
+   712→                <div key={i} className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+   713→                  <span className="text-xs text-cyan-400 font-medium">{useCase.category}</span>
+   714→                  <h3 className="font-semibold mt-1 mb-1">{useCase.title}</h3>
+   715→                  <p className="text-sm text-slate-400">{useCase.desc}</p>
+   716→                </div>
+   717→              ))}
+   718→            </div>
+   719→          )}
+   720→        </section>
+   721→      </main>
+   722→    </div>
+   723→  );
+   724→}
+   725→
+   726→// Missing icons
+   727→function Grid3X3(props: any) {
+   728→  return (
+   729→    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+   730→      <rect x="3" y="3" width="7" height="7"></rect>
+   731→      <rect x="14" y="3" width="7" height="7"></rect>
+   732→      <rect x="3" y="14" width="7" height="7"></rect>
+   733→      <rect x="14" y="14" width="7" height="7"></rect>
+   734→    </svg>
+   735→  );
+   736→}
+   737→
+   738→function Code(props: any) {
+   739→  return (
+   740→    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+   741→      <polyline points="16 18 22 12 16 6"></polyline>
+   742→      <polyline points="8 6 2 12 8 18"></polyline>
+   743→    </svg>
+   744→  );
+   745→}
+   746→
+   747→function Play(props: any) {
+   748→  return (
+   749→    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+   750→      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+   751→    </svg>
+   752→  );
+   753→}
+   754→
+   755→function Settings(props: any) {
+   756→  return (
+   757→    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+   758→      <circle cx="12" cy="12" r="3"></circle>
+   759→      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+   760→    </svg>
+   761→  );
+   762→}
+   763→
