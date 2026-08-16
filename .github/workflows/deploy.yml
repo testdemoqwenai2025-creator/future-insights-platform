@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+    workflow_dispatch:
 
 permissions:
   contents: read
@@ -28,12 +28,30 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: |
+          echo "Installing dependencies..."
+          npm install --legacy-peer-deps || npm install --force || npm ci --legacy-peer-deps
+          echo "Dependencies installed successfully"
       
       - name: Build static export
-        run: npm run build
+        run: |
+          echo "Starting Next.js build..."
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          npm run build
+          echo "Build completed!"
+          ls -la out/ || echo "WARNING: out/ directory not found"
         env:
           NODE_OPTIONS: --max-old-space-size=4096
+      
+      - name: Verify build output
+        run: |
+          if [ -d "out" ]; then
+            echo "✅ Build successful! Contents:"
+            ls -la out/
+          else
+            echo "❌ Build failed - out/ not found"
+            exit 1
+          fi
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
