@@ -29,43 +29,49 @@ jobs:
       
       - name: Install dependencies
         run: |
-          echo "Installing with npm install..."
-          npm install --legacy-peer-deps --no-optional 2>&1 | tee install.log
-          echo "Install exit code: $?"
+          echo "Installing dependencies..."
+          npm install --legacy-peer-deps
+          
+          echo ""
+          echo "Rebuilding native modules (fixing lightningcss)..."
+          npm rebuild lightningcss || true
+          
+          # Verify lightningcss binary exists
+          if [ -d "node_modules/lightningcss" ]; then
+            echo "Lightningcss files:"
+            ls -la node_modules/lightningcss/ 2>/dev/null | head -10
+            find node_modules/lightningcss -name "*.node" 2>/dev/null
+          fi
       
       - name: Build static export
         id: build
         run: |
           echo "=========================================="
           echo "Starting Next.js Build"
-          echo "Node version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-          echo "Next.js version: $(npx next --version || echo 'unknown')"
+          echo "Node: $(node --version)"
           echo "=========================================="
           
           export NODE_OPTIONS="--max-old-space-size=4096"
           
-          # Run build with full output
+          # Run build
           npm run build 2>&1 | tee build-output.log
           BUILD_EXIT_CODE=${PIPESTATUS[0]}
           
-          echo "=========================================="
+          echo ""
           echo "Build Exit Code: $BUILD_EXIT_CODE"
-          echo "=========================================="
           
           if [ $BUILD_EXIT_CODE -ne 0 ]; then
-            echo "::error::Build failed with exit code $BUILD_EXIT_CODE"
-            echo "Last 50 lines of build output:"
+            echo "::error::Build failed"
             tail -50 build-output.log
             exit $BUILD_EXIT_CODE
           fi
           
-          # Verify out directory
+          # Verify output
           if [ -d "out" ]; then
-            echo "✅ Build successful! out/ contents:"
+            echo "✅ SUCCESS! out/ contents:"
             ls -la out/
           else
-            echo "::error::Build completed but out/ directory not found"
+            echo "::error::out/ not found"
             exit 1
           fi
         env:
