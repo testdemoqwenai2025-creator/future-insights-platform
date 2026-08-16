@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  // Disable Turbopack to fix lightningcss native module issue
+  experimental: {},
 };
 
 export default nextConfig;
