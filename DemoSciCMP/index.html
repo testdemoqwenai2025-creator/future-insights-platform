@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DemoSciCMP - Scientific Computing Platform</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-violet: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --border-color: #475569;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header {
+            background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(6,182,212,0.1));
+            border-bottom: 1px solid var(--border-color);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--accent-violet), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle { color: var(--text-secondary); font-size: 1.1rem; }
+        nav {
+            background: var(--bg-secondary);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        nav a:hover, nav a.active { background: var(--accent-violet); color: white; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            border-color: var(--accent-violet);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(139,92,246,0.2);
+        }
+        .card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+        .icon {
+            width: 48px; height: 48px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+        }
+        .card h3 { font-size: 1.25rem; margin-bottom: 8px; }
+        .card p { color: var(--text-secondary); font-size: 0.95rem; }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-right: 6px;
+        }
+        .badge-beginner { background: rgba(16,185,129,0.2); color: #10b981; }
+        .badge-intermediate { background: rgba(234,179,8,0.2); color: #eab308; }
+        .badge-advanced { background: rgba(249,115,22,0.2); color: #f97316; }
+        .badge-free { background: rgba(139,92,246,0.2); color: #8b5cf6; }
+        section {
+            margin: 40px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .section-header {
+            background: var(--bg-secondary);
+            padding: 20px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .section-header:hover { background: var(--bg-card); }
+        .section-header h2 { display: flex; align-items: center; gap: 10px; font-size: 1.4rem; }
+        .section-content {
+            padding: 0 24px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+        section.open .section-content { padding: 24px; max-height: 2000px; }
+        .chevron { transition: transform 0.3s; }
+        section.open .chevron { transform: rotate(180deg); }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .feature-item {
+            background: var(--bg-primary);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .feature-item .icon { margin: 0 auto 10px; width: 40px; height: 40px; font-size: 20px; }
+        .feature-item h4 { font-size: 1rem; margin-bottom: 6px; }
+        .feature-item p { font-size: 0.85rem; color: var(--text-secondary); }
+        #template-detail {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+        #template-detail.show { display: block; }
+        .detail-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 32px;
+            border: 1px solid var(--border-color);
+        }
+        .detail-header {
+            display: flex;
+            align-items: start;
+            gap: 24px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .detail-icon {
+            width: 72px; height: 72px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px;
+            flex-shrink: 0;
+        }
+        .back-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { border-color: var(--accent-violet); color: var(--accent-violet); }
+        pre {
+            background: var(--bg-primary);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .code-actions { display: flex; gap: 12px; margin-top: 16px; }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent-violet); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-secondary { background: var(--bg-card); color: var(--text-primary); }
+        .btn-secondary:hover { background: var(--border-color); }
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            margin-top: 60px;
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .grid { grid-template-columns: 1fr; }
+            .detail-header { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🧬 SciCMPMATH</h1>
+            <p class="subtitle">Scientific Computing Template Gallery</p>
+            <p style="color: var(--text-secondary); margin-top: 10px;">
+                Production-ready templates with one-click setup & parameter presets
+            </p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#/" class="active">Gallery</a></li>
+            <li><a href="#/templates#/core-capabilities">Core Capabilities</a></li>
+            <li><a href="#/templates#/quick-start">Quick Start</a></li>
+            <li><a href="#/templates#/teaching-training">Teaching</a></li>
+            <li><a href="#/templates#/standardization">Standardization</a></li>
+            <li><a href="#/templates#/free-tier">Free Tier</a></li>
+            <li><a href="#/templates#/use-cases">Use Cases</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <div style="margin: 30px 0;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                <button onclick="filterTemplates('all')" class="btn btn-secondary filter-btn active" data-filter="all">All Templates</button>
+                <button onclick="filterTemplates('bioinformatics')" class="btn btn-secondary filter-btn" data-filter="bioinformatics">🧬 Bioinformatics</button>
+                <button onclick="filterTemplates('cheminformatics')" class="btn btn-secondary filter-btn" data-filter="cheminformatics">⚗️ Chemistry</button>
+                <button onclick="filterTemplates('machine-learning')" class="btn btn-secondary filter-btn" data-filter="machine-learning">🤖 ML</button>
+                <button onclick="filterTemplates('statistics')" class="btn btn-secondary filter-btn" data-filter="statistics">📊 Statistics</button>
+                <button onclick="filterTemplates('quantum-computing')" class="btn btn-secondary filter-btn" data-filter="quantum-computing">⚛️ Quantum</button>
+                <button onclick="filterTemplates('image-analysis')" class="btn btn-secondary filter-btn" data-filter="image-analysis">🖼️ Imaging</button>
+            </div>
+        </div>
+
+        <div id="templates-grid" class="grid"></div>
+
+        <section id="section-core-capabilities" onclick="toggleSection(this)">
+            <div class="section-header">
+                <h2>✨ Core Capabilities</h2>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="section-content">
+                <p style="margin-bottom: 16px;">Platform features that make SciCMPMATH powerful for scientific computing.</p>
+                <div class="feature-grid">
+                    <div class="feature-item"><div class="icon" style="background: rgba(139,92,246,0.2);">⚡</div><h4>One-Click Setup</h4><p>Instantly configure environments with pre-built templates</p></div>
+                    <div class="feature-item"><div class="icon" style="background: rgba(6,182,212,0.2);">⚙️</div><h4>Parameter Presets</h4><p>Optimized defaults for common research scenarios</p></div>
+                    <div class="feature-item"><div class="icon" style="background: rgba(16,185,129,0.2);">📚</div><h4>Best Practices</h4><p>Embedded community-vetted methodologies</p></div>
+                    <div class="feature-item"><div class="icon" style="background: rgba(249,115,22,0.2);">👥</div><h4>Community Curated</h4><p>Templates reviewed and improved by researchers</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-quick-start" onclick="toggleSection(this)">
+            <div class="section-header">
+                <h2>🚀 Quick Start Projects</h2>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="section-content">
+                <p style="margin-bottom: 16px;">Beginner-friendly templates to get started fast.</p>
+                <div id="quick-start-templates" class="grid" style="margin: 0;"></div>
+            </div>
+        </section>
+
+        <section id="section-teaching-training" onclick="toggleSection(this)">
+            <div class="section-header">
+                <h2>🎓 Teaching & Training</h2>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="section-content">
+                <p style="margin-bottom: 16px;">Educational resources for classrooms and workshops.</p>
+                <div class="feature-grid">
+                    <div class="feature-item"><div class="icon" style="background: rgba(139,92,246,0.2);">📖</div><h4>Classroom Ready</h4><p>Pre-configured for educational environments</p></div>
+                    <div class="feature-item"><div class="icon" style="background: rgba(6,182,212,0.2);">📝</div><h4>Step-by-Step Guides</h4><p>Integrated tutorials and documentation</p></div>
+                    <div class="feature-item"><div class="icon" style="background: rgba(16,185,129,0.2);">⭐</div><h4>Assessment Tools</h4><p>Built-in grading and progress tracking</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-standardization" onclick="toggleSection(this)">
+            <div class="section-header">
+                <h2>🔄 Standardization Across Labs</h2>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="section-content">
+                <p style="margin-bottom: 16px;">Ensure reproducibility across research teams.</p>
+                <div class="feature-grid">
+                    <div class="feature-item"><div class="icon" style="background: rgba(234,179,8,0.2);">📦</div><h4>Version Control</h4><p>Track changes, collaborate effectively</p></div>
+                    <div class="feature-item"><div class="icon" style="background: rgba(234,179,8,0.2);">📸</div><h4>Environment Snapshots</h4><p>Capture complete computational environments</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-free-tier" onclick="toggleSection(this)">
+            <div class="section-header">
+                <h2>🎁 Free Tier Resources (6 available)</h2>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="section-content">
+                <p style="margin-bottom: 16px;">Start free with these fully-featured templates.</p>
+                <div id="free-templates" class="grid" style="margin: 0;"></div>
+            </div>
+        </section>
+
+        <section id="section-use-cases" onclick="toggleSection(this)">
+            <div class="section-header">
+                <h2>🌍 Use Cases</h2>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="section-content">
+                <p style="margin-bottom: 16px;">Real-world applications and success stories.</p>
+                <div class="feature-grid">
+                    <div class="feature-item"><div class="icon" style="background: rgba(16,185,129,0.2);">🧬</div><h4>Genomic Research</h4><p>Sequence analysis processing millions of base pairs</p></div>
+                    <div class="feature-item"><div class="icon" style="background: rgba(59,130,246,0.2);">💊</div><h4>Drug Discovery</h4><p>Virtual screening identifying drug candidates</p></div>
+                    <div class="feature-item"><div class="icon" style="background: rgba(139,92,246,0.2);">🤖</div><h4>Model Training</h4><p>Production ML on large-scale datasets</p></div>
+                    <div class="feature-item"><div class="icon" style="background: rgba(168,85,247,0.2);">⚛️</div><h4>Quantum Simulation</h4><p>Quantum algorithm development environment</p></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="template-detail">
+        <div class="detail-container">
+            <button class="back-btn" onclick="closeDetail()">← Back to Gallery</button>
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p><strong>SciCMPMATH</strong> - Scientific Computing Platform</p>
+        <p style="margin-top: 8px;">Template Gallery v3.0 | Hash-Based Routing Enabled | Pure HTML/CSS/JS</p>
+    </footer>
+
+    <script>
+        const templates = [
+            {
+                id: 'blast-sequence-analysis',
+                slug: 'blast',
+                name: 'BLAST+ Sequence Analysis',
+                description: 'Perform BLAST sequence alignments with customizable parameters for DNA/RNA/protein analysis',
+                category: 'bioinformatics',
+                difficulty: 'intermediate',
+                oneClickSetup: true,
+                icon: '🧬',
+                color: '#10b981',
+                code: `# BLAST+ Sequence Analysis - SciCMPMATH Template
+import scicmppath as sci
+from Bio import SeqIO
+
+# Initialize pipeline
+pipeline = sci.Pipeline("blast-sequence-analysis")
+
+# Load sequences
+data = pipeline.load_data("sequences.fasta")
+
+# Configure parameters
+config = {
+    "evalue": 1e-5,
+    "max_target_seqs": 10,
+    "word_size": 11,
+    "matrix": "BLOSUM62"
+}
+
+# Run alignment
+results = pipeline.run(data, config)
+
+# Visualize hits
+pipeline.visualize(results, format="circular")
+pipeline.export(results, output="blast_results.pdf")
+
+print(f"✅ Found {len(results.hits)} significant matches")`
+            },
+            {
+                id: 'molecular-docking-workflow',
+                slug: 'docking',
+                name: 'Molecular Docking Workflow',
+                description: 'AutoDock Vina docking pipeline with ligand preparation and binding pose analysis',
+                category: 'cheminformatics',
+                difficulty: 'advanced',
+                oneClickSetup: true,
+                icon: '⚗️',
+                color: '#3b82f6',
+                code: `# Molecular Docking Workflow - SciCMPMATH Template
+import scicmppath as sci
+from rdkit import Chem
+
+# Initialize docking workspace
+workspace = sci.Workspace("molecular-docking-workflow")
+
+# Prepare ligand
+ligand = workspace.prepare_ligand("compound.sdf")
+ligand.optimize(conformer_generation=True)
+
+# Set up receptor
+receptor = workspace.load_receptor("protein.pdb")
+receptor.add_hydrogens()
+
+# Configure docking
+params = {"exhaustiveness": 32, "num_modes": 9, "energy_range": 3.0}
+
+# Run AutoDock Vina
+results = workspace.dock(ligand, receptor, params)
+
+# Analyze binding poses
+workspace.analyze_binding(results, interactions=True)
+workspace.export(results, format="pdbqt")
+
+print(f"🧪 Best binding affinity: {results.best_affinity} kcal/mol")`
+            },
+            {
+                id: 'transformer-training-pipeline',
+                slug: 'training',
+                name: 'ML Model Training Pipeline',
+                description: 'End-to-end transformer model training with data preprocessing, hyperparameter tuning, and evaluation',
+                category: 'machine-learning',
+                difficulty: 'advanced',
+                oneClickSetup: true,
+                icon: '🤖',
+                color: '#8b5cf6',
+                code: `# ML Training Pipeline - SciCMPMATH Template
+import scicmppath as sci
+import torch
+import transformers
+
+# Initialize ML environment
+ml_env = sci.MLEnvironment(gpu_acceleration=True, mixed_precision=True)
+
+# Load pretrained model
+model = ml_env.load_model(
+    architecture="bert-base-uncased",
+    task="sequence-classification",
+    num_labels=3
+)
+
+# Prepare dataset with augmentation
+dataset = ml_env.prepare_dataset(
+    path="./training_data",
+    augmentation=["back_translation", "synonym_replace"],
+    split_ratio=[0.8, 0.1, 0.1]
+)
+
+# Train with hyperparameter search
+trainer = ml_env.train(
+    model=model,
+    dataset=dataset,
+    hyperparameters={"learning_rate": [2e-5, 3e-5], "batch_size": [16, 32]},
+    early_stopping=True
+)
+
+# Evaluate and export
+metrics = trainer.evaluate()
+model.export("production_model")
+
+print(f"✅ Model trained! Accuracy: {metrics.accuracy:.2%}")`
+            },
+            {
+                id: 'bayesian-inference-framework',
+                slug: 'bayesian',
+                name: 'Statistical Analysis Suite',
+                description: 'Bayesian inference framework with MCMC sampling, posterior analysis, and visualization',
+                category: 'statistics',
+                difficulty: 'advanced',
+                oneClickSetup: true,
+                icon: '📊',
+                color: '#f59e0b',
+                code: `# Bayesian Inference Framework - SciCMPMATH Template
+import scicmppath as sci
+import pymc as pm
+import arviz as az
+
+# Initialize statistical workspace
+stats = sci.StatisticalWorkspace("bayesian-inference-framework")
+
+# Define Bayesian model
+with stats.model() as hierarchical_model:
+    mu = pm.Normal("mu", mu=0, sigma=10)
+    sigma = pm.HalfNormal("sigma", sigma=1)
+    y = pm.Normal("y", mu=mu, sigma=sigma, observed=data)
+    
+    trace = pm.sample(draws=2000, tune=1000, chains=4, cores=4)
+
+# Posterior analysis
+summary = az.summary(trace, var_names=["mu","sigma"])
+az.plot_trace(trace)
+az.plot_posterior(trace)
+
+stats.export(trace, format="netcdf")
+print(f"✅ Posterior mean: {summary['mean']['mu']:.3f}")`
+            },
+            {
+                id: 'quantum-algorithm-simulator',
+                slug: 'quantum-sim',
+                name: 'Quantum Algorithm Simulator',
+                description: 'Simulate quantum algorithms including QAOA, VQE, Grover search, and quantum Fourier transform',
+                category: 'quantum-computing',
+                difficulty: 'expert',
+                oneClickSetup: false,
+                icon: '⚛️',
+                color: '#a855f7',
+                code: `# Quantum Algorithm Simulator - SciCMPMATH Template
+import scicmppath as sci
+from qiskit import QuantumCircuit, Aer, execute
+
+# Initialize quantum workspace
+quantum = sci.QuantumWorkspace("quantum-algorithm-simulator")
+
+def create_qaoa_circuit(params, n_qubits):
+    qc = QuantumCircuit(n_qubits)
+    qc.h(range(n_qubits))
+    
+    for layer in range(len(params) // 2):
+        gamma = params[2 * layer]
+        beta = params[2 * layer + 1]
+        
+        for i in range(n_qubits):
+            qc.rz(gamma, i)
+        for i in range(n_qubits - 1):
+            qc.cx(i, i + 1)
+        for i in range(n_qubits):
+            qc.rx(beta, i)
+    
+    return qc
+
+result = quantum.simulate(circuit=create_qaoa_circuit, shots=8192)
+quantum.visualize(result, plot="counts")
+print(f"✅ Quantum simulation complete!")`
+            },
+            {
+                id: 'medical-image-segmentation',
+                slug: 'segmentation',
+                name: 'Medical Image Segmentation',
+                description: 'U-Net based segmentation for medical imaging with DICOM support and 3D visualization',
+                category: 'image-analysis',
+                difficulty: 'advanced',
+                oneClickSetup: true,
+                icon: '🖼️',
+                color: '#ec4899',
+                code: `# Medical Image Segmentation - SciCMPMATH Template
+import scicmppath as sci
+import torch
+import monai
+
+imaging = sci.ImagingWorkspace("medical-image-segmentation")
+
+dataset = imaging.load_dicom(path="./patient_scans/", modality="MRI", normalize=True)
+
+model = monai.networks.nets.UNet(
+    spatial_dims=3, in_channels=1, out_channels=5,
+    channels=(64, 128, 256, 512), strides=(2, 2, 2)
+)
+
+trainer = imaging.train_segmentation(model=model, dataset=dataset)
+prediction = trainer.predict("new_scan.dcm")
+imaging.visualize_3d(prediction, overlay=True)
+imaging.export(prediction, format="nifti")`
+            }
+        ];
+
+        let currentFilter = 'all';
+        let selectedTemplate = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTemplates();
+            handleHashRouting();
+            window.addEventListener('hashchange', handleHashRouting);
+        });
+
+        function renderTemplates() {
+            const grid = document.getElementById('templates-grid');
+            const filtered = currentFilter === 'all' ? templates : templates.filter(t => t.category === currentFilter);
+            
+            grid.innerHTML = filtered.map(t => `
+                <div class="card" onclick="openTemplate('${t.id}')" data-category="${t.category}">
+                    <div class="card-header">
+                        <div class="icon" style="background: ${t.color}20;">${t.icon}</div>
+                        <div>
+                            <h3>${t.name}</h3>
+                            <div style="margin-top: 6px;">
+                                <span class="badge badge-${t.difficulty}">${t.difficulty}</span>
+                                ${t.oneClickSetup ? '<span class="badge badge-free">⚡ One-click</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <p>${t.description}</p>
+                </div>
+            `).join('');
+
+            const freeGrid = document.getElementById('free-templates');
+            if (freeGrid) {
+                const freeT = templates.filter(t => t.oneClickSetup);
+                freeGrid.innerHTML = freeT.map(t => `
+                    <div class="card" onclick="openTemplate('${t.id}')">
+                        <div class="card-header">
+                            <div class="icon" style="background: ${t.color}20;">${t.icon}</div>
+                            <div><h3>${t.name}</h3><span class="badge badge-free">FREE</span></div>
+                        </div>
+                        <p>${t.description}</p>
+                    </div>
+                `).join('');
+            }
+
+            const quickGrid = document.getElementById('quick-start-templates');
+            if (quickGrid) {
+                const quickT = templates.filter(t => t.difficulty === 'beginner' || t.oneClickSetup);
+                quickGrid.innerHTML = quickT.map(t => `
+                    <div class="card" onclick="openTemplate('${t.id}')">
+                        <div class="card-header">
+                            <div class="icon" style="background: ${t.color}20;">${t.icon}</div>
+                            <div><h3>${t.name}</h3></div>
+                        </div>
+                        <p>${t.description}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function filterTemplates(category) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === category);
+                btn.style.background = btn.dataset.filter === category ? 'var(--accent-violet)' : '';
+                btn.style.color = btn.dataset.filter === category ? 'white' : '';
+            });
+            renderTemplates();
+        }
+
+        function openTemplate(templateId) {
+            selectedTemplate = templates.find(t => t.id === templateId);
+            if (!selectedTemplate) return;
+            
+            const detail = document.getElementById('template-detail');
+            const content = document.getElementById('detail-content');
+            
+            content.innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-icon" style="background: ${selectedTemplate.color}20;">${selectedTemplate.icon}</div>
+                    <div>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 8px;">${selectedTemplate.name}</h2>
+                        <p style="color: var(--text-secondary);">${selectedTemplate.description}</p>
+                        <div style="margin-top: 12px;">
+                            <span class="badge badge-${selectedTemplate.difficulty}">${selectedTemplate.difficulty}</span>
+                            ${selectedTemplate.oneClickSetup ? '<span class="badge badge-free">⚡ One-click Setup</span>' : ''}
+                            <span class="badge" style="background: rgba(100,116,139,0.2); color: #94a3b8;">${selectedTemplate.category}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom: 16px;"><span style="color: var(--accent-cyan);">💻</span> Starter Code</h3>
+                <pre><code>${selectedTemplate.code.replace(/</g, '&lt;')}</code></pre>
+                
+                <div class="code-actions">
+                    <button class="btn btn-primary" onclick="copyCode()">📋 Copy Code</button>
+                    <button class="btn btn-secondary" onclick="downloadTemplate()">⬇️ Download</button>
+                </div>
+            `;
+            
+            detail.classList.add('show');
+            window.location.hash = `#/templates/${selectedTemplate.category}/${selectedTemplate.slug}`;
+        }
+
+        function closeDetail() {
+            document.getElementById('template-detail').classList.remove('show');
+            window.location.hash = '#/templates';
+        }
+
+        function toggleSection(el) { el.classList.toggle('open'); }
+
+        function handleHashRouting() {
+            const hash = window.location.hash;
+            
+            const sectionMatch = hash.match(/\/?templates?#\/(.+)/);
+            if (sectionMatch) {
+                const section = document.getElementById(`section-${sectionMatch[1]}`);
+                if (section) {
+                    section.classList.add('open');
+                    setTimeout(() => section.scrollIntoView({ behavior: 'smooth' }), 100);
+                }
+                return;
+            }
+            
+            const templateMatch = hash.match(/\/templates\/([^/]+)\/([^/]+)/);
+            if (templateMatch) {
+                const t = templates.find(t => t.slug === templateMatch[2] || t.id === templateMatch[2]);
+                if (t) openTemplate(t.id);
+                return;
+            }
+            
+            if (hash.includes('templates')) closeDetail();
+        }
+
+        function copyCode() {
+            if (selectedTemplate) {
+                navigator.clipboard.writeText(selectedTemplate.code);
+                alert('Code copied!');
+            }
+        }
+
+        function downloadTemplate() {
+            if (selectedTemplate) {
+                const blob = new Blob([selectedTemplate.code], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `${selectedTemplate.id}.py`;
+                a.click();
+            }
+        }
+    </script>
+</body>
+</html>
