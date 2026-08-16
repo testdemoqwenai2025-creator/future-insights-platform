@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-    workflow_dispatch:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -29,29 +29,47 @@ jobs:
       
       - name: Install dependencies
         run: |
-          echo "Installing dependencies..."
-          npm install --legacy-peer-deps || npm install --force || npm ci --legacy-peer-deps
-          echo "Dependencies installed successfully"
+          echo "Installing with npm install..."
+          npm install --legacy-peer-deps --no-optional 2>&1 | tee install.log
+          echo "Install exit code: $?"
       
       - name: Build static export
+        id: build
         run: |
-          echo "Starting Next.js build..."
+          echo "=========================================="
+          echo "Starting Next.js Build"
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "Next.js version: $(npx next --version || echo 'unknown')"
+          echo "=========================================="
+          
           export NODE_OPTIONS="--max-old-space-size=4096"
-          npm run build
-          echo "Build completed!"
-          ls -la out/ || echo "WARNING: out/ directory not found"
-        env:
-          NODE_OPTIONS: --max-old-space-size=4096
-      
-      - name: Verify build output
-        run: |
+          
+          # Run build with full output
+          npm run build 2>&1 | tee build-output.log
+          BUILD_EXIT_CODE=${PIPESTATUS[0]}
+          
+          echo "=========================================="
+          echo "Build Exit Code: $BUILD_EXIT_CODE"
+          echo "=========================================="
+          
+          if [ $BUILD_EXIT_CODE -ne 0 ]; then
+            echo "::error::Build failed with exit code $BUILD_EXIT_CODE"
+            echo "Last 50 lines of build output:"
+            tail -50 build-output.log
+            exit $BUILD_EXIT_CODE
+          fi
+          
+          # Verify out directory
           if [ -d "out" ]; then
-            echo "✅ Build successful! Contents:"
+            echo "✅ Build successful! out/ contents:"
             ls -la out/
           else
-            echo "❌ Build failed - out/ not found"
+            echo "::error::Build completed but out/ directory not found"
             exit 1
           fi
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
