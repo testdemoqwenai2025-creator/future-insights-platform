@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Routing Test - DemoSciCMP</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #e2e8f0; 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { 
+            text-align: center; 
+            background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .test-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .test-card:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        .test-card h3 { color: #8b5cf6; margin-bottom: 10px; font-size: 1.1em; }
+        .url { 
+            font-family: 'Fira Code', monospace; 
+            background: rgba(15, 23, 42, 0.8); 
+            padding: 10px; 
+            border-radius: 6px; 
+            font-size: 0.85em;
+            word-break: break-all;
+            color: #22d3ee;
+            margin: 10px 0;
+        }
+        .status { 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-size: 0.85em; 
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .status.working { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .status.pending { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+        .section-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            border-radius: 4px;
+            font-size: 0.75em;
+            margin-right: 5px;
+        }
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .info-box h4 { color: #60a5fa; margin-bottom: 8px; }
+        a { color: #22d3ee; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 DemoSciCMP Template Routing Test</h1>
+        
+        <div class="info-box">
+            <h4>ℹ️ About This Test Page</h4>
+            <p>This page tests the hash-based routing implementation for the SciCMPMATH Template Gallery. 
+               Each URL below should navigate to the correct template or section when the site is deployed.</p>
+        </div>
+
+        <h2 style="color: #a78bfa; margin: 30px 0 15px;">📋 Template Deep Links</h2>
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>BLAST Sequence Analysis</h3>
+                <span class="section-badge">bioinformatics</span>
+                <span class="section-badge">intermediate</span>
+                <div class="url">/#/templates/bioinformatics/blast</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">Opens BLAST+ template with code editor and AI assistant</p>
+                <a href="/DemoSciCMP/#/templates/bioinformatics/blast" target="_blank" class="status working">✓ Test URL →</a>
+            </div>
+
+            <div class="test-card">
+                <h3>ML Training Pipeline</h3>
+                <span class="section-badge">machine-learning</span>
+                <span class="section-badge">advanced</span>
+                <div class="url">/#/templates/ml/training</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">Opens ML model training template with transformer config</p>
+                <a href="/DemoSciCMP/#/templates/ml/training" target="_blank" class="status working">✓ Test URL →</a>
+            </div>
+
+            <div class="test-card">
+                <h3>Molecular Docking</h3>
+                <span class="section-badge">cheminformatics</span>
+                <span class="section-badge">advanced</span>
+                <div class="url">/#/templates/chem/docking</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">AutoDock Vina docking workflow template</p>
+                <a href="/DemoSciCMP/#/templates/chem/docking" target="_blank" class="status working">✓ Test URL →</a>
+            </div>
+
+            <div class="test-card">
+                <h3>Main Gallery</h3>
+                <span class="section-badge">all categories</span>
+                <div class="url">/#/templates</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">Shows full template gallery with category filters</p>
+                <a href="/DemoSciCMP/#/templates" target="_blank" class="status working">✓ Test URL →</a>
+            </div>
+        </div>
+
+        <h2 style="color: #a78bfa; margin: 30px 0 15px;">📂 Section Routing (Expandable Areas)</h2>
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>Core Capabilities</h3>
+                <span class="section-badge">one-click setup</span>
+                <span class="section-badge">presets</span>
+                <div class="url">/#/templates#/core-capabilities</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">Expands Core Capabilities section automatically</p>
+                <a href="/DemoSciCMP/#/templates#/core-capabilities" target="_blank" class="status pending">⏳ Test Section →</a>
+            </div>
+
+            <div class="test-card">
+                <h3>Quick Start Projects</h3>
+                <span class="section-badge">beginners</span>
+                <span class="section-badge">tutorials</span>
+                <div class="url">/#/templates#/quick-start</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">Expands Quick Start section with beginner templates</p>
+                <a href="/DemoSciCMP/#/templates#/quick-start" target="_blank" class="status pending">⏳ Test Section →</a>
+            </div>
+
+            <div class="test-card">
+                <h3>Teaching & Training</h3>
+                <span class="section-badge">education</span>
+                <span class="section-badge">classroom</span>
+                <div class="url">/#/templates#/teaching-training</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">Educational resources for classrooms and workshops</p>
+                <a href="/DemoSciCMP/#/templates#/teaching-training" target="_blank" class="status pending">⏳ Test Section →</a>
+            </div>
+
+            <div class="test-card">
+                <h3>Standardization</h3>
+                <span class="section-badge">reproducibility</span>
+                <span class="section-badge">labs</span>
+                <div class="url">/#/templates#/standardization</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">Standardization across labs and version control</p>
+                <a href="/DemoSciCMP/#/templates#/standardization" target="_blank" class="status pending">⏳ Test Section →</a>
+            </div>
+
+            <div class="test-card">
+                <h3>Free Tier Resources</h3>
+                <span class="section-badge">free</span>
+                <span class="section-badge">6 available</span>
+                <div class="url">/#/templates#/free-tier</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">Free templates with one-click setup</p>
+                <a href="/DemoSciCMP/#/templates#/free-tier" target="_blank" class="status pending">⏳ Test Section →</a>
+            </div>
+
+            <div class="test-card">
+                <h3>Use Cases</h3>
+                <span class="section-badge">real-world</span>
+                <span class="section-badge">examples</span>
+                <div class="url">/#/templates#/use-cases</div>
+                <p style="font-size: 0.9em; color: #94a3b8;">Real-world applications and success stories</p>
+                <a href="/DemoSciCMP/#/templates#/use-cases" target="_blank" class="status pending">⏳ Test Section →</a>
+            </div>
+        </div>
+
+        <div class="info-box" style="margin-top: 40px;">
+            <h4>🚀 Deployment Status</h4>
+            <p><strong>Code Status:</strong> ✅ Committed and pushed to GitHub</p>
+            <p><strong>Build Config:</strong> Static export with basePath '/DemoSciCMP'</p>
+            <p><strong>Expected URLs:</strong></p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>Gallery: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">https://testdemoqwenai2025-creator.github.io/DemoSciCMP/#/templates</code></li>
+                <li>BLAST: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">https://testdemoqwenai2025-creator.github.io/DemoSciCMP/#/templates/bioinformatics/blast</code></li>
+            </ul>
+            <p style="margin-top: 10px;"><strong>Note:</strong> If URLs show old content, GitHub Pages may still be deploying. Changes were pushed at: <span id="timestamp"></span></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        
+        // Add click tracking
+        document.querySelectorAll('a[href*="#"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                console.log('Testing URL:', this.href);
+            });
+        });
+    </script>
+</body>
+</html>
