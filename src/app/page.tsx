@@ -25,7 +25,41 @@ const Preview5FutureLab = dynamic(() => import('./preview5/page'), {
   loading: () => <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Loading Future Lab...</div>
 });
 
-type PageId = 'preview1' | 'preview2' | 'preview3' | 'preview4' | 'preview5';
+// Dynamic import for Template Gallery with proper routing support
+const TemplateGalleryPage = dynamic(() => import('@/components/SciCMP/TemplateGalleryPage').then(mod => ({ default: mod.default })), {
+  loading: () => (
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-8">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mb-4"></div>
+      <div className="text-lg font-medium mb-2">Loading Template Gallery...</div>
+      <div className="text-sm text-slate-400">Preparing scientific computing templates</div>
+    </div>
+  ),
+  ssr: false
+});
+
+type PageId = 'preview1' | 'preview2' | 'preview3' | 'preview4' | 'preview5' | 'templates';
+
+/**
+ * Parse hash URL to determine if it's a template route
+ * Supports patterns:
+ * - /#/templates - Main template gallery
+ * - /#/templates/bioinformatics - Category filter
+ * - /#/templates/bioinformatics/blast - Specific template
+ * - /#/templates/ml/training - Short category + template slug
+ */
+function parseTemplateHash(hash: string): { isTemplateRoute: boolean; hashForComponent: string } {
+  const cleanHash = hash.replace(/^#\/?/, '');
+  
+  // Check if this is a templates route
+  if (cleanHash.startsWith('templates/') || cleanHash === 'templates') {
+    return { 
+      isTemplateRoute: true, 
+      hashForComponent: '#' + cleanHash 
+    };
+  }
+  
+  return { isTemplateRoute: false, hashForComponent: '' };
+}
 
 export default function HomePage() {
   const [currentPage, setCurrentPage] = useState<PageId>('preview1');
@@ -33,13 +67,47 @@ export default function HomePage() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [pageHistory, setPageHistory] = useState<PageId[]>(['preview1']);
+  const [templateHash, setTemplateHash] = useState<string>('');
+
+  // ====================================================================
+  // HASH-BASED ROUTING EFFECT
+  // Detects template URLs on mount and handles navigation
+  // ====================================================================
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      const { isTemplateRoute, hashForComponent } = parseTemplateHash(hash);
+      
+      if (isTemplateRoute) {
+        setTemplateHash(hashForComponent);
+        setCurrentPage('templates');
+        setPageHistory(prev => [...prev.slice(-10), 'templates']);
+      }
+    };
+
+    // Check initial hash on mount
+    handleHashChange();
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const handleNavigate = useCallback((pageId: string) => {
     if (pageId === currentPage) return;
     
     setIsTransitioning(true);
     
-    // Add transition effect
+    // Clear hash when navigating away from templates (unless it's another hash navigation)
+    if (pageId !== 'templates') {
+      // Only clear if we're explicitly navigating to a non-template page
+      if (!pageId.startsWith('#')) {
+        window.history.pushState('', '', window.location.pathname);
+        setTemplateHash('');
+      }
+    }
+    
     setTimeout(() => {
       setCurrentPage(pageId as PageId);
       setPageHistory(prev => [...prev.slice(-10), pageId as PageId]);
@@ -79,6 +147,25 @@ export default function HomePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [pageHistory, handleNavigate]);
 
+  /**
+   * Handle navigation to specific template URLs
+   * This enables deep linking to specific templates and sections
+   */
+  const navigateToTemplate = useCallback((path: string) => {
+    const newHash = `#/templates/${path}`;
+    window.location.hash = newHash;
+    setTemplateHash(newHash);
+    setCurrentPage('templates');
+  }, []);
+
+  /**
+   * Navigate to a specific section within the template gallery
+   * Sections: core-capabilities, quick-start, teaching-training, standardization, free-tier, use-cases
+   */
+  const navigateToSection = useCallback((sectionId: string) => {
+    navigateToTemplate(`#/${sectionId}`);
+  }, [navigateToTemplate]);
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'preview1':
@@ -91,6 +178,9 @@ export default function HomePage() {
         return <Preview4Studio />;
       case 'preview5':
         return <Preview5FutureLab />;
+      case 'templates':
+        // Pass the hash to TemplateGalleryPage for deep routing
+        return <TemplateGalleryPage key={templateHash || 'gallery'} initialHash={templateHash} />;
       default:
         return <Preview1Landing />;
     }
@@ -122,8 +212,8 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Floating Navigation Hint */}
-      {!isTransitioning && (
+      {/* Floating Navigation Hint - Hide on templates page for cleaner UI */}
+      {!isTransitioning && currentPage !== 'templates' && (
         <div className="fixed bottom-6 right-6 z-30 hidden md:block">
           <div className="px-4 py-2 rounded-xl bg-slate-900/90 backdrop-blur-sm border border-slate-700/50 shadow-lg">
             <p className="text-xs text-slate-400 mb-1">Quick Nav</p>
@@ -143,7 +233,7 @@ export default function HomePage() {
               ))}
             </div>
             <p className="text-[10px] text-slate-600 mt-1.5 text-center">
-              Press ⌘K for menu • 1-5 for quick nav
+              Press K for menu 1-5 for quick nav
             </p>
           </div>
         </div>
